@@ -1,0 +1,303 @@
+@extends('layouts.admin')
+
+@section('title', 'Dashboard - UniScan')
+
+@section('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
+@endsection
+
+@section('content')
+<div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="dashboard__sidebar">
+        <div class="sidebar__header">
+            <div class="sidebar__logo">
+                <img src="{{ asset('img/uniscan_logo.png') }}" alt="UniScan Logo" class="sidebar__logo-img">
+                <span class="sidebar__logo-text">UniScan</span>
+            </div>
+            <button class="sidebar__toggle" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <nav class="sidebar__nav">
+            <ul class="nav__list">
+                <li class="nav__item">
+                    <a href="{{ route('admin.dashboard') }}" class="nav__link nav__link--active">
+                        <span class="nav__link-icon"><i class="fas fa-home"></i></span>
+                        <span class="nav__link-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav__item">
+                    <a href="{{ route('admin.users') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-users"></i></span>
+                        <span class="nav__link-text">Usuarios</span>
+                    </a>
+                </li>
+                <li class="nav__item">
+                    <a href="{{ route('admin.subjects') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-book"></i></span>
+                        <span class="nav__link-text">Materias</span>
+                    </a>
+                </li>
+                <li class="nav__item">
+                    <a href="{{ route('admin.attendance') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-clipboard-check"></i></span>
+                        <span class="nav__link-text">Asistencias</span>
+                    </a>
+                </li>
+                <li class="nav__item">
+                    <a href="{{ route('admin.reports') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-chart-pie"></i></span>
+                        <span class="nav__link-text">Reportes</span>
+                    </a>
+                </li>
+                <li class="nav__item">
+                    <a href="{{ route('admin.settings') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-cog"></i></span>
+                        <span class="nav__link-text">Configuración</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="sidebar__footer">
+            <div class="user-info">
+                <div class="user-info__avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info__details">
+                    <div class="user-info__name">{{ Auth::user()->name }}</div>
+                    <div class="user-info__role">Administrador</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="dashboard__content">
+        <header class="content__header">
+            <button class="actions__button mobile-menu-btn d-md-none">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <h1 class="header__title">Dashboard</h1>
+            
+            <div class="header__search">
+                <span class="search__icon"><i class="fas fa-search"></i></span>
+                <input type="text" class="search__input" placeholder="Buscar...">
+            </div>
+            
+            <div class="header__actions">
+                <button class="actions__button">
+                    <i class="fas fa-bell"></i>
+                    <span class="actions__notification">3</span>
+                </button>
+                <button class="actions__button">
+                    <i class="fas fa-envelope"></i>
+                    <span class="actions__notification">5</span>
+                </button>
+                <button class="actions__button">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="content__main">
+            <!-- Tarjetas de resumen -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="summary-card__header">
+                        <h3 class="summary-card__title">Usuarios Totales</h3>
+                        <div class="summary-card__icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="summary-card__content">
+                        <div class="summary-card__value">2,845</div>
+                        <div class="summary-card__stats summary-card__stats--up">
+                            <i class="fas fa-arrow-up"></i> 12% desde el mes pasado
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-card__header">
+                        <h3 class="summary-card__title">Asistencias Hoy</h3>
+                        <div class="summary-card__icon">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                    </div>
+                    <div class="summary-card__content">
+                        <div class="summary-card__value">158</div>
+                        <div class="summary-card__stats summary-card__stats--up">
+                            <i class="fas fa-arrow-up"></i> 5% desde ayer
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-card__header">
+                        <h3 class="summary-card__title">Materias Activas</h3>
+                        <div class="summary-card__icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                    </div>
+                    <div class="summary-card__content">
+                        <div class="summary-card__value">42</div>
+                        <div class="summary-card__stats summary-card__stats--down">
+                            <i class="fas fa-arrow-down"></i> 3% desde el mes pasado
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-card__header">
+                        <h3 class="summary-card__title">% Asistencia</h3>
+                        <div class="summary-card__icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="summary-card__content">
+                        <div class="summary-card__value">87%</div>
+                        <div class="summary-card__stats summary-card__stats--up">
+                            <i class="fas fa-arrow-up"></i> 2% desde la semana pasada
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="charts">
+                <div class="content-section chart-container">
+                    <div class="section__header">
+                        <h2 class="section__title">Actividad Semanal</h2>
+                        <a href="{{ route('admin.reports') }}" class="section__action">Ver detalles</a>
+                    </div>
+                    <div class="section__content">
+                        <canvas id="weeklyActivityChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="content-section chart-container">
+                    <div class="section__header">
+                        <h2 class="section__title">Distribución de Asistencias</h2>
+                        <a href="{{ route('admin.reports') }}" class="section__action">Ver detalles</a>
+                    </div>
+                    <div class="section__content">
+                        <canvas id="attendanceDistChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de datos recientes -->
+            <div class="content-section">
+                <div class="section__header">
+                    <h2 class="section__title">Asistencias Recientes</h2>
+                    <a href="{{ route('admin.attendance') }}" class="section__action">Ver todas</a>
+                </div>
+                <div class="section__content">
+                    <table class="data-table">
+                        <thead class="data-table__head">
+                            <tr>
+                                <th class="data-table__header">Usuario</th>
+                                <th class="data-table__header">Materia</th>
+                                <th class="data-table__header">Fecha</th>
+                                <th class="data-table__header">Hora</th>
+                                <th class="data-table__header">Estado</th>
+                                <th class="data-table__header">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="data-table__body">
+                            <tr>
+                                <td class="data-table__cell">Carlos Rodríguez</td>
+                                <td class="data-table__cell">Matemáticas Avanzadas</td>
+                                <td class="data-table__cell">25/05/2025</td>
+                                <td class="data-table__cell">08:15</td>
+                                <td class="data-table__cell">
+                                    <span class="data-table__status data-table__status--active">A tiempo</span>
+                                </td>
+                                <td class="data-table__cell">
+                                    <div class="data-table__actions">
+                                        <button class="data-table__action" title="Editar"><i class="fas fa-edit"></i></button>
+                                        <button class="data-table__action" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="data-table__cell">María González</td>
+                                <td class="data-table__cell">Física Cuántica</td>
+                                <td class="data-table__cell">25/05/2025</td>
+                                <td class="data-table__cell">09:05</td>
+                                <td class="data-table__cell">
+                                    <span class="data-table__status data-table__status--pending">Tardanza</span>
+                                </td>
+                                <td class="data-table__cell">
+                                    <div class="data-table__actions">
+                                        <button class="data-table__action" title="Editar"><i class="fas fa-edit"></i></button>
+                                        <button class="data-table__action" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="data-table__cell">Juan Pérez</td>
+                                <td class="data-table__cell">Programación Web</td>
+                                <td class="data-table__cell">25/05/2025</td>
+                                <td class="data-table__cell">10:30</td>
+                                <td class="data-table__cell">
+                                    <span class="data-table__status data-table__status--inactive">Ausente</span>
+                                </td>
+                                <td class="data-table__cell">
+                                    <div class="data-table__actions">
+                                        <button class="data-table__action" title="Editar"><i class="fas fa-edit"></i></button>
+                                        <button class="data-table__action" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="data-table__cell">Ana Martínez</td>
+                                <td class="data-table__cell">Química Orgánica</td>
+                                <td class="data-table__cell">25/05/2025</td>
+                                <td class="data-table__cell">11:45</td>
+                                <td class="data-table__cell">
+                                    <span class="data-table__status data-table__status--active">A tiempo</span>
+                                </td>
+                                <td class="data-table__cell">
+                                    <div class="data-table__actions">
+                                        <button class="data-table__action" title="Editar"><i class="fas fa-edit"></i></button>
+                                        <button class="data-table__action" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="data-table__cell">Roberto López</td>
+                                <td class="data-table__cell">Historia del Arte</td>
+                                <td class="data-table__cell">25/05/2025</td>
+                                <td class="data-table__cell">13:20</td>
+                                <td class="data-table__cell">
+                                    <span class="data-table__status data-table__status--active">A tiempo</span>
+                                </td>
+                                <td class="data-table__cell">
+                                    <div class="data-table__actions">
+                                        <button class="data-table__action" title="Editar"><i class="fas fa-edit"></i></button>
+                                        <button class="data-table__action" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Contenedor para notificaciones -->
+            <div class="notifications-container"></div>
+        </div>
+    </main>
+</div>
+@endsection
+
+@section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('js/admin/dashboard.js') }}"></script>
+@endsection
