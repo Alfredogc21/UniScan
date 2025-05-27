@@ -31,7 +31,8 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            // Comentamos Sanctum ya que no lo estamos usando en este proyecto
+            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
@@ -51,7 +52,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
-        // 👇 Aquí puedes registrar tu middleware personalizado "rol"
-        'rol' => \App\Http\Middleware\RolMiddleware::class,
+        // Middlewares personalizados
+        'role' => \App\Http\Middleware\CheckRole::class,
     ];
 }
