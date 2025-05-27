@@ -63,15 +63,17 @@ class UserController extends Controller
         ]);
 
         return redirect()->route('admin.users')->with('success', 'Usuario creado correctamente.');
-    }
-
-    /**
+    }    /**
      * Obtener los datos de un usuario para editar
      */
     public function edit($id)
     {
-        $user = User::findOrFail($id);
-        return response()->json($user);
+        try {
+            $user = User::findOrFail($id);
+            return response()->json($user);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
     }
 
     /**
@@ -102,11 +104,12 @@ class UserController extends Controller
         // Actualizar contraseña solo si se proporciona una nueva
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
+        }        try {
+            $user->save();
+            return response()->json(['success' => true, 'message' => 'Usuario actualizado correctamente']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al actualizar usuario: ' . $e->getMessage()], 500);
         }
-
-        $user->save();
-
-        return response()->json(['success' => true]);
     }    /**
      * Eliminar un usuario
      */    public function destroy($id)

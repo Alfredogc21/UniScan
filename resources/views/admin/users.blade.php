@@ -190,22 +190,22 @@
         <div class="modal-header">
             <h3>Editar Usuario</h3>
             <button class="modal-close">&times;</button>
-        </div>
-        <form id="editUserForm" class="user-form">
+        </div>        <form id="editUserForm" class="user-form">
             @csrf
-            @method('PUT')
+            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="_method" value="PUT">
             <input type="hidden" id="editUserId" name="user_id">
-
+            
             <div class="form-group">
                 <label for="editName">Nombre</label>
                 <input type="text" id="editName" name="name" required>
             </div>
-
+            
             <div class="form-group">
                 <label for="editEmail">Email</label>
                 <input type="email" id="editEmail" name="email" required>
             </div>
-            <div class="form-group">
+              <div class="form-group">
                 <label for="editRole">Rol</label>
                 <select id="editRole" name="role_id" required>
                     <option value="1">Administrador</option>
@@ -213,7 +213,7 @@
                     <option value="3">Estudiante</option>
                 </select>
             </div>
-
+            
             <div class="form-group">
                 <label for="editEstado">Estado</label>
                 <select id="editEstado" name="estado_id" required>
@@ -221,12 +221,12 @@
                     <option value="0">Inactivo</option>
                 </select>
             </div>
-
+            
             <div class="form-group">
                 <label for="editPassword">Nueva Contraseña (dejar en blanco para no cambiar)</label>
                 <input type="password" id="editPassword" name="password">
             </div>
-
+            
             <div class="btn-container">
                 <button type="button" class="btn-cancel">Cancelar</button>
                 <button type="submit" class="btn-save">Guardar Cambios</button>
@@ -339,18 +339,22 @@
             btnAddUser.addEventListener('click', function() {
                 addUserModal.style.display = 'flex';
             });
-        }
-
-        // Abrir modal para editar usuario
+        }        // Abrir modal para editar usuario
         editButtons.forEach(button => {
             button.addEventListener('click', function() {
-                const userId = this.getAttribute('data-user-id');
-
-                // Aquí harías una petición AJAX para obtener los datos del usuario
-                // Por ahora, simulamos con datos estáticos
-                fetch(`/admin/users/${userId}/edit`)
-                    .then(response => response.json())
+                const userId = this.getAttribute('data-user-id');                // Hacemos petición AJAX para obtener los datos del usuario
+                fetch(`{{ url('/admin/users/') }}/${userId}/edit`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Error HTTP: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        
                         document.getElementById('editUserId').value = data.id;
                         document.getElementById('editName').value = data.name;
                         document.getElementById('editEmail').value = data.email;
@@ -361,6 +365,7 @@
                     })
                     .catch(error => {
                         console.error('Error al cargar datos del usuario:', error);
+                        alert('Error al cargar datos del usuario: ' + error.message);
                     });
             });
         });
@@ -389,24 +394,25 @@
             if (event.target === editUserModal) {
                 editUserModal.style.display = 'none';
             }
-        });
-
-        // Manejar envío de formulario para editar usuario
+        });        // Manejar envío de formulario para editar usuario
         const editUserForm = document.getElementById('editUserForm');
 
         if (editUserForm) {
             editUserForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-
-                const userId = document.getElementById('editUserId').value;
+                event.preventDefault();                const userId = document.getElementById('editUserId').value;
                 const formData = new FormData(this);
+                
+                // Agregar el método PUT para la actualización
+                formData.append('_method', 'PUT');
 
-                fetch(`/admin/users/${userId}`, {
+                fetch(`{{ url('/admin/users/') }}/${userId}`, {
                         method: 'POST',
                         body: formData,
                         headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'same-origin'
                     })
                     .then(response => response.json())
                     .then(data => {
