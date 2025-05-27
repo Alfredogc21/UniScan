@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
         'email' => 'admin@uniscan.com',
         'password' => Hash::make('admin12345'),
         'role_id' => 1, // Administrador
+        'estado_id' => 1, // Activo
     ]);
     
     // Crear usuario de prueba con rol profesor
@@ -32,6 +33,7 @@ class DatabaseSeeder extends Seeder
         'email' => 'profesor@uniscan.com',
         'password' => Hash::make('profesor12345'),
         'role_id' => 2, // Profesor
+        'estado_id' => 1, // Activo
     ]);
 }
 }

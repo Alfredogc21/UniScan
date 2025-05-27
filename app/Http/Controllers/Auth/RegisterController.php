@@ -25,6 +25,7 @@ class RegisterController extends Controller
         // Siempre asignar el rol de estudiante (3) por defecto, el admin puede cambiarlo después
         User::create([
             'role_id' => 3, // Rol de estudiante por defecto
+            'estado_id' => 1, // Estado activo por defecto
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),

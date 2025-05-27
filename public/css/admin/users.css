@@ -16,6 +16,20 @@
 .role-badge--estudiante {
     background-color: #28a745;
 }
+.estado-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: white;
+}
+.estado-badge--activo {
+    background-color: #28a745;
+}
+.estado-badge--inactivo {
+    background-color: #dc3545;
+}
 .actions-cell {
     display: flex;
     gap: 8px;

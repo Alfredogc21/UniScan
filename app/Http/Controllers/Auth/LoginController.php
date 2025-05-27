@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -19,6 +20,14 @@ class LoginController extends Controller
             'email' => ['required','email'],
             'password' => ['required'],
         ]);
+
+        // Verificar si el usuario está activo
+        $user = User::where('email', $request->email)->first();
+        if ($user && $user->estado_id == 0) {
+            return back()->withErrors([
+                'email' => 'Tu cuenta ha sido desactivada. Contacta al administrador.',
+            ]);
+        }
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();

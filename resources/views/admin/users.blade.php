@@ -126,19 +126,18 @@
                     <button id="btnAddUser" class="section__action"><i class="fas fa-plus"></i> Nuevo Usuario</button>
                 </div>
                 <div class="section__content">
-                    <table class="data-table" id="usersTable">
-                        <thead class="data-table__head">
+                    <table class="data-table" id="usersTable">                        <thead class="data-table__head">
                             <tr>
                                 <th class="data-table__header">ID</th>
                                 <th class="data-table__header">Nombre</th>
                                 <th class="data-table__header">Email</th>
                                 <th class="data-table__header">Rol</th>
+                                <th class="data-table__header">Estado</th>
                                 <th class="data-table__header">Fecha Registro</th>
                                 <th class="data-table__header">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody class="data-table__body">
-                            @foreach($users as $user)
+                        <tbody class="data-table__body">                            @foreach($users as $user)
                                 <tr>
                                     <td class="data-table__cell">{{ $user->id }}</td>
                                     <td class="data-table__cell">{{ $user->name }}</td>
@@ -150,6 +149,13 @@
                                             <span class="role-badge role-badge--profesor">Profesor</span>
                                         @else
                                             <span class="role-badge role-badge--estudiante">Estudiante</span>
+                                        @endif
+                                    </td>
+                                    <td class="data-table__cell">
+                                        @if($user->estado_id == 1)
+                                            <span class="estado-badge estado-badge--activo">Activo</span>
+                                        @else
+                                            <span class="estado-badge estado-badge--inactivo">Inactivo</span>
                                         @endif
                                     </td>
                                     <td class="data-table__cell">{{ $user->created_at->format('d/m/Y') }}</td>
@@ -198,13 +204,20 @@
                 <label for="editEmail">Email</label>
                 <input type="email" id="editEmail" name="email" required>
             </div>
-            
-            <div class="form-group">
+              <div class="form-group">
                 <label for="editRole">Rol</label>
                 <select id="editRole" name="role_id" required>
                     <option value="1">Administrador</option>
                     <option value="2">Profesor</option>
                     <option value="3">Estudiante</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="editEstado">Estado</label>
+                <select id="editEstado" name="estado_id" required>
+                    <option value="1">Activo</option>
+                    <option value="0">Inactivo</option>
                 </select>
             </div>
             
@@ -240,13 +253,20 @@
                 <label for="addEmail">Email</label>
                 <input type="email" id="addEmail" name="email" required>
             </div>
-            
-            <div class="form-group">
+              <div class="form-group">
                 <label for="addRole">Rol</label>
                 <select id="addRole" name="role_id" required>
                     <option value="1">Administrador</option>
                     <option value="2">Profesor</option>
                     <option value="3">Estudiante</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="addEstado">Estado</label>
+                <select id="addEstado" name="estado_id" required>
+                    <option value="1">Activo</option>
+                    <option value="0">Inactivo</option>
                 </select>
             </div>
             
@@ -285,16 +305,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Búsqueda de usuarios
     const searchInput = document.getElementById('userSearchInput');
     const tableRows = document.querySelectorAll('#usersTable tbody tr');
-    
-    if (searchInput) {
+      if (searchInput) {
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             
             tableRows.forEach(row => {
                 const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
                 const email = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                const rol = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+                const estado = row.querySelector('td:nth-child(5)').textContent.toLowerCase();
                 
-                if (name.includes(searchTerm) || email.includes(searchTerm)) {
+                if (name.includes(searchTerm) || email.includes(searchTerm) || 
+                    rol.includes(searchTerm) || estado.includes(searchTerm)) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
@@ -327,11 +349,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Por ahora, simulamos con datos estáticos
             fetch(`/admin/users/${userId}/edit`)
                 .then(response => response.json())
-                .then(data => {
-                    document.getElementById('editUserId').value = data.id;
+                .then(data => {                    document.getElementById('editUserId').value = data.id;
                     document.getElementById('editName').value = data.name;
                     document.getElementById('editEmail').value = data.email;
                     document.getElementById('editRole').value = data.role_id;
+                    document.getElementById('editEstado').value = data.estado_id;
                     
                     editUserModal.style.display = 'flex';
                 })

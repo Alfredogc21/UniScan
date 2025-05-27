@@ -44,13 +44,13 @@ class UserController extends Controller
      * Guardar un nuevo usuario
      */
     public function store(Request $request)
-    {
-        // Validación del formulario
+    {        // Validación del formulario
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'role_id' => 'required|exists:roles,id',
+            'estado_id' => 'required|in:0,1',
         ]);
 
         // Crear el usuario
@@ -59,6 +59,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role_id' => $request->role_id,
+            'estado_id' => $request->estado_id,
         ]);
 
         return redirect()->route('admin.users')->with('success', 'Usuario creado correctamente.');
@@ -78,9 +79,7 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
-
-        // Validación del formulario
+        $user = User::findOrFail($id);        // Validación del formulario
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => [
@@ -90,6 +89,7 @@ class UserController extends Controller
                 Rule::unique('users')->ignore($user->id),
             ],
             'role_id' => 'required|exists:roles,id',
+            'estado_id' => 'required|in:0,1',
             'password' => 'nullable|string|min:8',
         ]);
 
@@ -97,6 +97,7 @@ class UserController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         $user->role_id = $request->role_id;
+        $user->estado_id = $request->estado_id;
 
         // Actualizar contraseña solo si se proporciona una nueva
         if ($request->filled('password')) {

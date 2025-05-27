@@ -34,7 +34,7 @@ Route::get('password/reset/{token}', [ResetPasswordController::class, 'showReset
 Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
 
 // Rutas protegidas por autenticación
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth'])->group(function () {
 
     // Admin Routes
     Route::prefix('admin')->name('admin.')->group(function () {
@@ -72,19 +72,10 @@ Route::middleware('auth')->group(function () {
         return view('estudiante.dashboard');
     })->name('estudiante.dashboard');
 
-   Route::middleware(['auth'])->group(function () {
-    Route::get('/profesor/dashboard', [ProfesorController::class, 'dashboard'])->name('profesor.dashboard');
-Route::middleware(['auth'])->group(function () {
     // Guardar materia y generar QR (profesor)
     Route::post('/materias', [MateriaController::class, 'store']);
 
     // Registrar asistencia desde QR (alumno)
     Route::post('/registrar-asistencia', [MateriaController::class, 'registrarAsistencia']);
     Route::resource('asistencias', AsistenciaController::class);
-
-});
-
-});
-
-    
 });
