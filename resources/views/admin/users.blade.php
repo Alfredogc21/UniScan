@@ -1,0 +1,546 @@
+@extends('layouts.admin')
+
+@section('title', 'Gestión de Usuarios - UniScan')
+
+@section('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
+    <style>
+        /* Estilos específicos para la gestión de usuarios */
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+        }
+        .role-badge--admin {
+            background-color: #dc3545;
+        }
+        .role-badge--profesor {
+            background-color: #007bff;
+        }
+        .role-badge--estudiante {
+            background-color: #28a745;
+        }
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+        }
+        .user-form-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .user-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+        }
+        .form-group select, .form-group input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .btn-save {
+            background-color: #7c6bd6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-save:hover {
+            background-color: #6659b8;
+        }
+        .btn-cancel {
+            background-color: #f8f9fa;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-cancel:hover {
+            background-color: #e9ecef;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 500px;
+            max-width: 90%;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h3 {
+            margin: 0;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .success-message, .error-message {
+            padding: 10px 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+@endsection
+
+@section('content')
+<div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="dashboard__sidebar">
+        <div class="sidebar__header">
+            <div class="sidebar__logo">
+                <img src="{{ asset('img/uniscan_logo.png') }}" alt="UniScan Logo" class="sidebar__logo-img">
+                <span class="sidebar__logo-text">UniScan</span>
+            </div>
+            <button class="sidebar__toggle" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <nav class="sidebar__nav">
+            <ul class="nav__list">
+                <li class="nav__item">
+                    <a href="{{ route('admin.dashboard') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-home"></i></span>
+                        <span class="nav__link-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav__item">
+                    <a href="{{ route('admin.users') }}" class="nav__link nav__link--active">
+                        <span class="nav__link-icon"><i class="fas fa-users"></i></span>
+                        <span class="nav__link-text">Usuarios</span>
+                    </a>
+                </li>
+                <li class="nav__item">
+                    <a href="{{ route('admin.subjects') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-book"></i></span>
+                        <span class="nav__link-text">Materias</span>
+                    </a>
+                </li>
+                <li class="nav__item">
+                    <a href="{{ route('admin.attendance') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-clipboard-check"></i></span>
+                        <span class="nav__link-text">Asistencias</span>
+                    </a>
+                </li>
+                <li class="nav__item">
+                    <a href="{{ route('admin.reports') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-chart-pie"></i></span>
+                        <span class="nav__link-text">Reportes</span>
+                    </a>
+                </li>
+                <li class="nav__item">
+                    <a href="{{ route('admin.settings') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-cog"></i></span>
+                        <span class="nav__link-text">Configuración</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="sidebar__footer">
+            <div class="user-info">
+                <div class="user-info__avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info__details">
+                    <div class="user-info__name">{{ Auth::user()->name }}</div>
+                    <div class="user-info__role">Administrador</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="dashboard__content">
+        <header class="content__header">
+            <button class="actions__button mobile-menu-btn d-md-none">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <h1 class="header__title">Gestión de Usuarios</h1>
+            
+            <div class="header__search">
+                <span class="search__icon"><i class="fas fa-search"></i></span>
+                <input type="text" id="userSearchInput" class="search__input" placeholder="Buscar usuario...">
+            </div>
+            
+            <div class="header__actions">
+                <button class="actions__button">
+                    <i class="fas fa-bell"></i>
+                    <span class="actions__notification">3</span>
+                </button>
+                <button class="actions__button">
+                    <i class="fas fa-envelope"></i>
+                    <span class="actions__notification">5</span>
+                </button>
+                <button class="actions__button">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="content__main">
+            <!-- Mensajes de notificación -->
+            @if(session('success'))
+                <div class="success-message">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="error-message">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            <!-- Tabla de usuarios -->
+            <div class="content-section">
+                <div class="section__header">
+                    <h2 class="section__title">Usuarios del Sistema</h2>
+                    <button id="btnAddUser" class="section__action"><i class="fas fa-plus"></i> Nuevo Usuario</button>
+                </div>
+                <div class="section__content">
+                    <table class="data-table" id="usersTable">
+                        <thead class="data-table__head">
+                            <tr>
+                                <th class="data-table__header">ID</th>
+                                <th class="data-table__header">Nombre</th>
+                                <th class="data-table__header">Email</th>
+                                <th class="data-table__header">Rol</th>
+                                <th class="data-table__header">Fecha Registro</th>
+                                <th class="data-table__header">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="data-table__body">
+                            @foreach($users as $user)
+                                <tr>
+                                    <td class="data-table__cell">{{ $user->id }}</td>
+                                    <td class="data-table__cell">{{ $user->name }}</td>
+                                    <td class="data-table__cell">{{ $user->email }}</td>
+                                    <td class="data-table__cell">
+                                        @if($user->role_id == 1)
+                                            <span class="role-badge role-badge--admin">Administrador</span>
+                                        @elseif($user->role_id == 2)
+                                            <span class="role-badge role-badge--profesor">Profesor</span>
+                                        @else
+                                            <span class="role-badge role-badge--estudiante">Estudiante</span>
+                                        @endif
+                                    </td>
+                                    <td class="data-table__cell">{{ $user->created_at->format('d/m/Y') }}</td>
+                                    <td class="data-table__cell">
+                                        <div class="actions-cell">
+                                            <button class="data-table__action btn-edit-user" data-user-id="{{ $user->id }}" title="Editar usuario">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline delete-form">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="data-table__action btn-delete-user" title="Eliminar usuario">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal para editar usuario -->
+<div class="modal-overlay" id="editUserModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Editar Usuario</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <form id="editUserForm" class="user-form">
+            @csrf
+            @method('PUT')
+            <input type="hidden" id="editUserId" name="user_id">
+            
+            <div class="form-group">
+                <label for="editName">Nombre</label>
+                <input type="text" id="editName" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="editEmail">Email</label>
+                <input type="email" id="editEmail" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="editRole">Rol</label>
+                <select id="editRole" name="role_id" required>
+                    <option value="1">Administrador</option>
+                    <option value="2">Profesor</option>
+                    <option value="3">Estudiante</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="editPassword">Nueva Contraseña (dejar en blanco para no cambiar)</label>
+                <input type="password" id="editPassword" name="password">
+            </div>
+            
+            <div class="btn-container">
+                <button type="button" class="btn-cancel">Cancelar</button>
+                <button type="submit" class="btn-save">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para agregar usuario -->
+<div class="modal-overlay" id="addUserModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Agregar Nuevo Usuario</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <form id="addUserForm" action="{{ route('admin.users.store') }}" method="POST" class="user-form">
+            @csrf
+            
+            <div class="form-group">
+                <label for="addName">Nombre</label>
+                <input type="text" id="addName" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="addEmail">Email</label>
+                <input type="email" id="addEmail" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="addRole">Rol</label>
+                <select id="addRole" name="role_id" required>
+                    <option value="1">Administrador</option>
+                    <option value="2">Profesor</option>
+                    <option value="3">Estudiante</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="addPassword">Contraseña</label>
+                <input type="password" id="addPassword" name="password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="addPasswordConfirmation">Confirmar Contraseña</label>
+                <input type="password" id="addPasswordConfirmation" name="password_confirmation" required>
+            </div>
+            
+            <div class="btn-container">
+                <button type="button" class="btn-cancel">Cancelar</button>
+                <button type="submit" class="btn-save">Agregar Usuario</button>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejo de la barra lateral
+    const sidebarToggle = document.querySelector('.sidebar__toggle');
+    const sidebar = document.querySelector('.dashboard__sidebar');
+    
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('dashboard__sidebar--collapsed');
+        });
+    }
+
+    // Búsqueda de usuarios
+    const searchInput = document.getElementById('userSearchInput');
+    const tableRows = document.querySelectorAll('#usersTable tbody tr');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            tableRows.forEach(row => {
+                const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const email = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || email.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Mostrar/Ocultar modales
+    const btnAddUser = document.getElementById('btnAddUser');
+    const editButtons = document.querySelectorAll('.btn-edit-user');
+    const modalCloseButtons = document.querySelectorAll('.modal-close');
+    const cancelButtons = document.querySelectorAll('.btn-cancel');
+    const addUserModal = document.getElementById('addUserModal');
+    const editUserModal = document.getElementById('editUserModal');
+    
+    // Abrir modal para agregar usuario
+    if (btnAddUser && addUserModal) {
+        btnAddUser.addEventListener('click', function() {
+            addUserModal.style.display = 'flex';
+        });
+    }
+    
+    // Abrir modal para editar usuario
+    editButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            
+            // Aquí harías una petición AJAX para obtener los datos del usuario
+            // Por ahora, simulamos con datos estáticos
+            fetch(`/admin/users/${userId}/edit`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('editUserId').value = data.id;
+                    document.getElementById('editName').value = data.name;
+                    document.getElementById('editEmail').value = data.email;
+                    document.getElementById('editRole').value = data.role_id;
+                    
+                    editUserModal.style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error('Error al cargar datos del usuario:', error);
+                });
+        });
+    });
+    
+    // Cerrar modales
+    modalCloseButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            addUserModal.style.display = 'none';
+            editUserModal.style.display = 'none';
+        });
+    });
+    
+    cancelButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            addUserModal.style.display = 'none';
+            editUserModal.style.display = 'none';
+        });
+    });
+    
+    // Cerrar modal al hacer clic fuera
+    window.addEventListener('click', function(event) {
+        if (event.target === addUserModal) {
+            addUserModal.style.display = 'none';
+        }
+        
+        if (event.target === editUserModal) {
+            editUserModal.style.display = 'none';
+        }
+    });
+
+    // Manejar envío de formulario para editar usuario
+    const editUserForm = document.getElementById('editUserForm');
+    
+    if (editUserForm) {
+        editUserForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const userId = document.getElementById('editUserId').value;
+            const formData = new FormData(this);
+            
+            fetch(`/admin/users/${userId}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mostrar mensaje de éxito y recargar página
+                    window.location.reload();
+                } else {
+                    // Mostrar mensaje de error
+                    console.error('Error al actualizar usuario:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error en la petición:', error);
+            });
+        });
+    }
+
+    // Confirmación para eliminar usuario
+    const deleteForms = document.querySelectorAll('.delete-form');
+    
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            if (confirm('¿Está seguro de que desea eliminar este usuario? Esta acción no se puede deshacer.')) {
+                this.submit();
+            }
+        });
+    });
+});
+</script>
+@endsection

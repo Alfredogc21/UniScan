@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Registrarse')
-
+php artisan migrate:fresh --seed
 @section('content')
 <div class="login-wrapper">
   <!-- Círculos decorativos (mismos que en login) -->
@@ -20,20 +20,9 @@
 
       <form method="POST" action="{{ route('register') }}">
         @csrf
-         <label for="name">Selecciona tu rol</label>
-<select name="role_id" id="role_id" required
-  class="styled-select @error('role_id') input-error @enderror">
-  <option value=""> Elige un rol </option>
-  <option value="1" {{ old('role_id') == 1 ? 'selected' : '' }}>Admin</option>
-  <option value="2" {{ old('role_id') == 2 ? 'selected' : '' }}>Profesor</option>
-  <option value="3" {{ old('role_id') == 3 ? 'selected' : '' }}>Estudiante</option>
-</select>
-
-
-
-@error('role_id')
-  <p class="error-text">{{ $message }}</p>
-@enderror
+        <!-- La asignación de roles ahora será responsabilidad del administrador -->
+        <input type="hidden" name="role_id" value="3">
+        <!-- El valor 3 corresponde al rol de Estudiante, que es el predeterminado para nuevos usuarios -->
 
         <label for="name">Nombre</label>
         <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus

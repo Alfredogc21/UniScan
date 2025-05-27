@@ -3,8 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Role; // ✅ ¡Esta línea es clave!
+use App\Models\Role;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,11 +18,20 @@ class DatabaseSeeder extends Seeder
 
         
 
-    // Crear usuario de prueba con rol
+    // Crear usuario administrador por defecto
     User::factory()->create([
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'role_id' => 2, // Por ejemplo, profesor
+        'name' => 'Administrador',
+        'email' => 'admin@uniscan.com',
+        'password' => Hash::make('admin12345'),
+        'role_id' => 1, // Administrador
+    ]);
+    
+    // Crear usuario de prueba con rol profesor
+    User::factory()->create([
+        'name' => 'Profesor Prueba',
+        'email' => 'profesor@uniscan.com',
+        'password' => Hash::make('profesor12345'),
+        'role_id' => 2, // Profesor
     ]);
 }
 }
