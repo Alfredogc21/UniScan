@@ -10,35 +10,71 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebarToggle = document.querySelector('.sidebar__toggle');
     const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
     
-    // Toggle sidebar en desktop
+    // Crear un overlay para el sidebar en móvil
+    const sidebarOverlay = document.createElement('div');
+    sidebarOverlay.className = 'sidebar-overlay';
+    document.body.appendChild(sidebarOverlay);
+      // Función para mostrar/ocultar el overlay
+    function toggleSidebarOverlay() {
+        if (window.innerWidth <= 991 && sidebar.classList.contains('dashboard__sidebar--active')) {
+            sidebarOverlay.classList.add('sidebar-overlay--active');
+        } else {
+            sidebarOverlay.classList.remove('sidebar-overlay--active');
+        }
+    }
+      // Toggle sidebar en desktop
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('dashboard__sidebar--collapsed');
-            content.classList.toggle('dashboard__content--expanded');
-            
-            // Ocultar texto si el sidebar está colapsado
-            const sidebarTexts = document.querySelectorAll('.sidebar__logo-text, .nav__link-text, .user-info__details');
-            sidebarTexts.forEach(text => {
-                text.style.display = sidebar.classList.contains('dashboard__sidebar--collapsed') ? 'none' : 'block';
-            });
+            // Comportamiento diferente según el tamaño de pantalla
+            if (window.innerWidth <= 991) {
+                sidebar.classList.toggle('dashboard__sidebar--active');
+                toggleSidebarOverlay();
+            } else {
+                sidebar.classList.toggle('dashboard__sidebar--collapsed');
+                content.classList.toggle('dashboard__content--expanded');
+            }
         });
     }
-    
-    // Toggle sidebar en mobile
+      // Toggle sidebar en mobile
     if (mobileMenuBtn) {
-        mobileMenuBtn.addEventListener('click', function() {
+        mobileMenuBtn.addEventListener('click', function(e) {
+            e.stopPropagation(); // Evitar que el clic se propague al documento
             sidebar.classList.toggle('dashboard__sidebar--active');
+            toggleSidebarOverlay();
+            
+            console.log('Mobile menu clicked, sidebar classes:', sidebar.className);
         });
     }
     
-    // Cerrar sidebar en mobile cuando se hace clic fuera
-    document.addEventListener('click', function(event) {
-        const isClickInsideSidebar = sidebar.contains(event.target);
+    // Cerrar sidebar al hacer clic en el overlay
+    sidebarOverlay.addEventListener('click', function() {
+        sidebar.classList.remove('dashboard__sidebar--active');
+        sidebarOverlay.classList.remove('sidebar-overlay--active');
+    });
+      // Cerrar sidebar en mobile cuando se hace clic fuera
+    document.addEventListener('click', function(event) {        const isClickInsideSidebar = sidebar && sidebar.contains(event.target);
         const isClickOnMobileMenu = mobileMenuBtn && mobileMenuBtn.contains(event.target);
-        const isSidebarActive = sidebar.classList.contains('dashboard__sidebar--active');
+        const isClickOnOverlay = event.target === sidebarOverlay;
+        const isSidebarActive = sidebar && sidebar.classList.contains('dashboard__sidebar--active');
         
-        if (!isClickInsideSidebar && !isClickOnMobileMenu && isSidebarActive && window.innerWidth < 768) {
+        if (!isClickInsideSidebar && !isClickOnMobileMenu && !isClickOnOverlay && isSidebarActive && window.innerWidth < 992) {
             sidebar.classList.remove('dashboard__sidebar--active');
+            sidebarOverlay.classList.remove('sidebar-overlay--active');
+        }
+    });      // Manejo de redimensión de ventana
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 991) {
+            sidebar.classList.remove('dashboard__sidebar--active');
+            sidebarOverlay.classList.remove('sidebar-overlay--active');
+            
+            // Restaurar estado del sidebar basado en preferencia de usuario
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                sidebar.classList.add('dashboard__sidebar--collapsed');
+                content.classList.add('dashboard__content--expanded');
+            } else {
+                sidebar.classList.remove('dashboard__sidebar--collapsed');
+                content.classList.remove('dashboard__content--expanded');
+            }
         }
     });
     

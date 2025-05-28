@@ -140,77 +140,89 @@
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
-.btn-save {
-    background-color: #7c6bd6;
+
+/* Mejorar estilos del botón "Nuevo Usuario" */
+#btnAddUser {
+    background-color: var(--primary-color);
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.btn-save:hover {
-    background-color: #6659b8;
-}
-.btn-cancel {
-    background-color: #f8f9fa;
-    color: #333;
-    border: 1px solid #ddd;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.btn-cancel:hover {
-    background-color: #e9ecef;
-}
-.modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    justify-content: center;
+    display: inline-flex;
     align-items: center;
-}
-.modal-content {
-    background-color: white;
-    padding: 25px;
-    border-radius: 10px;
-    width: 500px;
-    max-width: 90%;
-}
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-.modal-header h3 {
-    margin: 0;
-}
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
     cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(123, 31, 162, 0.2);
+    text-decoration: none;
 }
-.success-message, .error-message {
-    padding: 10px 15px;
-    margin: 15px 0;
-    border-radius: 5px;
-    text-align: center;
+
+#btnAddUser:hover {
+    background-color: #8e24aa; /* Una tonalidad más clara del color primario */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(123, 31, 162, 0.3);
 }
-.success-message {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+
+#btnAddUser i {
+    font-size: 1rem;
 }
-.error-message {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+
+/* Estilos responsivos para la tabla de usuarios */
+@media (max-width: 991px) {
+    .data-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 767px) {
+    .section__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    #btnAddUser {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .data-table__header, 
+    .data-table__cell {
+        padding: 10px 8px;
+        font-size: 0.9rem;
+    }
+    
+    /* Ocultar columnas menos importantes en móviles */
+    .data-table__header:nth-child(6), 
+    .data-table__cell:nth-child(6) {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-section {
+        padding: 15px 10px;
+    }
+    
+    .data-table__header:nth-child(1), 
+    .data-table__cell:nth-child(1) {
+        display: none; /* Ocultar columna ID en pantallas muy pequeñas */
+    }
+    
+    .role-badge, .estado-badge {
+        padding: 3px 8px;
+        font-size: 0.7rem;
+    }
+    
+    .data-table__action {
+        font-size: 0.9rem;
+    }
+    
+    .modal-content {
+        padding: 15px;
+    }
 }

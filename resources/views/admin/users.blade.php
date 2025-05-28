@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
 <link rel="stylesheet" href="{{ asset('css/admin/users.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 @endsection
 
 @section('content')
@@ -79,7 +80,7 @@
     <!-- Contenido principal -->
     <main class="dashboard__content">
         <header class="content__header">
-            <button class="actions__button mobile-menu-btn d-md-none">
+            <button class="actions__button mobile-menu-btn">
                 <i class="fas fa-bars"></i>
             </button>
 
@@ -291,17 +292,10 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('js/admin/dashboard.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Manejo de la barra lateral
-        const sidebarToggle = document.querySelector('.sidebar__toggle');
-        const sidebar = document.querySelector('.dashboard__sidebar');
-
-        if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('dashboard__sidebar--collapsed');
-            });
-        }
+        // La gestión del sidebar ahora está en dashboard.js
 
         // Búsqueda de usuarios
         const searchInput = document.getElementById('userSearchInput');
