@@ -100,9 +100,7 @@
                     <i class="fas fa-envelope"></i>
                     <span class="actions__notification">5</span>
                 </button>
-                <button class="actions__button">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
+                @include('partials.logout_button')
             </div>
         </header>
 
