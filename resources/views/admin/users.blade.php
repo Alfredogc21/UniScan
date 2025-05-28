@@ -65,15 +65,15 @@
         </nav>
 
         <div class="sidebar__footer">
-            <div class="user-info">
+            <a href="{{ route('admin.profile') }}" class="user-info" style="color: white;">
                 <div class="user-info__avatar">
                     <i class="fas fa-user"></i>
                 </div>
                 <div class="user-info__details">
-                    <div class="user-info__name">{{ Auth::user()->name }}</div>
-                    <div class="user-info__role">Administrador</div>
+                    <div class="user-info__name" style="color: white;">{{ Auth::user()->name }}</div>
+                    <div class="user-info__role" style="color: rgba(255, 255, 255, 0.8);">Administrador</div>
                 </div>
-            </div>
+            </a>
         </div>
     </aside>
 

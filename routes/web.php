@@ -42,6 +42,10 @@ Route::middleware(['auth'])->group(function () {
             return view('admin.dashboard');
         })->name('dashboard');
         
+        // Rutas de perfil
+        Route::get('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'edit'])->name('profile');
+        Route::put('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
+        
         // Rutas de gestión de usuarios usando el controlador
         Route::get('/users', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('users');
         Route::post('/users', [App\Http\Controllers\Admin\UserController::class, 'store'])->name('users.store');
