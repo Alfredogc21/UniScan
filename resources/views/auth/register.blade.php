@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('title', 'Registrarse')
-php artisan migrate:fresh --seed
 @section('content')
 <div class="login-wrapper">
   <!-- Círculos decorativos (mismos que en login) -->
