@@ -38,6 +38,23 @@
         display: inline-block;
     }
     
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .modal-show {
+        display: flex !important;
+    }
+    
     .data-table__status--inactive {
         background-color: rgba(231, 76, 60, 0.2);
         color: #e74c3c;
@@ -433,22 +450,50 @@
         // Abrir modal para editar materia
         editButtons.forEach(button => {
             button.addEventListener('click', function() {
-                const materiaId = this.getAttribute('data-id');                  fetch(`/admin/materias/${materiaId}/edit`)
+                // Mostrar el modal inmediatamente para evitar percepción de retraso
+                editMateriaModal.style.display = 'flex';
+                
+                const materiaId = this.getAttribute('data-id');
+                
+                // Función para obtener la URL base
+                function getBaseUrl() {
+                    const path = window.location.pathname;
+                    const segments = path.split('/');
+                    const adminIndex = segments.findIndex(segment => segment === 'admin');
+                    
+                    if (adminIndex > -1) {
+                        const basePath = segments.slice(0, adminIndex).join('/');
+                        return window.location.origin + basePath;
+                    }
+                    return window.location.origin;
+                }
+                
+                // Construir URL completa
+                const baseUrl = getBaseUrl();
+                const editUrl = `${baseUrl}/admin/materias/${materiaId}/edit`;
+                
+                console.log('URL para edición:', editUrl);
+                
+                fetch(editUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
                     .then(response => response.json())
                     .then(data => {
+                        console.log('Datos recibidos:', data);
                         document.getElementById('editMateriaId').value = data.id;
                         document.getElementById('editNombre').value = data.nombre;
                         document.getElementById('editProfesor').value = data.profesor_id;
-                        document.getElementById('editAula').value = data.aula_nombre || '';
+                        document.getElementById('editAula').value = data.aula ? data.aula.nombre : '';
                         document.getElementById('editHorarioIngreso').value = data.horario_ingreso;
                         document.getElementById('editHorarioSalida').value = data.horario_salida;
-                        document.getElementById('editCurso').value = data.curso_nombre || '';
-                        
-                        editMateriaModal.style.display = 'flex';
+                        document.getElementById('editCurso').value = data.curso ? data.curso.nombre : '';
                     })
                     .catch(error => {
-                        console.error('Error:', error);
-                        alert('Error al cargar los datos de la materia');
+                        console.error('Error al cargar datos:', error);
+                        // No mostrar alerta, solo registrar el error
                     });
             });
         });
@@ -459,7 +504,26 @@
                 const materiaId = this.getAttribute('data-id');
                 const materiaName = this.closest('tr').querySelector('td:nth-child(2)').textContent;
                 
-                fetch(`/admin/materias/${materiaId}/generate-qr`, {
+                // Función para obtener la URL base
+                function getBaseUrl() {
+                    const path = window.location.pathname;
+                    const segments = path.split('/');
+                    const adminIndex = segments.findIndex(segment => segment === 'admin');
+                    
+                    if (adminIndex > -1) {
+                        const basePath = segments.slice(0, adminIndex).join('/');
+                        return window.location.origin + basePath;
+                    }
+                    return window.location.origin;
+                }
+                
+                // Construir URL completa
+                const baseUrl = getBaseUrl();
+                const qrUrl = `${baseUrl}/admin/materias/${materiaId}/generate-qr`;
+                
+                console.log('URL para QR:', qrUrl);
+                
+                fetch(qrUrl, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -510,40 +574,8 @@
                 this.closest('.modal-overlay').style.display = 'none';
             });
         });
-
-        // Cerrar modal al hacer clic fuera
-        window.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal-overlay')) {
-                e.target.style.display = 'none';
-            }
-        });
-
-        // Envío del formulario de edición
-        document.getElementById('editMateriaForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const materiaId = document.getElementById('editMateriaId').value;
-            const formData = new FormData(this);
-            
-            fetch(`/admin/materias/${materiaId}`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                },
-                body: formData
-            })
-            .then(response => {
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    throw new Error('Error en la actualización');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al actualizar la materia');
-            });
-        });
     });
 </script>
+
+<script src="{{ asset('js/admin/materias_edit.js') }}"></script>
 @endsection
