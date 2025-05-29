@@ -9,7 +9,7 @@ class Materia extends Model
 {
     use HasFactory;
 
-   protected $fillable = ['profesor_id', 'nombre', 'aula', 'horario_ingreso', 'horario_salida', 'curso', 'token_qr'];
+   protected $fillable = ['profesor_id', 'nombre', 'aula_id', 'horario_ingreso', 'horario_salida', 'curso_id', 'token_qr', 'qr_path'];
 
 public function asistencias() {
     return $this->hasMany(Asistencia::class);
@@ -18,4 +18,11 @@ public function asistencias() {
 public function profesor() {
     return $this->belongsTo(User::class, 'profesor_id');
 }
+
+    public function aula() {
+        return $this->belongsTo(\App\Models\Aula::class, 'aula_id');
+    }
+    public function curso() {
+        return $this->belongsTo(\App\Models\Curso::class, 'curso_id');
+    }
 }

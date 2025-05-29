@@ -6,6 +6,7 @@ use App\Models\Materia;
 use App\Models\Asistencia;
 use Illuminate\Http\Request; // ¡Faltaba este import!
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class MateriaController extends Controller // ¡Faltaba la clase!
 {

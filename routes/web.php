@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\ProfesorController;
 use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\AsistenciaController;
+use App\Http\Controllers\Admin\MateriaController as AdminMateriaController;
 
 
 
@@ -52,6 +53,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/users/{id}/edit', [App\Http\Controllers\Admin\UserController::class, 'edit'])->name('users.edit');
         Route::put('/users/{id}', [App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
         Route::delete('/users/{id}', [App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
+        
+        // Rutas de gestión de materias
+        Route::get('/materias', [AdminMateriaController::class, 'index'])->name('materias');
+        Route::post('/materias', [AdminMateriaController::class, 'store'])->name('materias.store');
+        Route::get('/materias/{id}/edit', [AdminMateriaController::class, 'edit'])->name('materias.edit');
+        Route::put('/materias/{id}', [AdminMateriaController::class, 'update'])->name('materias.update');
+        Route::delete('/materias/{id}', [AdminMateriaController::class, 'destroy'])->name('materias.destroy');
+        Route::post('/materias/{id}/generate-qr', [AdminMateriaController::class, 'generateQr'])->name('materias.generateQr');
         
         Route::get('/subjects', function () {
             return view('admin.subjects');
