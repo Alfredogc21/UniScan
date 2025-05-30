@@ -168,6 +168,25 @@ $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
 switch($ext) {
     case 'svg':
         $contentType = 'image/svg+xml';
+        // Para SVG, asegurarse de que el archivo tenga la declaración XML correcta
+        $fileContent = file_get_contents($fullPath);
+        if (!preg_match('/^\<\?xml/i', $fileContent)) {
+            $xmlDeclaration = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' . "\n";
+            $cssStyle = '<style type="text/css"><![CDATA[
+                svg {
+                    background-color: #fff;
+                    display: block;
+                    margin: 0 auto;
+                }
+            ]]></style>';
+            
+            if (strpos($fileContent, '<svg') !== false) {
+                $fileContent = $xmlDeclaration . str_replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"', $fileContent);
+                $fileContent = str_replace('<svg xmlns', '<svg ' . $cssStyle . ' xmlns', $fileContent);
+                // Guardar el archivo modificado
+                file_put_contents($fullPath, $fileContent);
+            }
+        }
         break;
     case 'png':
         $contentType = 'image/png';

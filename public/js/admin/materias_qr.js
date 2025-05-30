@@ -6,63 +6,55 @@ document.addEventListener('DOMContentLoaded', function() {
     const qrModal = document.getElementById('qrModal');
     const generateQrButtons = document.querySelectorAll('.btn-generate-qr');
     const downloadQrButton = document.getElementById('downloadQr');
-    const viewQrButton = document.getElementById('viewQr');
-      // Función para descargar QR directamente
+      // Variable para evitar múltiples descargas simultáneas
+    let isDownloading = false;
+    
+    // Función para descargar QR directamente
     function downloadQR() {
-        // Verificar que existe el elemento de descarga
-        if (!downloadQrButton) return;
-        
-        // Obtener la URL directamente del botón
-        const downloadUrl = downloadQrButton.getAttribute('data-download-url') || downloadQrButton.href;
-        
-        if (!downloadUrl || downloadUrl === '#' || downloadUrl.includes('undefined')) {
-            console.error('URL de descarga no válida');
-            
-            // Intentar obtener la URL de la imagen mostrada
-            const qrImage = document.getElementById('qrImage');
-            if (qrImage && qrImage.src && qrImage.src !== 'undefined') {                // Crear un enlace temporal para la descarga con la URL de la imagen
-                const downloadLink = document.createElement('a');
-                const imgSrc = qrImage.src;
-                downloadLink.href = imgSrc.includes('?') ? 
-                    imgSrc + '&download=1' : 
-                    imgSrc + '?download=1';
-                downloadLink.download = `qr_code_${Date.now()}.svg`;
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-                console.log('Descarga alternativa iniciada');
-                return;
-            }
-            
-            alert('Error: URL de descarga no disponible. Por favor, haga clic derecho en la imagen y seleccione "Guardar imagen como...".');
+        // Evitar múltiples clics
+        if (isDownloading) {
+            console.log('Ya hay una descarga en proceso, evitando duplicados');
             return;
         }
         
-        const fileName = downloadQrButton.getAttribute('download') || 'qr_code.svg';
+        // Marcar como en proceso de descarga
+        isDownloading = true;
+        setTimeout(() => { isDownloading = false; }, 2000);
         
-        console.log('Iniciando descarga del QR:', downloadUrl);
+        // Verificar que existe el elemento de descarga
+        if (!downloadQrButton) {
+            console.error('Botón de descarga no encontrado');
+            isDownloading = false;
+            return;
+        }
         
-        // Método simple: redirección directa al script de descarga
-        try {
-            // Usar un enlace para la descarga
-            const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            console.log('Descarga iniciada con éxito');
-        } catch (error) {
-            console.error('Error al iniciar la descarga:', error);
-            
-            // Fallback: intentar con redirección directa
-            try {
-                window.location.href = downloadUrl;
-            } catch (redirectError) {
-                console.error('Error al redirigir:', redirectError);
-                alert('Error al descargar el QR. Por favor, intente con el botón "Ver QR" y guarde la imagen manualmente.');
+        // Obtener el elemento de la imagen QR
+        const qrImage = document.getElementById('qrImage');
+        if (!qrImage || !qrImage.src || qrImage.src === 'undefined') {
+            console.error('Imagen QR no encontrada o no válida');
+            alert('Error: No se encontró la imagen QR. Por favor, intente nuevamente.');
+            isDownloading = false;
+            return;
+        }
+        
+        // Obtener la URL de la imagen
+        const imageUrl = qrImage.src;
+        
+        // Recuperar el nombre de la materia para crear un nombre de archivo descriptivo
+        let fileName = 'qr_code.png';
+        const materiaTitleElement = document.querySelector('.modal-title');
+        if (materiaTitleElement && materiaTitleElement.textContent) {
+            const materiaName = materiaTitleElement.textContent.replace('Código QR: ', '').trim();
+            if (materiaName) {
+                // Usar siempre PNG para mejor compatibilidad
+                fileName = `qr_${materiaName.replace(/\s+/g, '_')}.png`;
             }
         }
+        
+        console.log('Iniciando descarga del QR:', imageUrl, 'Nombre de archivo:', fileName);
+        
+        // Usar el generador de QR para descargar (método mejorado que convierte directamente a PNG)
+        ClientQRGenerator.downloadImage(imageUrl, fileName);
     }
       // Asignar manejo de eventos al botón de descarga
     if (downloadQrButton) {
@@ -71,18 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
             downloadQR();
         });
     }
-      // Asignar manejo de eventos al botón de ver QR
-    if (viewQrButton) {
-        viewQrButton.addEventListener('click', function() {
-            const qrImage = document.getElementById('qrImage');
-            // Usar la URL de la imagen mostrada en el modal
-            const viewUrl = qrImage.src;
-            
-            // Abrir la imagen en una nueva ventana/pestaña
-            window.open(viewUrl, '_blank');
-            console.log('Abriendo QR para visualización:', viewUrl);
-        });
-    }
+      // Se removió la funcionalidad de "Ver QR"
     
     // Función para obtener la URL base
     function getBaseUrl() {
@@ -147,10 +128,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         qrUrl + '&download=1' : 
                         qrUrl + '?download=1';
                     
-                    // Configurar botón de descarga
-                    document.getElementById('downloadQr').href = downloadUrl;
-                    document.getElementById('downloadQr').setAttribute('data-download-url', downloadUrl);
-                    document.getElementById('downloadQr').setAttribute('data-materia', materiaName);
+                    // Configurar botón de descarga - asegurando que se establecen correctamente los atributos
+                    const downloadButton = document.getElementById('downloadQr');
+                    if (downloadButton) {
+                        downloadButton.href = downloadUrl;
+                        downloadButton.setAttribute('data-download-url', downloadUrl);
+                        downloadButton.setAttribute('data-materia', materiaName);
+                        // Establecer explícitamente el atributo download con un nombre de archivo PNG
+                        downloadButton.download = `qr_${materiaName.replace(/\s+/g, '_')}.png`;
+                        console.log('Configuración de descarga: ', {url: downloadUrl, filename: downloadButton.download});
+                    }
                     document.getElementById('qrMateriaName').textContent = materiaName;
                     console.log('Materia para el QR:', materiaName);
                     console.log('URL para descargar configurada:', downloadUrl);
@@ -223,10 +210,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             document.getElementById('qrImage').src = data.qr_url;
                             console.log('URL alternativa para mostrar QR:', data.qr_url);
                             
-                            // Configurar URL para descargar
-                            document.getElementById('downloadQr').href = data.download_url;
-                            document.getElementById('downloadQr').download = `qr_${materiaName.replace(/\s+/g, '_')}.svg`;
-                            console.log('URL alternativa para descargar QR:', data.download_url);
+                            // Configurar URL para descargar - asegurando que todos los atributos se establecen correctamente
+                            const downloadButton = document.getElementById('downloadQr');
+                            if (downloadButton) {
+                                downloadButton.href = data.download_url || data.qr_url;
+                                downloadButton.setAttribute('data-download-url', data.download_url || data.qr_url);
+                                downloadButton.download = `qr_${materiaName.replace(/\s+/g, '_')}.png`;
+                                console.log('URL alternativa para descargar QR:', data.download_url || data.qr_url);
+                                console.log('Nombre archivo para descargar:', downloadButton.download);
+                            }
                               // Mostrar modal
                             qrModal.style.display = 'flex';
                             

@@ -6,81 +6,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
 <link rel="stylesheet" href="{{ asset('css/admin/users.css') }}">
+<link rel="stylesheet" href="{{ asset('css/admin/materias.css') }}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <!-- Biblioteca QRCode.js para generación de QR en el cliente -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<style>
-    /* Estilos mejorados para botones */
-    .btn-edit-materia:hover, .btn-generate-qr:hover, .btn-delete-materia:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    
-    .btn-edit-materia:active, .btn-generate-qr:active, .btn-delete-materia:active {
-        transform: translateY(1px);
-    }
-    
-    #btnAddMateria:hover {
-        box-shadow: 0 6px 15px rgba(37, 117, 252, 0.3);
-        transform: translateY(-2px);
-    }
-    
-    #btnAddMateria:active {
-        transform: translateY(1px);
-        box-shadow: 0 3px 8px rgba(37, 117, 252, 0.2);
-    }
-    
-    .data-table__status--active {
-        background-color: rgba(46, 204, 113, 0.2);
-        color: #27ae60;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-weight: 600;
-        display: inline-block;
-    }
-    
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .modal-show {
-        display: flex !important;
-    }
-    
-    .data-table__status--inactive {
-        background-color: rgba(231, 76, 60, 0.2);
-        color: #e74c3c;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-weight: 600;
-        display: inline-block;
-    }
-    
-    /* Mejora en el estilo de la tabla */
-    .data-table {
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    
-    .data-table__head {
-        background: linear-gradient(to right, #f8f9fa, #e9ecef);
-    }
-    
-    .data-table tr:hover {
-        background-color: #f8f9fa;
-    }
-</style>
 @endsection
 
 @section('content')
@@ -196,7 +126,7 @@
             <div class="content-section">
                 <div class="section__header">
                     <h2 class="section__title">Materias del Sistema</h2>
-                    <button id="btnAddMateria" class="section__action" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 10px rgba(37, 117, 252, 0.2); transition: all 0.3s ease;">
+                    <button id="btnAddMateria" class="section__action">
                         <i class="fas fa-plus" style="margin-right: 8px;"></i> Añadir nueva materia
                     </button>
                 </div>
@@ -229,17 +159,15 @@
                                         <span class="data-table__status data-table__status--inactive">No generado</span>
                                     @endif
                                 </td>
-                                <td class="data-table__cell">                                    <div class="data-table__actions" style="display: flex; gap: 8px; justify-content: center;">
+                                <td class="data-table__cell">                                    <div class="data-table__actions">
                                         <button class="data-table__action btn-edit-materia" 
                                                 title="Editar materia" 
-                                                data-id="{{ $materia->id }}"
-                                                style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; width: 36px; height: 36px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: transform 0.2s, box-shadow 0.2s;">
+                                                data-id="{{ $materia->id }}">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         <button class="data-table__action btn-generate-qr" 
                                                 title="Generar QR" 
-                                                data-id="{{ $materia->id }}"
-                                                style="background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; width: 36px; height: 36px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: transform 0.2s, box-shadow 0.2s;">
+                                                data-id="{{ $materia->id }}">
                                             <i class="fas fa-qrcode"></i>
                                         </button>
                                         <form method="POST" action="{{ route('admin.materias.destroy', $materia->id) }}" 
@@ -248,8 +176,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="data-table__action btn-delete-materia" 
-                                                   title="Eliminar materia"
-                                                   style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; width: 36px; height: 36px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: transform 0.2s, box-shadow 0.2s;">
+                                                   title="Eliminar materia">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
@@ -380,35 +307,35 @@
         <div class="modal-header">
             <h3>Código QR - <span id="qrMateriaName"></span></h3>
             <button class="modal-close">&times;</button>
-        </div>        <div class="qr-content">
-            <div id="qrContainer" style="text-align: center; padding: 20px;">
+        </div>
+        <div class="qr-content">
+            <div id="qrContainer">
                 <!-- Contenedor para la imagen del servidor -->
                 <div id="serverQrContainer">
-                    <img id="qrImage" src="" alt="Código QR" style="max-width: 300px; margin-bottom: 20px;">
+                    <img id="qrImage" src="" alt="Código QR">
                 </div>
                 
                 <!-- Contenedor para QR generado en el cliente (alternativa) -->
-                <div id="clientQrContainer" style="display: none;">
-                    <div id="qrCodeCanvas" style="margin: 0 auto; margin-bottom: 20px;"></div>
+                <div id="clientQrContainer">
+                    <div id="qrCodeCanvas"></div>
                     <p style="color: #28a745; font-weight: 500; margin-bottom: 15px;">✓ QR generado localmente con éxito</p>
                 </div>
                 
                 <!-- Información detallada del QR -->
-                <div class="qr-info" style="text-align: left; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                    <h4 style="margin-bottom: 10px; color: #333;">Información contenida en el QR:</h4>
+                <div class="qr-info">
+                    <h4>Información contenida en el QR:</h4>
                     <div class="qr-data">
-                        <div style="margin-bottom: 8px;"><strong>Token QR:</strong> <span id="qrTokenData"></span></div>
-                        <div style="margin-bottom: 8px;"><strong>Materia:</strong> <span id="qrNombreData"></span></div>
-                        <div style="margin-bottom: 8px;"><strong>Aula:</strong> <span id="qrAulaData"></span></div>
-                        <div style="margin-bottom: 8px;"><strong>Curso:</strong> <span id="qrCursoData"></span></div>
-                        <div style="margin-bottom: 8px;"><strong>Horario:</strong> <span id="qrHorarioData"></span></div>
+                        <div><strong>Token QR:</strong> <span id="qrTokenData"></span></div>
+                        <div><strong>Materia:</strong> <span id="qrNombreData"></span></div>
+                        <div><strong>Aula:</strong> <span id="qrAulaData"></span></div>
+                        <div><strong>Curso:</strong> <span id="qrCursoData"></span></div>
+                        <div><strong>Horario:</strong> <span id="qrHorarioData"></span></div>
                     </div>
                 </div>
             </div>
-            <div class="btn-container" style="margin-top: 20px;">
+            <div class="btn-container">
                 <button type="button" class="btn-cancel">Cerrar</button>
-                <a id="downloadQr" href="" download="" class="btn-save">Descargar QR</a>
-                <button id="viewQr" type="button" class="btn-save" style="background: #17a2b8;">Ver QR</button>
+                <a id="downloadQr" href="" download="" data-format="png" class="btn-save">Descargar QR</a>
             </div>
         </div>
     </div>
@@ -419,18 +346,6 @@
 <script src="{{ asset('js/admin/dashboard.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    // Configurar el botón Ver QR
-    const viewQrBtn = document.getElementById('viewQr');
-    if (viewQrBtn) {
-        viewQrBtn.addEventListener('click', function() {
-            const qrImage = document.getElementById('qrImage');
-            const viewUrl = qrImage.getAttribute('data-view-url') || qrImage.src;
-            
-            // Abrir la imagen en una nueva ventana/pestaña
-            window.open(viewUrl, '_blank');
-        });
-    }
-    
     // Búsqueda de materias
     const searchInput = document.getElementById('materiaSearchInput');
     const tableRows = document.querySelectorAll('#materiasTable tbody tr');
@@ -497,25 +412,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Mejorar el botón de descarga para usar el método alternativo si la descarga directa falla
     const downloadQrBtn = document.getElementById('downloadQr');
     if (downloadQrBtn) {
-        // Guardar el comportamiento original
-        const originalHref = downloadQrBtn.href;
-        const originalDownload = downloadQrBtn.getAttribute('download');
-        
-        // Reemplazar el evento predeterminado
+        // Simplificar el evento del botón de descarga
         downloadQrBtn.addEventListener('click', function(e) {
             // Prevenir la descarga predeterminada
             e.preventDefault();
             
-            // Nombre del archivo para descargar
-            const fileName = downloadQrBtn.getAttribute('download') || 'qr_code.svg';
-            const qrUrl = downloadQrBtn.href;
-            const materiaName = document.getElementById('qrMateriaName').textContent || 'materia';
-            
-            // Intentar método alternativo de descarga
-            console.log('Intentando descarga alternativa para:', qrUrl);
-            
-            // Usar el método especializado de ClientQRGenerator
-            ClientQRGenerator.downloadImage(qrUrl, fileName);
+            // La función downloadQR en materias_qr.js maneja toda la lógica
+            // incluyendo prevención de descargas múltiples y conversión a PNG
+            downloadQR();
         });
     }
 

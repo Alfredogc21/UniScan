@@ -10,45 +10,94 @@ class ClientQRGenerator {
      * @param {string} fileName - Nombre del archivo para guardar
      */
     static downloadImage(imgUrl, fileName = 'qr-code.png') {
+        // Evitar múltiples descargas con un mecanismo de bloqueo
+        if (this._isDownloading) {
+            console.log('Ya hay una descarga en proceso, evitando duplicados');
+            return true;
+        }
+        
+        // Establecer bloqueo
+        this._isDownloading = true;
+        setTimeout(() => { this._isDownloading = false; }, 2000);
+        
         try {
-            // Crear un canvas temporal 
+            console.log('Iniciando descarga de imagen:', imgUrl, 'con nombre:', fileName);
+            
+            // Verificar que la URL sea válida
+            if (!imgUrl || imgUrl === '#' || imgUrl === '' || imgUrl === 'undefined' || imgUrl === window.location.href) {
+                console.error('URL de imagen no válida para descarga');
+                alert('La URL de la imagen no es válida. Por favor, intente nuevamente o recargue la página.');
+                this._isDownloading = false;
+                return false;
+            }
+                 // Siempre usar PNG independientemente de la extensión original
+        let outputFileName = fileName.replace(/\.(svg|jpg|jpeg)$/i, '.png');
+        if (!outputFileName.endsWith('.png')) {
+            outputFileName = outputFileName + '.png';
+        }
+            
+            // Crear un canvas temporal para convertir a PNG
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             const img = new Image();
             
             img.crossOrigin = 'Anonymous'; // Intenta permitir CORS
             
-            img.onload = function() {
+            img.onload = () => {
+                console.log('Imagen cargada correctamente, dimensiones:', img.width, 'x', img.height);
+                
                 // Configurar el canvas con las dimensiones de la imagen
                 canvas.width = img.width;
                 canvas.height = img.height;
                 
-                // Dibujar la imagen en el canvas
+                // Dibujar la imagen en el canvas (esto convierte cualquier formato a PNG)
                 ctx.drawImage(img, 0, 0);
                 
-                // Crear enlace para descargar
-                const link = document.createElement('a');
-                link.download = fileName;
-                link.href = canvas.toDataURL('image/png');
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                // Mostrar mensaje de éxito
-                console.log('Imagen descargada exitosamente usando método alternativo');
+                try {
+                    // Usar URL.createObjectURL que es más eficiente para archivos grandes
+                    canvas.toBlob((blob) => {
+                        // Crear un objeto URL para el blob
+                        const url = URL.createObjectURL(blob);
+                        
+                        // Crear enlace para descargar
+                        const link = document.createElement('a');
+                        link.download = outputFileName;
+                        link.href = url;
+                        
+                        // Método más limpio para simular click
+                        document.body.appendChild(link);
+                        link.click();
+                        
+                        // Limpieza
+                        setTimeout(() => {
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(url);
+                            this._isDownloading = false;
+                        }, 100);
+                        
+                        console.log('Imagen descargada exitosamente como PNG');
+                    }, 'image/png');
+                } catch (e) {
+                    console.error('Error al convertir imagen a blob:', e);
+                    this._isDownloading = false;
+                    alert('Para guardar el código QR: haga clic derecho en la imagen y seleccione "Guardar imagen como..."');
+                }
             };
             
-            img.onerror = function() {
-                console.error('Error al cargar la imagen para descarga alternativa');
-                alert('No se pudo descargar la imagen. Intente con el botón "Generar en navegador" para crear un QR local.');
+            img.onerror = (e) => {
+                console.error('Error al cargar la imagen para conversión a PNG:', e);
+                this._isDownloading = false;
+                alert('Para guardar el código QR: haga clic derecho en la imagen visible y seleccione "Guardar imagen como..."');
             };
             
             // Añadir parámetro para evitar caché
-            img.src = imgUrl + '?t=' + new Date().getTime();
+            img.src = imgUrl + (imgUrl.includes('?') ? '&t=' : '?t=') + new Date().getTime();
             
             return true;
         } catch (error) {
-            console.error('Error en downloadImage:', error);
+            console.error('Error general en downloadImage:', error);
+            this._isDownloading = false;
+            alert('Ocurrió un error al descargar la imagen. Por favor, intente hacer clic derecho en la imagen y seleccione "Guardar imagen como..."');
             return false;
         }
     }
@@ -159,6 +208,17 @@ class ClientQRGenerator {
             colorDark: "#5a46b7"
         });
     }
+
+    /**
+     * Reinicia el estado de descarga en caso de bloqueo
+     */
+    static resetDownloadStatus() {
+        this._isDownloading = false;
+        return true;
+    }
+    
+    // Atributo estático para controlar el estado de descarga
+    static _isDownloading = false;
 }
 
 // Verificar si se incluye la biblioteca QRCode

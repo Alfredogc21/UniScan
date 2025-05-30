@@ -38,7 +38,7 @@
                     </a>
                 </li>
                 <li class="nav__item">
-                    <a href="{{ route('admin.subjects') }}" class="nav__link">
+                    <a href="{{ route('admin.materias') }}" class="nav__link">
                         <span class="nav__link-icon"><i class="fas fa-book"></i></span>
                         <span class="nav__link-text">Materias</span>
                     </a>

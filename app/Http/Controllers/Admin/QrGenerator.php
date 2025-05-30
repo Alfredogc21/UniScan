@@ -64,6 +64,22 @@ function generate_qr($id) {
                             ->margin(1)
                             ->generate(json_encode($qrData));
             
+            // Añadir XML declaration y CSS styling para que el SVG se muestre correctamente cuando se abre directamente
+            $xmlDeclaration = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' . "\n";
+            $cssStyle = '<style type="text/css"><![CDATA[
+                svg {
+                    background-color: #fff;
+                    display: block;
+                    margin: 0 auto;
+                }
+            ]]></style>';
+            
+            // Insertar el XML declaration al principio y el CSS después de la etiqueta <svg
+            if (strpos($qrcode, '<svg') !== false) {
+                $qrcode = $xmlDeclaration . str_replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"', $qrcode);
+                $qrcode = str_replace('<svg xmlns', '<svg ' . $cssStyle . ' xmlns', $qrcode);
+            }
+            
             // GUARDAR DIRECTAMENTE en public/storage/qrcodes
             file_put_contents($qrPath, $qrcode);
             
