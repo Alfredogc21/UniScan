@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="{{ asset('css/admin/users.css') }}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<!-- Biblioteca QRCode.js para generación de QR en el cliente -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
     /* Estilos mejorados para botones */
     .btn-edit-materia:hover, .btn-generate-qr:hover, .btn-delete-materia:hover {
@@ -380,7 +382,16 @@
             <button class="modal-close">&times;</button>
         </div>        <div class="qr-content">
             <div id="qrContainer" style="text-align: center; padding: 20px;">
-                <img id="qrImage" src="" alt="Código QR" style="max-width: 300px; margin-bottom: 20px;">
+                <!-- Contenedor para la imagen del servidor -->
+                <div id="serverQrContainer">
+                    <img id="qrImage" src="" alt="Código QR" style="max-width: 300px; margin-bottom: 20px;">
+                </div>
+                
+                <!-- Contenedor para QR generado en el cliente (alternativa) -->
+                <div id="clientQrContainer" style="display: none;">
+                    <div id="qrCodeCanvas" style="margin: 0 auto; margin-bottom: 20px;"></div>
+                    <p style="color: #28a745; font-weight: 500; margin-bottom: 15px;">✓ QR generado localmente con éxito</p>
+                </div>
                 
                 <!-- Información detallada del QR -->
                 <div class="qr-info" style="text-align: left; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
@@ -397,6 +408,7 @@
             <div class="btn-container" style="margin-top: 20px;">
                 <button type="button" class="btn-cancel">Cerrar</button>
                 <a id="downloadQr" href="" download="" class="btn-save">Descargar QR</a>
+                <button id="viewQr" type="button" class="btn-save" style="background: #17a2b8;">Ver QR</button>
             </div>
         </div>
     </div>
@@ -407,38 +419,47 @@
 <script src="{{ asset('js/admin/dashboard.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Búsqueda de materias
-        const searchInput = document.getElementById('materiaSearchInput');
-        const tableRows = document.querySelectorAll('#materiasTable tbody tr');
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
+    // Configurar el botón Ver QR
+    const viewQrBtn = document.getElementById('viewQr');
+    if (viewQrBtn) {
+        viewQrBtn.addEventListener('click', function() {
+            const qrImage = document.getElementById('qrImage');
+            const viewUrl = qrImage.getAttribute('data-view-url') || qrImage.src;
+            
+            // Abrir la imagen en una nueva ventana/pestaña
+            window.open(viewUrl, '_blank');
+        });
+    }
+    
+    // Búsqueda de materias
+    const searchInput = document.getElementById('materiaSearchInput');
+    const tableRows = document.querySelectorAll('#materiasTable tbody tr');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
 
-                tableRows.forEach(row => {
-                    const nombre = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                    const profesor = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-                    const aula = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
-                    const curso = row.querySelector('td:nth-child(6)').textContent.toLowerCase();
+            tableRows.forEach(row => {
+                const nombre = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const profesor = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                const aula = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+                const curso = row.querySelector('td:nth-child(6)').textContent.toLowerCase();
 
-                    if (nombre.includes(searchTerm) || profesor.includes(searchTerm) ||
-                        aula.includes(searchTerm) || curso.includes(searchTerm)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
+                if (nombre.includes(searchTerm) || profesor.includes(searchTerm) ||
+                    aula.includes(searchTerm) || curso.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
             });
-        }
+        });
+    }
 
-        // Mostrar/Ocultar modales
+        // Mostrar/Ocultar modales básicos
         const btnAddMateria = document.getElementById('btnAddMateria');
-        const editButtons = document.querySelectorAll('.btn-edit-materia');
-        const generateQrButtons = document.querySelectorAll('.btn-generate-qr');
         const modalCloseButtons = document.querySelectorAll('.modal-close');
         const cancelButtons = document.querySelectorAll('.btn-cancel');
         const addMateriaModal = document.getElementById('addMateriaModal');
         const editMateriaModal = document.getElementById('editMateriaModal');
-        const qrModal = document.getElementById('qrModal');
 
         // Abrir modal para agregar materia
         if (btnAddMateria && addMateriaModal) {
@@ -446,121 +467,6 @@
                 addMateriaModal.style.display = 'flex';
             });
         }
-
-        // Abrir modal para editar materia
-        editButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Mostrar el modal inmediatamente para evitar percepción de retraso
-                editMateriaModal.style.display = 'flex';
-                
-                const materiaId = this.getAttribute('data-id');
-                
-                // Función para obtener la URL base
-                function getBaseUrl() {
-                    const path = window.location.pathname;
-                    const segments = path.split('/');
-                    const adminIndex = segments.findIndex(segment => segment === 'admin');
-                    
-                    if (adminIndex > -1) {
-                        const basePath = segments.slice(0, adminIndex).join('/');
-                        return window.location.origin + basePath;
-                    }
-                    return window.location.origin;
-                }
-                
-                // Construir URL completa
-                const baseUrl = getBaseUrl();
-                const editUrl = `${baseUrl}/admin/materias/${materiaId}/edit`;
-                
-                console.log('URL para edición:', editUrl);
-                
-                fetch(editUrl, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Datos recibidos:', data);
-                        document.getElementById('editMateriaId').value = data.id;
-                        document.getElementById('editNombre').value = data.nombre;
-                        document.getElementById('editProfesor').value = data.profesor_id;
-                        document.getElementById('editAula').value = data.aula ? data.aula.nombre : '';
-                        document.getElementById('editHorarioIngreso').value = data.horario_ingreso;
-                        document.getElementById('editHorarioSalida').value = data.horario_salida;
-                        document.getElementById('editCurso').value = data.curso ? data.curso.nombre : '';
-                    })
-                    .catch(error => {
-                        console.error('Error al cargar datos:', error);
-                        // No mostrar alerta, solo registrar el error
-                    });
-            });
-        });
-
-        // Generar QR
-        generateQrButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const materiaId = this.getAttribute('data-id');
-                const materiaName = this.closest('tr').querySelector('td:nth-child(2)').textContent;
-                
-                // Función para obtener la URL base
-                function getBaseUrl() {
-                    const path = window.location.pathname;
-                    const segments = path.split('/');
-                    const adminIndex = segments.findIndex(segment => segment === 'admin');
-                    
-                    if (adminIndex > -1) {
-                        const basePath = segments.slice(0, adminIndex).join('/');
-                        return window.location.origin + basePath;
-                    }
-                    return window.location.origin;
-                }
-                
-                // Construir URL completa
-                const baseUrl = getBaseUrl();
-                const qrUrl = `${baseUrl}/admin/materias/${materiaId}/generate-qr`;
-                
-                console.log('URL para QR:', qrUrl);
-                
-                fetch(qrUrl, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('qrMateriaName').textContent = materiaName;
-                        document.getElementById('qrImage').src = data.qr_url;
-                        document.getElementById('downloadQr').href = data.qr_url;
-                        document.getElementById('downloadQr').download = `qr_${materiaName.replace(/\s+/g, '_')}.png`;
-                        
-                        // Mostrar los datos del QR
-                        if (data.qr_data) {
-                            document.getElementById('qrTokenData').textContent = data.qr_data.token_qr;
-                            document.getElementById('qrNombreData').textContent = data.qr_data.nombre;
-                            document.getElementById('qrAulaData').textContent = data.qr_data.aula;
-                            document.getElementById('qrCursoData').textContent = data.qr_data.curso;
-                            document.getElementById('qrHorarioData').textContent = data.qr_data.horario;
-                        }
-                        
-                        qrModal.style.display = 'flex';
-                        
-                        // Actualizar la tabla
-                        location.reload();
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al generar el código QR');
-                });
-            });
-        });
 
         // Cerrar modales
         modalCloseButtons.forEach(button => {
@@ -577,5 +483,43 @@
     });
 </script>
 
+<!-- QR Code Generator Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<!-- Scripts principales para funcionalidad -->
+<script src="{{ asset('js/admin/qr-generator.js') }}"></script>
 <script src="{{ asset('js/admin/materias_edit.js') }}"></script>
+<script src="{{ asset('js/admin/materias_qr.js') }}"></script>
+
+<!-- Script para generar QR en el cliente como fallback -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mejorar el botón de descarga para usar el método alternativo si la descarga directa falla
+    const downloadQrBtn = document.getElementById('downloadQr');
+    if (downloadQrBtn) {
+        // Guardar el comportamiento original
+        const originalHref = downloadQrBtn.href;
+        const originalDownload = downloadQrBtn.getAttribute('download');
+        
+        // Reemplazar el evento predeterminado
+        downloadQrBtn.addEventListener('click', function(e) {
+            // Prevenir la descarga predeterminada
+            e.preventDefault();
+            
+            // Nombre del archivo para descargar
+            const fileName = downloadQrBtn.getAttribute('download') || 'qr_code.svg';
+            const qrUrl = downloadQrBtn.href;
+            const materiaName = document.getElementById('qrMateriaName').textContent || 'materia';
+            
+            // Intentar método alternativo de descarga
+            console.log('Intentando descarga alternativa para:', qrUrl);
+            
+            // Usar el método especializado de ClientQRGenerator
+            ClientQRGenerator.downloadImage(qrUrl, fileName);
+        });
+    }
+
+    // Simplificamos la interfaz quitando la generación en el navegador
+});
+</script>
 @endsection

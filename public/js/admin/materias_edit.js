@@ -24,15 +24,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return window.location.origin;
     }
-    
-    // Botones de edición
+      // Botones de edición
     const editButtons = document.querySelectorAll('.btn-edit-materia');
     editButtons.forEach(button => {
         button.addEventListener('click', function() {
             const materiaId = this.getAttribute('data-id');
             openEditModal(materiaId);
         });
-    });    // Función para abrir el modal de edición y cargar datos
+    });
+    
+    // Función para abrir el modal de edición y cargar datos
     function openEditModal(materiaId) {
         console.log('Abriendo modal para materia ID:', materiaId);
         
@@ -41,11 +42,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Obtener la URL base y construir la URL completa
         const baseUrl = getBaseUrl();
-        // Usar directamente la ruta de diagnóstico que sabemos que funciona
-        const debugUrl = `${baseUrl}/debug-materia/${materiaId}`;
-        console.log('URL para cargar datos:', debugUrl);
+        // Usar la ruta oficial de edición
+        const editUrl = `${baseUrl}/admin/materias/${materiaId}/edit`;
+        console.log('URL para cargar datos:', editUrl);
         
-        fetch(debugUrl, {
+        fetch(editUrl, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
@@ -119,13 +120,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        console.error('Error response:', text);
-                        throw new Error(`Error ${response.status}: ${response.statusText}`);
-                    });
-                }
-                return response.json();
+                // Capturar el texto de la respuesta primero para poder analizarlo
+                return response.text().then(text => {
+                    console.log('Respuesta completa:', text);
+                    
+                    try {
+                        // Intentar parsear como JSON
+                        const data = JSON.parse(text);
+                        if (!response.ok) {
+                            throw new Error(`Error ${response.status}: ${response.statusText}`);
+                        }
+                        return data;
+                    } catch (e) {
+                        console.error('Error al parsear JSON:', e);
+                        if (!response.ok) {
+                            throw new Error(`Error ${response.status}: ${response.statusText}`);
+                        }
+                        // Si no es JSON, pero es una respuesta exitosa, podría ser una redirección
+                        if (text.includes('Redirecting to')) {
+                            window.location.reload();
+                            return { success: true };
+                        }
+                        throw new Error('Error al procesar la respuesta');
+                    }
+                });
             })
             .then(data => {
                 console.log('Respuesta actualización:', data);

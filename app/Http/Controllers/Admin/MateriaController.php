@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class MateriaController extends Controller
 {
@@ -94,9 +95,20 @@ class MateriaController extends Controller
     {
         $materia = Materia::findOrFail($id);
         
-        // Eliminar archivo QR si existe
-        if ($materia->qr_path && Storage::disk('public')->exists($materia->qr_path)) {
-            Storage::disk('public')->delete($materia->qr_path);
+        // Eliminar archivo QR si existe de ambas ubicaciones posibles
+        if ($materia->qr_path) {
+            // Intentar eliminar de la ubicación antigua (storage)
+            if (Storage::disk('public')->exists($materia->qr_path)) {
+                Storage::disk('public')->delete($materia->qr_path);
+                Log::info('QR eliminado de storage/app/public/', ['path' => $materia->qr_path]);
+            }
+            
+            // Intentar eliminar de la ubicación nueva (public/storage)
+            $publicQrPath = public_path('storage/' . $materia->qr_path);
+            if (file_exists($publicQrPath)) {
+                unlink($publicQrPath);
+                Log::info('QR eliminado de public/storage/', ['path' => $publicQrPath]);
+            }
         }
         
         $materia->delete();
@@ -109,9 +121,23 @@ class MateriaController extends Controller
         $materia = Materia::findOrFail($id);
         
         try {
-            // Crear directorio si no existe
-            if (!Storage::disk('public')->exists('qrcodes')) {
-                Storage::disk('public')->makeDirectory('qrcodes');
+            // *** GUARDAR DIRECTAMENTE EN public/storage/qrcodes ***
+            $publicQrDir = public_path('storage/qrcodes');
+            
+            // Crear el directorio public/storage/qrcodes si no existe
+            if (!file_exists($publicQrDir)) {
+                if (mkdir($publicQrDir, 0755, true)) {
+                    Log::info("Directorio creado directamente: $publicQrDir");
+                } else {
+                    Log::error("No se pudo crear el directorio: $publicQrDir");
+                    throw new \Exception('No se pudo crear el directorio para QR');
+                }
+            }
+            
+            // Asegurarse de que exista el enlace simbólico para acceder a los archivos
+            if (!file_exists(public_path('storage'))) {
+                Log::info('Creando enlace simbólico para storage');
+                \Illuminate\Support\Facades\Artisan::call('storage:link');
             }
               // Generar QR con todos los datos incluyendo aula y curso
             $qrData = json_encode([
@@ -126,6 +152,7 @@ class MateriaController extends Controller
             ]);
             
             $fileName = 'qr_materia_' . $materia->id . '_' . time() . '.png';
+            $qrPath = $publicQrDir . '/' . $fileName;
             $path = 'qrcodes/' . $fileName;
             
             $qrCode = QrCode::format('png')
@@ -133,13 +160,23 @@ class MateriaController extends Controller
                 ->margin(2)
                 ->generate($qrData);
             
-            Storage::disk('public')->put($path, $qrCode);
+            // GUARDAR DIRECTAMENTE en public/storage/qrcodes
+            $saved = file_put_contents($qrPath, $qrCode);
+            
+            if (!$saved) {
+                throw new \Exception('No se pudo guardar el archivo QR en la ubicación pública');
+            }
+            
+            // Verificar permisos del archivo en Windows
+            if (file_exists($qrPath) && strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                exec('icacls "' . $qrPath . '" /grant Everyone:F', $output, $returnCode);
+            }
             
             // Guardar la ruta en la base de datos
             $materia->update(['qr_path' => $path]);            return response()->json([
                 'success' => true,
                 'message' => 'Código QR generado correctamente',
-                'qr_url' => Storage::url($path),
+                'qr_url' => asset('storage/' . $path),
                 'qr_data' => [
                     'token_qr' => $materia->token_qr,
                     'nombre' => $materia->nombre,

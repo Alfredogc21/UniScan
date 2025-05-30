@@ -50,6 +50,33 @@ Route::get('/debug-materia/{id}', function($id) {
     }
 });
 
+// Ruta alternativa para generar QR (por si falla la principal)
+Route::get('/generate-qr/{id}', function($id) {
+    try {
+        // Generar el QR usando la función del archivo independiente
+        require_once app_path('Http/Controllers/Admin/QrGenerator.php');
+        $result = App\Http\Controllers\Admin\generate_qr($id);
+        
+        // Log para debugging
+        \Illuminate\Support\Facades\Log::info('QR generado vía ruta alternativa', [
+            'materia_id' => $id,
+            'success' => $result['success'] ?? false
+        ]);
+        
+        return response()->json($result);
+    } catch (\Exception $e) {
+        \Illuminate\Support\Facades\Log::error('Error en ruta /generate-qr', [
+            'materia_id' => $id,
+            'error' => $e->getMessage()
+        ]);
+        
+        return response()->json([
+            'success' => false, 
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
 // Rutas protegidas por autenticación
 Route::middleware(['auth'])->group(function () {
 
