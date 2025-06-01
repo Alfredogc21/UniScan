@@ -49,18 +49,7 @@
                         <span class="nav__link-text">Asistencias</span>
                     </a>
                 </li>
-                <li class="nav__item">
-                    <a href="{{ route('admin.reports') }}" class="nav__link">
-                        <span class="nav__link-icon"><i class="fas fa-chart-pie"></i></span>
-                        <span class="nav__link-text">Reportes</span>
-                    </a>
-                </li>
-                <li class="nav__item">
-                    <a href="{{ route('admin.settings') }}" class="nav__link">
-                        <span class="nav__link-icon"><i class="fas fa-cog"></i></span>
-                        <span class="nav__link-text">Configuración</span>
-                    </a>
-                </li>
+
             </ul>
         </nav>
 
