@@ -91,6 +91,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Inicialización de gráficos si existen
     initCharts();
+    
+    // Configurar actualización automática de datos cada 5 minutos
+    setInterval(refreshChartData, 300000); // 300000 ms = 5 minutos
 });
 
 /**
@@ -107,18 +110,44 @@ function initCharts() {
     // Gráfico de actividad semanal
     const weeklyActivityChart = document.getElementById('weeklyActivityChart');
     if (weeklyActivityChart) {
+        // Obtener datos del elemento para el gráfico semanal
+        const datosGraficoSemanal = weeklyActivityChart.dataset.chartData ? 
+            JSON.parse(weeklyActivityChart.dataset.chartData) : 
+            { 
+                labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'], 
+                datasets: [
+                    {
+                        label: 'Presentes',
+                        data: [0, 0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        borderColor: '#4caf50',
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Ausentes',
+                        data: [0, 0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(244, 67, 54, 0.2)',
+                        borderColor: '#f44336',
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Justificados',
+                        data: [0, 0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(33, 150, 243, 0.2)',
+                        borderColor: '#2196f3',
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            };
+        
         new Chart(weeklyActivityChart, {
             type: 'line',
             data: {
-                labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
-                datasets: [{
-                    label: 'Registros de Asistencia',
-                    data: [65, 59, 80, 81, 56, 40, 30],
-                    borderColor: '#7b1fa2',
-                    backgroundColor: 'rgba(123, 31, 162, 0.1)',
-                    tension: 0.3,
-                    fill: true
-                }]
+                labels: datosGraficoSemanal.labels,
+                datasets: datosGraficoSemanal.datasets
             },
             options: {
                 responsive: true,
@@ -135,18 +164,22 @@ function initCharts() {
     // Gráfico de distribución de asistencias
     const attendanceDistChart = document.getElementById('attendanceDistChart');
     if (attendanceDistChart) {
+        // Obtener datos del elemento para el gráfico de distribución
+        const datosGraficoDistribucion = attendanceDistChart.dataset.chartData ? 
+            JSON.parse(attendanceDistChart.dataset.chartData) : 
+            { 
+                labels: ['A tiempo', 'Ausentes', 'Tardanzas', 'Justificados'], 
+                datos: [0, 0, 0, 0],
+                colores: ['#4caf50', '#f44336', '#ff9800', '#2196f3']
+            };
+            
         new Chart(attendanceDistChart, {
             type: 'pie',
             data: {
-                labels: ['A tiempo', 'Tarde', 'Ausentes', 'Justificados'],
+                labels: datosGraficoDistribucion.labels,
                 datasets: [{
-                    data: [60, 15, 10, 15],
-                    backgroundColor: [
-                        '#4caf50',
-                        '#ff9800',
-                        '#f44336',
-                        '#2196f3'
-                    ]
+                    data: datosGraficoDistribucion.datos,
+                    backgroundColor: datosGraficoDistribucion.colores
                 }]
             },
             options: {
@@ -216,4 +249,42 @@ function getIconForType(type) {
         case 'info': return 'fa-info-circle';
         default: return 'fa-info-circle';
     }
+}
+
+/**
+ * Actualiza los datos de los gráficos mediante peticiones AJAX
+ */
+function refreshChartData() {
+    // Actualizar gráfico de actividad semanal
+    fetch('/admin/dashboard/datos-semanal')
+        .then(response => response.json())
+        .then(data => {
+            const weeklyChart = Chart.getChart('weeklyActivityChart');
+            if (weeklyChart) {
+                weeklyChart.data.labels = data.labels;
+                weeklyChart.data.datasets = data.datasets;
+                weeklyChart.update();
+                showNotification('Datos de actividad semanal actualizados', 'info');
+            }
+        })
+        .catch(error => {
+            console.error('Error al actualizar datos semanales:', error);
+        });
+
+    // Actualizar gráfico de distribución de asistencias
+    fetch('/admin/dashboard/datos-distribucion')
+        .then(response => response.json())
+        .then(data => {
+            const distChart = Chart.getChart('attendanceDistChart');
+            if (distChart) {
+                distChart.data.labels = data.labels;
+                distChart.data.datasets[0].data = data.datos;
+                distChart.data.datasets[0].backgroundColor = data.colores;
+                distChart.update();
+                showNotification('Datos de distribución de asistencias actualizados', 'info');
+            }
+        })
+        .catch(error => {
+            console.error('Error al actualizar datos de distribución:', error);
+        });
 }

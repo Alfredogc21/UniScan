@@ -82,9 +82,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Admin Routes
     Route::prefix('admin')->name('admin.')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/datos-semanal', [App\Http\Controllers\Admin\AdminDashboardController::class, 'getDatosSemanal'])->name('dashboard.datos-semanal');
+        Route::get('/dashboard/datos-distribucion', [App\Http\Controllers\Admin\AdminDashboardController::class, 'getDatosDistribucion'])->name('dashboard.datos-distribucion');
+        Route::get('/dashboard/tipos-asistencia', [App\Http\Controllers\Admin\AdminDashboardController::class, 'getTiposAsistencia'])->name('dashboard.tipos-asistencia');
 
         // Rutas de perfil
         Route::get('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'edit'])->name('profile');

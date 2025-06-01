@@ -94,9 +94,9 @@
                         </div>
                     </div>
                     <div class="summary-card__content">
-                        <div class="summary-card__value">2,845</div>
+                        <div class="summary-card__value">{{ number_format($totalUsuarios) }}</div>
                         <div class="summary-card__stats summary-card__stats--up">
-                            <i class="fas fa-arrow-up"></i> 12% desde el mes pasado
+                            <i class="fas fa-arrow-up"></i> Actualizado en tiempo real
                         </div>
                     </div>
                 </div>
@@ -109,9 +109,9 @@
                         </div>
                     </div>
                     <div class="summary-card__content">
-                        <div class="summary-card__value">158</div>
+                        <div class="summary-card__value">{{ number_format($asistenciasHoy) }}</div>
                         <div class="summary-card__stats summary-card__stats--up">
-                            <i class="fas fa-arrow-up"></i> 5% desde ayer
+                            <i class="fas fa-arrow-up"></i> {{ Carbon\Carbon::now()->format('d/m/Y') }}
                         </div>
                     </div>
                 </div>
@@ -124,9 +124,9 @@
                         </div>
                     </div>
                     <div class="summary-card__content">
-                        <div class="summary-card__value">42</div>
-                        <div class="summary-card__stats summary-card__stats--down">
-                            <i class="fas fa-arrow-down"></i> 3% desde el mes pasado
+                        <div class="summary-card__value">{{ number_format($materiasActivas) }}</div>
+                        <div class="summary-card__stats">
+                            <i class="fas fa-circle"></i> Total de materias
                         </div>
                     </div>
                 </div>
@@ -139,9 +139,9 @@
                         </div>
                     </div>
                     <div class="summary-card__content">
-                        <div class="summary-card__value">87%</div>
-                        <div class="summary-card__stats summary-card__stats--up">
-                            <i class="fas fa-arrow-up"></i> 2% desde la semana pasada
+                        <div class="summary-card__value">{{ $porcentajeAsistencia }}%</div>
+                        <div class="summary-card__stats {{ $porcentajeAsistencia >= 80 ? 'summary-card__stats--up' : 'summary-card__stats--down' }}">
+                            <i class="fas fa-{{ $porcentajeAsistencia >= 80 ? 'arrow-up' : 'arrow-down' }}"></i> Promedio general
                         </div>
                     </div>
                 </div>
@@ -149,23 +149,20 @@
 
             <!-- Gráficos -->
             <div class="charts">
-                <div class="content-section chart-container">
-                    <div class="section__header">
-                        <h2 class="section__title">Actividad Semanal</h2>
-                        <a href="{{ route('admin.reports') }}" class="section__action">Ver detalles</a>
-                    </div>
+                <div class="content-section chart-container">                <div class="section__header">
+                    <h2 class="section__title">Actividad Semanal</h2>
+                </div>
                     <div class="section__content">
-                        <canvas id="weeklyActivityChart"></canvas>
+                        <canvas id="weeklyActivityChart" data-chart-data="{{ json_encode($datosGraficoSemanal) }}"></canvas>
                     </div>
                 </div>
 
                 <div class="content-section chart-container">
                     <div class="section__header">
                         <h2 class="section__title">Distribución de Asistencias</h2>
-                        <a href="{{ route('admin.reports') }}" class="section__action">Ver detalles</a>
                     </div>
                     <div class="section__content">
-                        <canvas id="attendanceDistChart"></canvas>
+                        <canvas id="attendanceDistChart" data-chart-data="{{ json_encode($datosGraficoDistribucion) }}"></canvas>
                     </div>
                 </div>
             </div>
@@ -174,7 +171,6 @@
             <div class="content-section">
                 <div class="section__header">
                     <h2 class="section__title">Asistencias Recientes</h2>
-                    <a href="{{ route('admin.asistencias') }}" class="section__action">Ver todas</a>
                 </div>
                 <div class="section__content">
                     <table class="data-table">
@@ -185,85 +181,34 @@
                                 <th class="data-table__header">Fecha</th>
                                 <th class="data-table__header">Hora</th>
                                 <th class="data-table__header">Estado</th>
-                                <th class="data-table__header">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="data-table__body">
+                            @forelse($asistenciasRecientes as $asistencia)
                             <tr>
-                                <td class="data-table__cell">Carlos Rodríguez</td>
-                                <td class="data-table__cell">Matemáticas Avanzadas</td>
-                                <td class="data-table__cell">25/05/2025</td>
-                                <td class="data-table__cell">08:15</td>
+                                <td class="data-table__cell">{{ $asistencia->alumno->name }}</td>
+                                <td class="data-table__cell">{{ $asistencia->materia->nombre }}</td>
+                                <td class="data-table__cell">{{ \Carbon\Carbon::parse($asistencia->fecha_hora)->format('d/m/Y') }}</td>
+                                <td class="data-table__cell">{{ \Carbon\Carbon::parse($asistencia->fecha_hora)->format('H:i') }}</td>
                                 <td class="data-table__cell">
-                                    <span class="data-table__status data-table__status--active">A tiempo</span>
-                                </td>
-                                <td class="data-table__cell">
-                                    <div class="data-table__actions">
-                                        <button class="data-table__action" title="Editar"><i class="fas fa-edit"></i></button>
-                                        <button class="data-table__action" title="Eliminar"><i class="fas fa-trash"></i></button>
-                                    </div>
+                                    @php
+                                    $estadoClass = [
+                                        1 => 'data-table__status--active',   // Presente
+                                        2 => 'data-table__status--inactive', // Ausente
+                                        3 => 'data-table__status--pending'   // Justificado
+                                    ];
+                                    $class = $estadoClass[$asistencia->tipo_asistencia_id] ?? '';
+                                    @endphp
+                                    <span class="data-table__status {{ $class }}">
+                                        {{ $asistencia->tipoAsistencia->descripcion }}
+                                    </span>
                                 </td>
                             </tr>
+                            @empty
                             <tr>
-                                <td class="data-table__cell">María González</td>
-                                <td class="data-table__cell">Física Cuántica</td>
-                                <td class="data-table__cell">25/05/2025</td>
-                                <td class="data-table__cell">09:05</td>
-                                <td class="data-table__cell">
-                                    <span class="data-table__status data-table__status--pending">Tardanza</span>
-                                </td>
-                                <td class="data-table__cell">
-                                    <div class="data-table__actions">
-                                        <button class="data-table__action" title="Editar"><i class="fas fa-edit"></i></button>
-                                        <button class="data-table__action" title="Eliminar"><i class="fas fa-trash"></i></button>
-                                    </div>
-                                </td>
+                                <td colspan="5" class="data-table__cell text-center">No hay asistencias recientes</td>
                             </tr>
-                            <tr>
-                                <td class="data-table__cell">Juan Pérez</td>
-                                <td class="data-table__cell">Programación Web</td>
-                                <td class="data-table__cell">25/05/2025</td>
-                                <td class="data-table__cell">10:30</td>
-                                <td class="data-table__cell">
-                                    <span class="data-table__status data-table__status--inactive">Ausente</span>
-                                </td>
-                                <td class="data-table__cell">
-                                    <div class="data-table__actions">
-                                        <button class="data-table__action" title="Editar"><i class="fas fa-edit"></i></button>
-                                        <button class="data-table__action" title="Eliminar"><i class="fas fa-trash"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="data-table__cell">Ana Martínez</td>
-                                <td class="data-table__cell">Química Orgánica</td>
-                                <td class="data-table__cell">25/05/2025</td>
-                                <td class="data-table__cell">11:45</td>
-                                <td class="data-table__cell">
-                                    <span class="data-table__status data-table__status--active">A tiempo</span>
-                                </td>
-                                <td class="data-table__cell">
-                                    <div class="data-table__actions">
-                                        <button class="data-table__action" title="Editar"><i class="fas fa-edit"></i></button>
-                                        <button class="data-table__action" title="Eliminar"><i class="fas fa-trash"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="data-table__cell">Roberto López</td>
-                                <td class="data-table__cell">Historia del Arte</td>
-                                <td class="data-table__cell">25/05/2025</td>
-                                <td class="data-table__cell">13:20</td>
-                                <td class="data-table__cell">
-                                    <span class="data-table__status data-table__status--active">A tiempo</span>
-                                </td>
-                                <td class="data-table__cell">
-                                    <div class="data-table__actions">
-                                        <button class="data-table__action" title="Editar"><i class="fas fa-edit"></i></button>
-                                        <button class="data-table__action" title="Eliminar"><i class="fas fa-trash"></i></button>
-                                    </div>
-                                </td>
-                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
