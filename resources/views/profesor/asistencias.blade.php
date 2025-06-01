@@ -1,6 +1,6 @@
 @extends('layouts.profesor')
 
-@section('title', 'Dashboard Profesor - UniScan')
+@section('title', 'Asistencias - UniScan')
 
 @section('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -20,10 +20,11 @@
                 <i class="fas fa-bars"></i>
             </button>
         </div>
+
         <nav class="sidebar__nav">
             <ul class="nav__list">
                 <li class="nav__item">
-                    <a href="{{ route('profesor.dashboard') }}" class="nav__link nav__link--active">
+                    <a href="{{ route('profesor.dashboard') }}" class="nav__link">
                         <span class="nav__link-icon"><i class="fas fa-home"></i></span>
                         <span class="nav__link-text">Dashboard</span>
                     </a>
@@ -41,14 +42,14 @@
                     </a>
                 </li>
                 <li class="nav__item">
-                    <a href="{{ route('profesor.asistencias') }}" class="nav__link">
+                    <a href="{{ route('profesor.asistencias') }}" class="nav__link nav__link--active">
                         <span class="nav__link-icon"><i class="fas fa-clipboard-check"></i></span>
                         <span class="nav__link-text">Asistencias</span>
                     </a>
                 </li>
-
             </ul>
         </nav>
+
         <div class="sidebar__footer">
             <a href="{{ route('profesor.profile') }}" class="user-info" style="color: white;">
                 <div class="user-info__avatar">
@@ -64,15 +65,16 @@
 
     <!-- Contenido principal -->
     <main class="dashboard__content">
-        <header class="content__header"> <button class="actions__button mobile-menu-btn d-md-none">
+        <header class="content__header">
+            <button class="actions__button mobile-menu-btn d-md-none">
                 <i class="fas fa-bars"></i>
             </button>
 
-            <h1 class="header__title">Dashboard Profesor</h1>
+            <h1 class="header__title">Asistencias</h1>
 
             <div class="header__search">
                 <span class="search__icon"><i class="fas fa-search"></i></span>
-                <input type="text" class="search__input" placeholder="Buscar...">
+                <input type="text" class="search__input" placeholder="Buscar asistencia...">
             </div>
 
             <div class="header__actions">
@@ -81,102 +83,68 @@
         </header>
 
         <div class="content__main">
-            <!-- Tarjetas de resumen -->
-            <div class="summary-cards">                <div class="summary-card">
-                    <div class="summary-card__header">
-                        <h3 class="summary-card__title">Alumnos en Mis Materias</h3>
-                        <div class="summary-card__icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                    </div>
-                    <div class="summary-card__content">
-                        <div class="summary-card__value">{{ number_format($totalUsuarios) }}</div>
-                        <div class="summary-card__stats summary-card__stats--up">
-                            <i class="fas fa-arrow-up"></i> Alumnos matriculados
-                        </div>
-                    </div>
-                </div>
-
-                <div class="summary-card">
-                    <div class="summary-card__header">
-                        <h3 class="summary-card__title">Asistencias Hoy</h3>
-                        <div class="summary-card__icon">
-                            <i class="fas fa-clipboard-check"></i>
-                        </div>
-                    </div>
-                    <div class="summary-card__content">
-                        <div class="summary-card__value">{{ number_format($asistenciasHoy) }}</div>
-                        <div class="summary-card__stats summary-card__stats--up">
-                            <i class="fas fa-arrow-up"></i> De mis materias - {{ Carbon\Carbon::now()->format('d/m/Y') }}
-                        </div>
-                    </div>
-                </div>                <div class="summary-card">
-                    <div class="summary-card__header">
-                        <h3 class="summary-card__title">Materias Activas</h3>
-                        <div class="summary-card__icon">
-                            <i class="fas fa-book"></i>
-                        </div>
-                    </div>
-                    <div class="summary-card__content">
-                        <div class="summary-card__value">{{ number_format($materiasActivas) }}</div>
-                        <div class="summary-card__stats">
-                            <i class="fas fa-circle"></i> Mis materias asignadas
-                        </div>
-                    </div>
-                </div>                <div class="summary-card">
-                    <div class="summary-card__header">
-                        <h3 class="summary-card__title">% Asistencia</h3>
-                        <div class="summary-card__icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                    </div>
-                    <div class="summary-card__content">
-                        <div class="summary-card__value">{{ $porcentajeAsistencia }}%</div>
-                        <div class="summary-card__stats {{ $porcentajeAsistencia >= 80 ? 'summary-card__stats--up' : 'summary-card__stats--down' }}">
-                            <i class="fas fa-{{ $porcentajeAsistencia >= 80 ? 'arrow-up' : 'arrow-down' }}"></i> Asistencia a mis clases
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Gráficos -->            <div class="charts">
-                <div class="content-section chart-container">
-                    <div class="section__header">
-                        <h2 class="section__title">Actividad Semanal de Mis Clases</h2>
-                    </div>
-                    <div class="section__content">
-                        <canvas id="weeklyActivityChart" data-chart-data="{{ json_encode($datosGraficoSemanal) }}"></canvas>
-                    </div>
-                </div>
-
-                <div class="content-section chart-container">
-                    <div class="section__header">
-                        <h2 class="section__title">Distribución de Asistencias en Mis Materias</h2>
-                    </div>
-                    <div class="section__content">
-                        <canvas id="attendanceDistChart" data-chart-data="{{ json_encode($datosGraficoDistribucion) }}"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabla de datos recientes -->            <div class="content-section">
+            <!-- Filtros de asistencia -->
+            <div class="content-section">
                 <div class="section__header">
-                    <h2 class="section__title">Asistencias Recientes en Mis Clases</h2>
+                    <h2 class="section__title">Filtros</h2>
+                </div>
+                <div class="section__content">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="materia-filter">Materia:</label>
+                            <select id="materia-filter" class="form-select">
+                                <option value="">Todas</option>
+                                @foreach($materias ?? [] as $materia)
+                                    <option value="{{ $materia->id }}">{{ $materia->nombre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="estado-filter">Estado:</label>
+                            <select id="estado-filter" class="form-select">
+                                <option value="">Todos</option>
+                                @foreach($tiposAsistencia ?? [] as $tipo)
+                                    <option value="{{ $tipo->id }}">{{ $tipo->descripcion }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="fecha-desde">Desde:</label>
+                            <input type="date" id="fecha-desde" class="form-control">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="fecha-hasta">Hasta:</label>
+                            <input type="date" id="fecha-hasta" class="form-control">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button class="btn btn-primary" id="aplicar-filtros">Aplicar Filtros</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabla de asistencias -->
+            <div class="content-section">
+                <div class="section__header">
+                    <h2 class="section__title">Registro de Asistencias</h2>
                 </div>
                 <div class="section__content">
                     <table class="data-table">
                         <thead class="data-table__head">
                             <tr>
-                                <th class="data-table__header">Usuario</th>
+                                <th class="data-table__header">ID</th>
+                                <th class="data-table__header">Alumno</th>
                                 <th class="data-table__header">Materia</th>
                                 <th class="data-table__header">Fecha</th>
                                 <th class="data-table__header">Hora</th>
                                 <th class="data-table__header">Estado</th>
+                                <th class="data-table__header">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="data-table__body">
-                            @forelse($asistenciasRecientes as $asistencia)
+                            @forelse($asistencias ?? [] as $asistencia)
                             <tr>
+                                <td class="data-table__cell">{{ $asistencia->id }}</td>
                                 <td class="data-table__cell">{{ $asistencia->alumno->name }}</td>
                                 <td class="data-table__cell">{{ $asistencia->materia->nombre }}</td>
                                 <td class="data-table__cell">{{ \Carbon\Carbon::parse($asistencia->fecha_hora)->format('d/m/Y') }}</td>
@@ -184,9 +152,9 @@
                                 <td class="data-table__cell">
                                     @php
                                     $estadoClass = [
-                                    1 => 'data-table__status--active', // Presente
-                                    2 => 'data-table__status--inactive', // Ausente
-                                    3 => 'data-table__status--pending' // Justificado
+                                        1 => 'data-table__status--active',   // Presente
+                                        2 => 'data-table__status--inactive', // Ausente
+                                        3 => 'data-table__status--pending'   // Justificado
                                     ];
                                     $class = $estadoClass[$asistencia->tipo_asistencia_id] ?? '';
                                     @endphp
@@ -194,17 +162,33 @@
                                         {{ $asistencia->tipoAsistencia->descripcion }}
                                     </span>
                                 </td>
+                                <td class="data-table__cell">
+                                    <div class="data-table__actions">
+                                        <button class="data-table__action" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="data-table__action" title="Justificar">
+                                            <i class="fas fa-check-circle"></i>
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="data-table__cell text-center">No hay asistencias recientes</td>
+                                <td colspan="7" class="data-table__cell text-center">No hay asistencias registradas</td>
                             </tr>
                             @endforelse
                         </tbody>
                     </table>
+                    
+                    @if(isset($asistencias) && method_exists($asistencias, 'links'))
+                        <div class="mt-4">
+                            {{ $asistencias->links() }}
+                        </div>
+                    @endif
                 </div>
             </div>
-
+            
             <!-- Contenedor para notificaciones -->
             <div class="notifications-container"></div>
         </div>
@@ -213,6 +197,5 @@
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ asset('js/profesor/dashboard.js') }}"></script>
 @endsection

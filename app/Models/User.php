@@ -73,6 +73,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all asistencias related to the user (as alumno).
+     */
+    public function asistencias()
+    {
+        return $this->hasMany(Asistencia::class, 'alumno_id');
+    }
+
+    /**
      * Check if the user is a profesor.
      */
     public function isProfesor()

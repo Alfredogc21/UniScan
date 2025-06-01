@@ -127,7 +127,19 @@ Route::middleware(['auth'])->group(function () {
         })->name('settings');
     });
 
-    Route::get('/profesor/dashboard', [ProfesorController::class, 'dashboard'])->name('profesor.dashboard');
+    // Rutas del profesor
+    Route::prefix('profesor')->name('profesor.')->group(function () {
+        Route::get('/dashboard', [ProfesorController::class, 'dashboard'])->name('dashboard');
+        Route::get('/alumnos', [ProfesorController::class, 'alumnos'])->name('alumnos');
+        Route::get('/materias', [ProfesorController::class, 'materias'])->name('materias');
+        Route::get('/asistencias', [ProfesorController::class, 'asistencias'])->name('asistencias');
+        Route::get('/profile', [ProfesorController::class, 'profile'])->name('profile');
+        Route::put('/profile', [ProfesorController::class, 'updateProfile'])->name('profile.update');
+        
+        // Rutas para datos de gráficos
+        Route::get('/dashboard/datos-semanal', [ProfesorController::class, 'getDatosSemanal'])->name('dashboard.datos-semanal');
+        Route::get('/dashboard/datos-distribucion', [ProfesorController::class, 'getDatosDistribucion'])->name('dashboard.datos-distribucion');
+    });
 
     Route::get('/estudiante/dashboard', function () {
         return view('estudiante.dashboard');
