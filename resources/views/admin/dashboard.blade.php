@@ -3,8 +3,8 @@
 @section('title', 'Dashboard - UniScan')
 
 @section('styles')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-    <link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
 @endsection
 
 @section('content')
@@ -20,7 +20,7 @@
                 <i class="fas fa-bars"></i>
             </button>
         </div>
-        
+
         <nav class="sidebar__nav">
             <ul class="nav__list">
                 <li class="nav__item">
@@ -42,7 +42,7 @@
                     </a>
                 </li>
                 <li class="nav__item">
-                    <a href="{{ route('admin.attendance') }}" class="nav__link">
+                    <a href="{{ route('admin.asistencias') }}" class="nav__link">
                         <span class="nav__link-icon"><i class="fas fa-clipboard-check"></i></span>
                         <span class="nav__link-text">Asistencias</span>
                     </a>
@@ -61,7 +61,7 @@
                 </li>
             </ul>
         </nav>
-        
+
         <div class="sidebar__footer">
             <a href="{{ route('admin.profile') }}" class="user-info" style="color: white;">
                 <div class="user-info__avatar">
@@ -81,14 +81,14 @@
             <button class="actions__button mobile-menu-btn d-md-none">
                 <i class="fas fa-bars"></i>
             </button>
-            
+
             <h1 class="header__title">Dashboard</h1>
-            
+
             <div class="header__search">
                 <span class="search__icon"><i class="fas fa-search"></i></span>
                 <input type="text" class="search__input" placeholder="Buscar...">
             </div>
-            
+
             <div class="header__actions">
                 @include('partials.logout_button')
             </div>
@@ -185,7 +185,7 @@
             <div class="content-section">
                 <div class="section__header">
                     <h2 class="section__title">Asistencias Recientes</h2>
-                    <a href="{{ route('admin.attendance') }}" class="section__action">Ver todas</a>
+                    <a href="{{ route('admin.asistencias') }}" class="section__action">Ver todas</a>
                 </div>
                 <div class="section__content">
                     <table class="data-table">
@@ -279,7 +279,7 @@
                     </table>
                 </div>
             </div>
-            
+
             <!-- Contenedor para notificaciones -->
             <div class="notifications-container"></div>
         </div>
@@ -288,6 +288,6 @@
 @endsection
 
 @section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ asset('js/admin/dashboard.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ asset('js/admin/dashboard.js') }}"></script>
 @endsection

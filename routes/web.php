@@ -35,7 +35,7 @@ Route::get('password/reset/{token}', [ResetPasswordController::class, 'showReset
 Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
 
 // Ruta de diagnóstico para materias
-Route::get('/debug-materia/{id}', function($id) {
+Route::get('/debug-materia/{id}', function ($id) {
     try {
         $materia = App\Models\Materia::with(['profesor', 'aula', 'curso'])->findOrFail($id);
         return response()->json([
@@ -51,27 +51,27 @@ Route::get('/debug-materia/{id}', function($id) {
 });
 
 // Ruta alternativa para generar QR (por si falla la principal)
-Route::get('/generate-qr/{id}', function($id) {
+Route::get('/generate-qr/{id}', function ($id) {
     try {
         // Generar el QR usando la función del archivo independiente
         require_once app_path('Http/Controllers/Admin/QrGenerator.php');
         $result = App\Http\Controllers\Admin\generate_qr($id);
-        
+
         // Log para debugging
         \Illuminate\Support\Facades\Log::info('QR generado vía ruta alternativa', [
             'materia_id' => $id,
             'success' => $result['success'] ?? false
         ]);
-        
+
         return response()->json($result);
     } catch (\Exception $e) {
         \Illuminate\Support\Facades\Log::error('Error en ruta /generate-qr', [
             'materia_id' => $id,
             'error' => $e->getMessage()
         ]);
-        
+
         return response()->json([
-            'success' => false, 
+            'success' => false,
             'error' => $e->getMessage()
         ], 500);
     }
@@ -85,18 +85,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', function () {
             return view('admin.dashboard');
         })->name('dashboard');
-        
+
         // Rutas de perfil
         Route::get('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'edit'])->name('profile');
         Route::put('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
-        
+
         // Rutas de gestión de usuarios usando el controlador
         Route::get('/users', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('users');
         Route::post('/users', [App\Http\Controllers\Admin\UserController::class, 'store'])->name('users.store');
         Route::get('/users/{id}/edit', [App\Http\Controllers\Admin\UserController::class, 'edit'])->name('users.edit');
         Route::put('/users/{id}', [App\Http\Controllers\Admin\UserController::class, 'update'])->name('users.update');
         Route::delete('/users/{id}', [App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('users.destroy');
-        
+
         // Rutas de gestión de materias
         Route::get('/materias', [App\Http\Controllers\Admin\AdminMateriaController::class, 'index'])->name('materias');
         Route::post('/materias', [App\Http\Controllers\Admin\AdminMateriaController::class, 'store'])->name('materias.store');
@@ -104,19 +104,23 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/materias/{id}', [App\Http\Controllers\Admin\AdminMateriaController::class, 'update'])->name('materias.update');
         Route::delete('/materias/{id}', [App\Http\Controllers\Admin\AdminMateriaController::class, 'destroy'])->name('materias.destroy');
         Route::post('/materias/{id}/generate-qr', [App\Http\Controllers\Admin\AdminMateriaController::class, 'generateQr'])->name('materias.generateQr');
-        
+
         Route::get('/subjects', function () {
             return view('admin.subjects');
         })->name('subjects');
+
+        Route::get('/asistencias', [App\Http\Controllers\Admin\AdminAsistenciaController::class, 'index'])->name('asistencias');
+        Route::post('/asistencias/{id}/justificar', [App\Http\Controllers\Admin\AdminAsistenciaController::class, 'justificarAsistencia'])->name('asistencias.justificar');
+        Route::get('/asistencias/{id}/details', [App\Http\Controllers\Admin\AdminAsistenciaController::class, 'getAsistenciaDetails'])->name('asistencias.details');
         
-        Route::get('/attendance', function () {
-            return view('admin.attendance');
-        })->name('attendance');
-        
+        // Rutas para PDF de asistencias
+        Route::get('/asistencias/exportar-pdf', [App\Http\Controllers\Admin\AdminAsistenciaController::class, 'exportarPdf'])->name('asistencias.exportar-pdf');
+        Route::get('/asistencias/previsualizar-pdf', [App\Http\Controllers\Admin\AdminAsistenciaController::class, 'previsualizarPdf'])->name('asistencias.previsualizar-pdf');
+
         Route::get('/reports', function () {
             return view('admin.reports');
         })->name('reports');
-        
+
         Route::get('/settings', function () {
             return view('admin.settings');
         })->name('settings');

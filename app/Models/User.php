@@ -24,7 +24,7 @@ class User extends Authenticatable
         'role_id',
         'estado_id'
     ];
-    
+
     /**
      * Get the role that owns the user.
      */
@@ -54,5 +54,37 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the asistencias where the user is the alumno.
+     */
+    public function asistenciasComoAlumno()
+    {
+        return $this->hasMany(Asistencia::class, 'alumno_id');
+    }
+
+    /**
+     * Get the asistencias where the user is the profesor.
+     */
+    public function asistenciasComoProfesor()
+    {
+        return $this->hasMany(Asistencia::class, 'profesor_id');
+    }
+
+    /**
+     * Check if the user is a profesor.
+     */
+    public function isProfesor()
+    {
+        return $this->role_id === 2; // Asumiendo que 2 es el ID para el rol de profesor
+    }
+
+    /**
+     * Check if the user is an alumno.
+     */
+    public function isAlumno()
+    {
+        return $this->role_id === 3; // Asumiendo que 3 es el ID para el rol de alumno
     }
 }

@@ -1,0 +1,654 @@
+/* Estilos generales mejorados */
+:root {
+    --primary-color: #7f6fcb;
+    --primary-hover: #6a5cb0;
+    --secondary-color: #6c757d;
+    --secondary-hover: #5a6268;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --light-bg: #f8f9fa;
+    --border-color: #e5e1ff;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --border-radius: 8px;
+    --transition: all 0.3s ease;
+    --card-padding: 1.25rem;
+}
+
+/* Estilos para el contenedor de filtros */
+#filtersContainer {
+    display: block !important;
+    opacity: 1 !important;
+    height: auto !important;
+    transition: none;
+    margin-bottom: 20px;
+}
+
+#filtersContainer.filters-mobile {
+    padding: 10px;
+}
+
+/* Estilos para valores de estado - Específicos */
+.detail-value.status-presente {
+    color: #22c55e;
+    font-weight: bold;
+}
+
+.detail-value.status-ausente {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+.detail-value.status-tardanza {
+    color: #f59e0b;
+    font-weight: bold;
+}
+
+.detail-value.status-justificado {
+    color: #3b82f6;
+    font-weight: bold;
+}
+
+.detail-value.status-desconocido {
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* Estilos genéricos por prefijo para valores de estado dinámicos */
+/* Estos se aplicarán automáticamente a nuevos estados según su nombre */
+.detail-value[class*="status-"] {
+    font-weight: bold;
+}
+
+/* Estilos para otros estados posibles según prefijos */
+.detail-value[class*="status-pre"] {
+    color: #22c55e; /* verde para presentes, presencial, etc */
+}
+
+.detail-value[class*="status-aus"] {
+    color: #ef4444; /* rojo para ausentes, ausentado, etc */
+}
+
+.detail-value[class*="status-tar"] {
+    color: #f59e0b; /* naranja para tardanza, tarde, etc */
+}
+
+.detail-value[class*="status-jus"] {
+    color: #3b82f6; /* azul para justificado, justificación, etc */
+}
+
+.attendance-status.attendance-present,
+.attendance-status[class*="attendance-pre"] {
+    color: #22c55e;
+    font-weight: bold;
+}
+
+.attendance-status.attendance-absent,
+.attendance-status[class*="attendance-aus"] {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+.attendance-status.attendance-late,
+.attendance-status[class*="attendance-tar"] {
+    color: #f59e0b;
+    font-weight: bold;
+}
+
+.attendance-status.attendance-justified,
+.attendance-status[class*="attendance-jus"] {
+    color: #3b82f6;
+    font-weight: bold;
+}
+
+/* Estilos para tarjetas de detalles de asistencia */
+.attendance-details-card .detail-row {
+    margin-bottom: 15px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #374151;
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.detail-label i {
+    color: #6b7280;
+    width: 16px;
+}
+
+.detail-value {
+    color: #1f2937;
+    flex: 1;
+    word-break: break-word;
+}
+
+/* Botón de exportar Excel */
+#btnExportExcel {
+    background: #16a085;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section__action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section__action i {
+    margin-right: 8px;
+}
+
+#btnExportExcel:hover {
+    background: #138d75;
+}
+
+/* Modal de contenido */
+.modal-content {
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.section__content {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Contenedor de filtros mejorado */
+.filters-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background-color: var(--light-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    align-items: flex-end;
+    overflow: visible;
+    /* Asegura que los elementos secundarios no se corten */
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 calc(25% - 1rem);
+    min-width: 200px;
+    margin-bottom: 0.5rem;
+}
+
+.filter-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #495057;
+}
+
+.filter-group select,
+.filter-group input {
+    padding: 0.75rem;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+    transition: var(--transition);
+    width: 100%;
+    background-color: white;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(127, 111, 203, 0.25);
+}
+
+/* Estiliza la fecha para mejorar compatibilidad */
+.date-picker {
+    min-height: 40px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.filter-button {
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition);
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    box-shadow: var(--shadow-sm);
+}
+
+.filter-apply {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.filter-reset {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.filter-apply:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.filter-reset:hover {
+    background-color: var(--secondary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.attendance-status {
+    padding: 0.4rem 0.8rem;
+    border-radius: 30px;
+    font-weight: 500;
+    text-align: center;
+    font-size: 0.85rem;
+    display: inline-block;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.attendance-present {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+}
+
+.attendance-absent {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+}
+
+.attendance-late {
+    background-color: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffecb5;
+}
+
+.attendance-justified {
+    background-color: #cfe2ff;
+    color: #084298;
+    border: 1px solid #b6d4fe;
+}
+
+.attendance-status:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.date-range-container {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.date-field {
+    flex: 1;
+}
+
+/* Mejora el diseño de las tarjetas de resumen */
+.summary-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    width: 100%;
+}
+
+.summary-card {
+    flex: 1 1 calc(25% - 1.25rem);
+    min-width: 220px;
+    transition: var(--transition);
+    border: 1px solid var(--border-color);
+}
+
+.summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Mejora botones de acciones en la tabla */
+.data-table__action {
+    padding: 0.5rem;
+    border-radius: var(--border-radius);
+    background: transparent;
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+    color: var(--primary-color);
+}
+
+.data-table__action:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Centrar la columna de acciones */
+.data-table__actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Centrar el contenido de la celda de acciones */
+td.data-table__cell:last-child {
+    text-align: center;
+}
+
+/* Estilos para modales mejorados */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    max-height: 90vh;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 600px;
+    transition: var(--transition);
+}
+
+.btn-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.btn-save,
+.btn-cancel {
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 120px;
+    text-align: center;
+}
+
+.btn-save {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+.btn-cancel {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+}
+
+.btn-save:hover,
+.btn-cancel:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* User info styles */
+.user-info {
+    color: white;
+}
+
+.user-info__name {
+    color: white;
+}
+
+.user-info__role {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Empty table message style */
+.data-table__cell.empty-message {
+    text-align: center;
+}
+
+/* Icon spacing in section actions */
+.section__action i {
+    margin-right: 8px;
+}
+
+/* Estilos para acciones de sección */
+.section__actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Botones de PDF */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: var(--transition);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    text-decoration: none;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    color: white;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-hover);
+    color: white;
+}
+
+.btn i {
+    font-size: 14px;
+}
+
+/* Responsive para botones */
+@media (max-width: 768px) {
+    .section__actions {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Estilos responsive */
+@media (max-width: 992px) {
+    .summary-card {
+        flex: 1 1 calc(50% - 1.25rem);
+    }
+}
+
+@media (max-width: 768px) {
+    .filters-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .date-range-container {
+        flex-direction: column;
+    }
+
+    .filter-buttons {
+        justify-content: center;
+    }
+
+    .summary-card {
+        flex: 1 1 100%;
+    }
+
+    .section__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .section__action {
+        width: 100%;
+        text-align: center;
+    }
+
+    .data-table {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .filter-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-button {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Estilos para filas alternadas en la tabla (usado en JavaScript) */
+.row-alternate {
+    background-color: var(--light-bg);
+}
+
+/* Estilos para botones de PDF */
+.section__actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: var(--transition);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    text-decoration: none;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    color: white;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-hover);
+    color: white;
+}
+
+.btn i {
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .section__actions {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

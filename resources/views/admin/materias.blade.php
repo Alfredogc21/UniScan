@@ -48,7 +48,7 @@
                     </a>
                 </li>
                 <li class="nav__item">
-                    <a href="{{ route('admin.attendance') }}" class="nav__link">
+                    <a href="{{ route('admin.asistencias') }}" class="nav__link">
                         <span class="nav__link-icon"><i class="fas fa-clipboard-check"></i></span>
                         <span class="nav__link-text">Asistencias</span>
                     </a>
@@ -138,7 +138,8 @@
                         </thead>
                         <tbody class="data-table__body">
                             @foreach($materias as $materia)
-                            <tr>                                <td class="data-table__cell">{{ $materia->id }}</td>
+                            <tr>
+                                <td class="data-table__cell">{{ $materia->id }}</td>
                                 <td class="data-table__cell">{{ $materia->nombre }}</td>
                                 <td class="data-table__cell">{{ $materia->profesor->name ?? 'Sin asignar' }}</td>
                                 <td class="data-table__cell">{{ $materia->aula->nombre ?? 'No especificado' }}</td>
@@ -146,29 +147,30 @@
                                 <td class="data-table__cell">{{ $materia->curso->nombre ?? 'No especificado' }}</td>
                                 <td class="data-table__cell">
                                     @if($materia->qr_path)
-                                        <span class="data-table__status data-table__status--active">Generado</span>
+                                    <span class="data-table__status data-table__status--active">Generado</span>
                                     @else
-                                        <span class="data-table__status data-table__status--inactive">No generado</span>
+                                    <span class="data-table__status data-table__status--inactive">No generado</span>
                                     @endif
                                 </td>
-                                <td class="data-table__cell">                                    <div class="data-table__actions">
-                                        <button class="data-table__action btn-edit-materia" 
-                                                title="Editar materia" 
-                                                data-id="{{ $materia->id }}">
+                                <td class="data-table__cell">
+                                    <div class="data-table__actions">
+                                        <button class="data-table__action btn-edit-materia"
+                                            title="Editar materia"
+                                            data-id="{{ $materia->id }}">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button class="data-table__action btn-generate-qr" 
-                                                title="Generar QR" 
-                                                data-id="{{ $materia->id }}">
+                                        <button class="data-table__action btn-generate-qr"
+                                            title="Generar QR"
+                                            data-id="{{ $materia->id }}">
                                             <i class="fas fa-qrcode"></i>
                                         </button>
-                                        <form method="POST" action="{{ route('admin.materias.destroy', $materia->id) }}" 
-                                              style="display: inline;" 
-                                              onsubmit="return confirm('¿Estás seguro de eliminar esta materia?')">
+                                        <form method="POST" action="{{ route('admin.materias.destroy', $materia->id) }}"
+                                            style="display: inline;"
+                                            onsubmit="return confirm('¿Estás seguro de eliminar esta materia?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="data-table__action btn-delete-materia" 
-                                                   title="Eliminar materia">
+                                            <button type="submit" class="data-table__action btn-delete-materia"
+                                                title="Eliminar materia">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
@@ -196,42 +198,42 @@
             <input type="hidden" name="_token" value="{{ csrf_token() }}">
             <input type="hidden" name="_method" value="PUT">
             <input type="hidden" id="editMateriaId" name="materia_id">
-            
+
             <div class="form-group">
                 <label for="editNombre">Nombre de la Materia</label>
                 <input type="text" id="editNombre" name="nombre" required>
             </div>
-            
+
             <div class="form-group">
                 <label for="editProfesor">Profesor</label>
                 <select id="editProfesor" name="profesor_id" required>
                     <option value="">Seleccionar profesor</option>
                     @foreach($profesores as $profesor)
-                        <option value="{{ $profesor->id }}">{{ $profesor->name }}</option>
+                    <option value="{{ $profesor->id }}">{{ $profesor->name }}</option>
                     @endforeach
                 </select>
             </div>
-            
+
             <div class="form-group">
                 <label for="editAula">Aula</label>
                 <input type="text" id="editAula" name="aula" required>
             </div>
-            
+
             <div class="form-group">
                 <label for="editHorarioIngreso">Horario de Ingreso</label>
                 <input type="time" id="editHorarioIngreso" name="horario_ingreso" required>
             </div>
-            
+
             <div class="form-group">
                 <label for="editHorarioSalida">Horario de Salida</label>
                 <input type="time" id="editHorarioSalida" name="horario_salida" required>
             </div>
-            
+
             <div class="form-group">
                 <label for="editCurso">Curso</label>
                 <input type="text" id="editCurso" name="curso" required>
             </div>
-            
+
             <div class="btn-container">
                 <button type="button" class="btn-cancel">Cancelar</button>
                 <button type="submit" class="btn-save">Guardar Cambios</button>
@@ -260,7 +262,7 @@
                 <select id="addProfesor" name="profesor_id" required>
                     <option value="">Seleccionar profesor</option>
                     @foreach($profesores as $profesor)
-                        <option value="{{ $profesor->id }}">{{ $profesor->name }}</option>
+                    <option value="{{ $profesor->id }}">{{ $profesor->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -306,13 +308,13 @@
                 <div id="serverQrContainer">
                     <img id="qrImage" src="" alt="Código QR">
                 </div>
-                
+
                 <!-- Contenedor para QR generado en el cliente (alternativa) -->
                 <div id="clientQrContainer">
                     <div id="qrCodeCanvas"></div>
                     <p style="color: #28a745; font-weight: 500; margin-bottom: 15px;">✓ QR generado localmente con éxito</p>
                 </div>
-                
+
                 <!-- Información detallada del QR -->
                 <div class="qr-info">
                     <h4>Información contenida en el QR:</h4>
@@ -338,28 +340,28 @@
 <script src="{{ asset('js/admin/dashboard.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    // Búsqueda de materias
-    const searchInput = document.getElementById('materiaSearchInput');
-    const tableRows = document.querySelectorAll('#materiasTable tbody tr');
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
+        // Búsqueda de materias
+        const searchInput = document.getElementById('materiaSearchInput');
+        const tableRows = document.querySelectorAll('#materiasTable tbody tr');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
 
-            tableRows.forEach(row => {
-                const nombre = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                const profesor = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-                const aula = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
-                const curso = row.querySelector('td:nth-child(6)').textContent.toLowerCase();
+                tableRows.forEach(row => {
+                    const nombre = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    const profesor = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                    const aula = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+                    const curso = row.querySelector('td:nth-child(6)').textContent.toLowerCase();
 
-                if (nombre.includes(searchTerm) || profesor.includes(searchTerm) ||
-                    aula.includes(searchTerm) || curso.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+                    if (nombre.includes(searchTerm) || profesor.includes(searchTerm) ||
+                        aula.includes(searchTerm) || curso.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
             });
-        });
-    }
+        }
 
         // Mostrar/Ocultar modales básicos
         const btnAddMateria = document.getElementById('btnAddMateria');
@@ -400,22 +402,22 @@
 
 <!-- Script para generar QR en el cliente como fallback -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Mejorar el botón de descarga para usar el método alternativo si la descarga directa falla
-    const downloadQrBtn = document.getElementById('downloadQr');
-    if (downloadQrBtn) {
-        // Simplificar el evento del botón de descarga
-        downloadQrBtn.addEventListener('click', function(e) {
-            // Prevenir la descarga predeterminada
-            e.preventDefault();
-            
-            // La función downloadQR en materias_qr.js maneja toda la lógica
-            // incluyendo prevención de descargas múltiples y conversión a PNG
-            downloadQR();
-        });
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mejorar el botón de descarga para usar el método alternativo si la descarga directa falla
+        const downloadQrBtn = document.getElementById('downloadQr');
+        if (downloadQrBtn) {
+            // Simplificar el evento del botón de descarga
+            downloadQrBtn.addEventListener('click', function(e) {
+                // Prevenir la descarga predeterminada
+                e.preventDefault();
 
-    // Simplificamos la interfaz quitando la generación en el navegador
-});
+                // La función downloadQR en materias_qr.js maneja toda la lógica
+                // incluyendo prevención de descargas múltiples y conversión a PNG
+                downloadQR();
+            });
+        }
+
+        // Simplificamos la interfaz quitando la generación en el navegador
+    });
 </script>
 @endsection
