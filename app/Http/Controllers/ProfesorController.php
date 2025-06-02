@@ -91,61 +91,111 @@ class ProfesorController extends Controller
 
     /**
      * Mostrar la lista de alumnos del profesor
-     */    public function alumnos()
+     */      public function alumnos(Request $request)
     {
         $user = Auth::user();
         
         if (!$user || $user->role_id != 2) {
             abort(403, 'Acceso no autorizado');
-        }        // Obtener alumnos que están inscritos en materias del profesor con información adicional
-        $alumnos = User::where('role_id', 3)
-            ->where('estado_id', 1) // Solo mostrar alumnos activos
-            ->whereHas('asistencias', function ($query) use ($user) {
-                $query->whereHas('materia', function ($q) use ($user) {
-                    $q->where('profesor_id', $user->id);
-                });
-            })
-            ->withCount(['asistencias' => function ($query) use ($user) {
-                $query->whereHas('materia', function ($q) use ($user) {
-                    $q->where('profesor_id', $user->id);
-                });
-            }])
-            ->with(['asistencias' => function ($query) use ($user) {
-                $query->whereHas('materia', function ($q) use ($user) {
-                    $q->where('profesor_id', $user->id);
-                })
-                ->with('materia')
-                ->latest();
-            }])
-            ->get()
-            ->map(function ($alumno) use ($user) {
-                // Calcular porcentaje de asistencia individual
-                $totalAsistencias = $alumno->asistencias->count();
-                $asistenciasPresente = $alumno->asistencias->where('tipo_asistencia_id', 1)->count();
-                $porcentajeAsistencia = $totalAsistencias > 0 ? round(($asistenciasPresente / $totalAsistencias) * 100) : 0;
-                
-                // Obtener materias compartidas con el profesor
-                $materiasCompartidas = $alumno->asistencias
-                    ->pluck('materia')
-                    ->unique('id')
-                    ->pluck('nombre')
-                    ->toArray();
-                
-                // Obtener último acceso (última asistencia registrada)
-                $ultimaAsistencia = $alumno->asistencias->first();
-                $ultimoAcceso = $ultimaAsistencia ? $ultimaAsistencia->fecha_hora : null;
-                
-                $alumno->porcentaje_asistencia = $porcentajeAsistencia;
-                $alumno->materias_compartidas = implode(', ', $materiasCompartidas);
-                $alumno->ultimo_acceso = $ultimoAcceso;
-                
-                return $alumno;
-            });
-
-        // Obtener materias del profesor para el formulario de agregar alumno
-        $materias = Materia::where('profesor_id', $user->id)->get();
+        }
         
-        return view('profesor.alumnos', compact('alumnos', 'materias'));
+        // Obtener materias del profesor para el formulario de agregar alumno y filtros
+        $materias = Materia::where('profesor_id', $user->id)->get();
+        $aulas = DB::table('aulas')->orderBy('nombre')->get();
+        $cursos = DB::table('cursos')->orderBy('nombre')->get();
+        
+        // Preparar la consulta base - más eficiente al precargar las relaciones
+        $query = User::where('role_id', 3);
+        
+        // Filtro por estado (activo/inactivo)
+        if ($request->filled('estado')) {
+            $query->where('estado_id', $request->estado);
+        }
+        
+        // Subquery para filtrar por materias del profesor actual
+        $profesorMateriasSubQuery = function ($q) use ($user) {
+            $q->where('profesor_id', $user->id);
+        };
+        
+        // Filtro base: alumnos que tienen asistencias en materias del profesor
+        $query->whereHas('asistencias', function ($subquery) use ($user, $request, $profesorMateriasSubQuery) {
+            $subquery->whereHas('materia', function ($q) use ($user, $request, $profesorMateriasSubQuery) {
+                $q->where('profesor_id', $user->id);
+                
+                // Filtro por materia
+                if ($request->filled('materia')) {
+                    $q->where('id', $request->materia);
+                }
+                
+                // Filtro por aula
+                if ($request->filled('aula')) {
+                    $q->where('aula_id', $request->aula);
+                }
+                
+                // Filtro por curso
+                if ($request->filled('curso')) {
+                    $q->where('curso_id', $request->curso);
+                }
+            });
+        });
+        
+        // Incluir conteo de asistencias para cálculos de porcentaje
+        // Esta parte trae las relaciones necesarias para el cálculo del porcentaje y evita n+1 queries
+        $query->withCount([
+            'asistencias as total_asistencias' => function ($q) use ($profesorMateriasSubQuery) {
+                $q->whereHas('materia', $profesorMateriasSubQuery);
+            },
+            'asistencias as asistencias_presente' => function ($q) use ($profesorMateriasSubQuery) {
+                $q->whereHas('materia', $profesorMateriasSubQuery)
+                  ->where('tipo_asistencia_id', 1); // Tipo "Presente"
+            }
+        ])->with(['asistencias' => function ($q) use ($profesorMateriasSubQuery) {
+            $q->whereHas('materia', $profesorMateriasSubQuery)
+              ->with('materia')
+              ->latest();
+        }]);
+        
+        // Ejecutar la consulta y procesar los resultados
+        $alumnos = $query->get()->map(function ($alumno) {
+            // Calcular porcentaje de asistencia usando los conteos
+            $totalAsistencias = $alumno->total_asistencias;
+            $asistenciasPresente = $alumno->asistencias_presente;
+            $porcentajeAsistencia = $totalAsistencias > 0 ? round(($asistenciasPresente / $totalAsistencias) * 100) : 0;
+            
+            // Obtener materias compartidas con el profesor
+            $materiasCompartidas = $alumno->asistencias
+                ->pluck('materia')
+                ->unique('id')
+                ->pluck('nombre')
+                ->toArray();
+            
+            // Obtener último acceso (última asistencia registrada)
+            $ultimaAsistencia = $alumno->asistencias->first();
+            $ultimoAcceso = $ultimaAsistencia ? $ultimaAsistencia->fecha_hora : null;
+            
+            // Agregar atributos calculados al modelo del alumno
+            $alumno->porcentaje_asistencia = $porcentajeAsistencia;
+            $alumno->materias_compartidas = implode(', ', $materiasCompartidas);
+            $alumno->ultimo_acceso = $ultimoAcceso;
+            
+            return $alumno;
+        });
+        
+        // Filtro por rango de porcentaje de asistencia
+        // Se aplica al final porque es un atributo calculado que no está en la base de datos
+        if ($request->filled('asistencia_min')) {
+            $alumnos = $alumnos->filter(function ($alumno) use ($request) {
+                return $alumno->porcentaje_asistencia >= $request->asistencia_min;
+            });
+        }
+        
+        if ($request->filled('asistencia_max')) {
+            $alumnos = $alumnos->filter(function ($alumno) use ($request) {
+                return $alumno->porcentaje_asistencia <= $request->asistencia_max;
+            });
+        }
+        
+        return view('profesor.alumnos', compact('alumnos', 'materias', 'aulas', 'cursos'));
     }
 
     /**

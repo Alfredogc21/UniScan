@@ -142,6 +142,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/alumnos/{id}/asistencias', [ProfesorController::class, 'getDetallesAsistencia'])->name('alumnos.asistencias');
         Route::post('/asistencias/{id}/justificar', [ProfesorController::class, 'justificarAsistencia'])->name('asistencias.justificar');
         
+        // Ruta AJAX para filtrado dinámico de alumnos
+        Route::get('/alumnos/filter', [ProfesorController::class, 'filterAlumnos'])->name('alumnos.filter');
+        
         Route::get('/materias', [ProfesorController::class, 'materias'])->name('materias');
         Route::get('/asistencias', [ProfesorController::class, 'asistencias'])->name('asistencias');
         Route::get('/profile', [ProfesorController::class, 'profile'])->name('profile');

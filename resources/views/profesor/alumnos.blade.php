@@ -98,6 +98,84 @@
             </div>
             @endif
 
+            <!-- Filtros de alumnos -->
+            <div class="content-section">
+                <div class="section__header">
+                    <h2 class="section__title">Filtros</h2>
+                </div>
+                <div class="section__content">
+                    <form id="filtersForm" class="filters-form" method="GET" action="{{ route('profesor.alumnos') }}">
+                        <div class="filters-container">
+                            <div class="filter-group">
+                                <label for="estado">Estado:</label>
+                                <select id="estado" name="estado" class="form-control">
+                                    <option value="">Todos</option>
+                                    <option value="1" {{ request('estado') == '1' ? 'selected' : '' }}>Activo</option>
+                                    <option value="2" {{ request('estado') == '2' ? 'selected' : '' }}>Inactivo</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="materia">Materia:</label>
+                                <select id="materia" name="materia" class="form-control">
+                                    <option value="">Todas</option>
+                                    @foreach($materias as $materia)
+                                    <option value="{{ $materia->id }}" {{ request('materia') == $materia->id ? 'selected' : '' }}>
+                                        {{ $materia->nombre }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="aula">Aula:</label>
+                                <select id="aula" name="aula" class="form-control">
+                                    <option value="">Todas</option>
+                                    @foreach($aulas ?? [] as $aula)
+                                    <option value="{{ $aula->id }}" {{ request('aula') == $aula->id ? 'selected' : '' }}>
+                                        {{ $aula->nombre }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="curso">Curso:</label>
+                                <select id="curso" name="curso" class="form-control">
+                                    <option value="">Todos</option>
+                                    @foreach($cursos ?? [] as $curso)
+                                    <option value="{{ $curso->id }}" {{ request('curso') == $curso->id ? 'selected' : '' }}>
+                                        {{ $curso->nombre }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="asistencia_min">% Asistencia mínima:</label>
+                                <input type="number" id="asistencia_min" name="asistencia_min" class="form-control"
+                                    min="0" max="100" step="1" value="{{ request('asistencia_min') }}">
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="asistencia_max">% Asistencia máxima:</label>
+                                <input type="number" id="asistencia_max" name="asistencia_max" class="form-control"
+                                    min="0" max="100" step="1" value="{{ request('asistencia_max') }}">
+                            </div>
+                        </div>
+
+                        <div class="filters-actions">
+                            <button type="submit" id="applyFilters" class="btn-apply-filters">
+                                <i class="fas fa-filter"></i> Aplicar Filtros
+                            </button>
+                            <a href="{{ route('profesor.alumnos') }}" class="btn-reset-filters">
+                                <i class="fas fa-undo"></i> Restablecer
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <!-- Tabla de alumnos -->
             <div class="content-section">
                 <div class="section__header">
@@ -108,7 +186,8 @@
                         </button>
                     </div>
                 </div>
-                <div class="section__content">                    <table class="data-table" id="usersTable">
+                <div class="section__content">
+                    <table class="data-table" id="usersTable">
                         <thead class="data-table__head">
                             <tr>
                                 <th class="data-table__header">ID</th>
@@ -192,7 +271,7 @@
             @csrf
             <input type="hidden" name="_token" value="{{ csrf_token() }}">
             <input type="hidden" name="_method" value="PUT">
-            <input type="hidden" id="editUserId" name="user_id">
+            <input type="hidden" id="editUserId">
 
             <div class="form-group">
                 <label for="editName">Nombre</label>
@@ -202,11 +281,26 @@
             <div class="form-group">
                 <label for="editEmail">Email</label>
                 <input type="email" id="editEmail" name="email" required>
-            </div>            <div class="form-group">
+            </div>
+            <div class="form-group">
                 <label for="editEstado">Estado</label>
                 <select id="editEstado" name="estado_id" required>
                     <option value="1">Activo</option>
                     <option value="2">Inactivo</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="editMateria">Materia</label>
+                <select id="editMateria" name="materia_id" required>
+                    <option value="">Seleccione una materia</option>
+                    @foreach($materias ?? [] as $materia)
+                        <option value="{{ $materia->id }}">
+                            {{ $materia->nombre }} 
+                            (Curso: {{ $materia->curso->nombre ?? 'N/A' }}, 
+                            Aula: {{ $materia->aula->nombre ?? 'N/A' }})
+                        </option>
+                    @endforeach
                 </select>
             </div>
 
@@ -236,7 +330,8 @@
             <div class="form-group">
                 <label for="addName">Nombre</label>
                 <input type="text" id="addName" name="name" required>
-            </div>            <div class="form-group">
+            </div>
+            <div class="form-group">
                 <label for="addEmail">Email</label>
                 <input type="email" id="addEmail" name="email" required>
             </div>
@@ -249,10 +344,11 @@
                 <select id="addMateria" name="materia_id" required>
                     <option value="">Seleccionar materia...</option>
                     @foreach($materias ?? [] as $materia)
-                        <option value="{{ $materia->id }}">{{ $materia->nombre }}</option>
+                    <option value="{{ $materia->id }}">{{ $materia->nombre }}</option>
                     @endforeach
                 </select>
-            </div>            <div class="form-group">
+            </div>
+            <div class="form-group">
                 <label for="addEstado">Estado</label>
                 <select id="addEstado" name="estado_id" required>
                     <option value="1">Activo</option>
@@ -286,30 +382,8 @@
             <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
-            <!-- Filtros -->
-            <div class="attendance-filters">
-                <div class="filter-group">
-                    <label for="dateFrom">Desde:</label>
-                    <input type="date" id="dateFrom" class="form-control">
-                </div>
-                <div class="filter-group">
-                    <label for="dateTo">Hasta:</label>
-                    <input type="date" id="dateTo" class="form-control">
-                </div>
-                <div class="filter-group">
-                    <label for="attendanceType">Tipo:</label>
-                    <select id="attendanceType" class="form-control">
-                        <option value="">Todos</option>
-                        <option value="1">Presente</option>
-                        <option value="2">Ausente</option>
-                        <option value="3">Justificado</option>
-                    </select>
-                </div>
-                <button id="applyFilters" class="btn-action">Aplicar Filtros</button>
-            </div>
-
             <!-- Estadísticas generales -->
-            <div class="attendance-stats">
+            <div class="attendance-stats modal-content-section">
                 <div class="stat-card">
                     <div class="stat-number" id="totalAttendances">0</div>
                     <div class="stat-label">Total Asistencias</div>
@@ -332,14 +406,8 @@
                 </div>
             </div>
 
-            <!-- Gráfico de tendencia -->
-            <div class="chart-container">
-                <h4>Tendencia de Asistencia (Últimos 30 días)</h4>
-                <canvas id="attendanceTrendChart" width="400" height="200"></canvas>
-            </div>
-
             <!-- Estadísticas por materia -->
-            <div class="subject-stats">
+            <div class="subject-stats modal-content-section">
                 <h4>Estadísticas por Materia</h4>
                 <div id="subjectStatsContainer">
                     <!-- Se llenará dinámicamente -->
@@ -347,10 +415,11 @@
             </div>
 
             <!-- Historial de asistencias -->
-            <div class="attendance-history">
+            <div class="attendance-history modal-content-section">
                 <h4>Historial de Asistencias</h4>
                 <div class="attendance-table-container">
-                    <table class="data-table" id="attendanceHistoryTable">                        <thead>
+                    <table class="data-table" id="attendanceHistoryTable">
+                        <thead>
                             <tr>
                                 <th>Fecha y Hora</th>
                                 <th>Materia</th>
@@ -378,12 +447,12 @@
         <form id="justifyForm">
             @csrf
             <input type="hidden" id="justifyAttendanceId" name="attendance_id">
-            
+
             <div class="form-group">
                 <label for="justification">Justificación:</label>
                 <textarea id="justification" name="justificacion" rows="4" required placeholder="Ingrese la justificación para esta asistencia..."></textarea>
             </div>
-            
+
             <div class="btn-container">
                 <button type="button" class="btn-cancel">Cancelar</button>
                 <button type="submit" class="btn-save">Justificar</button>
@@ -398,7 +467,9 @@
 <script src="{{ asset('js/profesor/dashboard.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // La gestión del sidebar ahora está en dashboard.js        // Búsqueda de alumnos
+        // La gestión del sidebar ahora está en dashboard.js
+
+        // Búsqueda de alumnos
         const searchInput = document.getElementById('userSearchInput');
         const tableRows = document.querySelectorAll('#usersTable tbody tr');
         if (searchInput) {
@@ -418,6 +489,56 @@
                     }
                 });
             });
+        }
+
+        // Mejorar experiencia del filtrado
+        const filtersForm = document.getElementById('filtersForm');
+        const asistenciaMin = document.getElementById('asistencia_min');
+        const asistenciaMax = document.getElementById('asistencia_max');
+
+        // Validar rango de asistencia
+        if (asistenciaMin && asistenciaMax) {
+            asistenciaMin.addEventListener('change', function() {
+                if (asistenciaMax.value && parseInt(asistenciaMin.value) > parseInt(asistenciaMax.value)) {
+                    asistenciaMax.value = asistenciaMin.value;
+                }
+            });
+
+            asistenciaMax.addEventListener('change', function() {
+                if (asistenciaMin.value && parseInt(asistenciaMax.value) < parseInt(asistenciaMin.value)) {
+                    asistenciaMin.value = asistenciaMax.value;
+                }
+            });
+        }
+
+        // Mostrar número de resultados filtrados
+        const updateFilterResults = function() {
+            const visibleRows = document.querySelectorAll('#usersTable tbody tr:not([style*="display: none"])').length;
+            const totalRows = tableRows.length;
+
+            // Si existe un contador, actualizarlo
+            let resultsCounter = document.getElementById('filter-results-counter');
+            if (!resultsCounter) {
+                resultsCounter = document.createElement('div');
+                resultsCounter.id = 'filter-results-counter';
+                resultsCounter.className = 'filter-results';
+
+                // Insertar después del botón de reset
+                const filtersActions = document.querySelector('.filters-actions');
+                if (filtersActions) {
+                    filtersActions.appendChild(resultsCounter);
+                }
+            }
+
+            resultsCounter.textContent = `Mostrando ${visibleRows} de ${totalRows} alumnos`;
+        };
+
+        // Actualizar después de cargar la página
+        setTimeout(updateFilterResults, 100);
+
+        // Eventos que hacen trigger de la actualización del contador
+        if (searchInput) {
+            searchInput.addEventListener('input', updateFilterResults);
         }
 
         // Mostrar/Ocultar modales
@@ -441,7 +562,7 @@
             button.addEventListener('click', function() {
                 const userId = this.getAttribute('data-user-id');
                 // Hacemos petición AJAX para obtener los datos del alumno
-                fetch(`{{ url('/profesor/alumnos/') }}/${userId}/edit`)
+                fetch(`{{ url('/profesor/alumnos') }}/${userId}/edit`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error(`Error HTTP: ${response.status}`);
@@ -457,6 +578,11 @@
                         document.getElementById('editName').value = data.name;
                         document.getElementById('editEmail').value = data.email;
                         document.getElementById('editEstado').value = data.estado_id;
+                        
+                        // Setear la materia si está disponible
+                        if (data.materia_id) {
+                            document.getElementById('editMateria').value = data.materia_id;
+                        }
 
                         editUserModal.style.display = 'flex';
                     })
@@ -466,6 +592,83 @@
                     });
             });
         });
+
+        // Manejar el envío del formulario de edición
+        const editUserForm = document.getElementById('editUserForm');
+        if (editUserForm) {
+            editUserForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const userId = document.getElementById('editUserId').value;
+                const formData = new FormData(this);
+                
+                // Mostrar indicador de carga
+                const saveButton = this.querySelector('.btn-save');
+                const originalButtonText = saveButton.textContent;
+                saveButton.textContent = 'Guardando...';
+                saveButton.disabled = true;
+                
+                fetch(`{{ url('/profesor/alumnos') }}/${userId}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-HTTP-Method-Override': 'PUT'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    // Cerrar el modal
+                    editUserModal.style.display = 'none';
+                    
+                    // Mostrar mensaje de éxito
+                    const notifications = document.querySelector('.notifications-container');
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'success-message';
+                    successMsg.textContent = 'Alumno actualizado con éxito';
+                    notifications.appendChild(successMsg);
+                    
+                    // Quitar mensaje después de 3 segundos
+                    setTimeout(() => {
+                        successMsg.remove();
+                    }, 3000);
+                    
+                    // Recargar la página para mostrar los cambios
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    
+                    // Mostrar mensaje de error
+                    const notifications = document.querySelector('.notifications-container');
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = 'error-message';
+                    errorMsg.textContent = 'Error al actualizar alumno: ' + error.message;
+                    notifications.appendChild(errorMsg);
+                    
+                    // Quitar mensaje después de 3 segundos
+                    setTimeout(() => {
+                        errorMsg.remove();
+                    }, 3000);
+                })
+                .finally(() => {
+                    // Restaurar el botón
+                    saveButton.textContent = originalButtonText;
+                    saveButton.disabled = false;
+                });
+            });
+        }
 
         // Abrir modal para ver detalles de asistencia
         const viewAttendanceButtons = document.querySelectorAll('.btn-view-attendance');
@@ -486,7 +689,7 @@
 
         // Función para cargar detalles de asistencia
         function loadAttendanceDetails(userId) {
-            fetch(`{{ url('/profesor/alumnos/') }}/${userId}/asistencias`)
+            fetch(`{{ url('/profesor/alumnos') }}/${userId}/asistencias`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`Error HTTP: ${response.status}`);
@@ -500,26 +703,23 @@
 
                     attendanceData = data.asistencias;
                     filteredData = [...attendanceData];
-                    
+
                     // Llenar datos del modal
                     document.getElementById('attendanceStudentName').textContent = data.alumno.name;
-                    
+
                     // Estadísticas generales
                     document.getElementById('totalAttendances').textContent = data.estadisticas.total;
                     document.getElementById('totalPresent').textContent = data.estadisticas.presente;
                     document.getElementById('totalAbsent').textContent = data.estadisticas.ausente;
                     document.getElementById('totalJustified').textContent = data.estadisticas.justificado;
                     document.getElementById('attendancePercentage').textContent = data.estadisticas.porcentaje + '%';
-                    
+
                     // Estadísticas por materia
                     renderSubjectStats(data.estadisticasPorMateria);
-                    
-                    // Gráfico de tendencia
-                    renderTrendChart(data.tendencia);
-                    
+
                     // Historial de asistencias
                     renderAttendanceHistory(filteredData);
-                    
+
                     // Mostrar modal
                     attendanceModal.style.display = 'flex';
                 })
@@ -533,7 +733,7 @@
         function renderSubjectStats(stats) {
             const container = document.getElementById('subjectStatsContainer');
             container.innerHTML = '';
-            
+
             stats.forEach(stat => {
                 const card = document.createElement('div');
                 card.className = 'subject-stat-card';
@@ -567,23 +767,25 @@
         // Función para renderizar gráfico de tendencia
         function renderTrendChart(tendenciaData) {
             const ctx = document.getElementById('attendanceTrendChart').getContext('2d');
-            
+
             // Destruir gráfico anterior si existe
             if (attendanceTrendChart) {
                 attendanceTrendChart.destroy();
             }
-            
+
             const labels = tendenciaData.map(item => {
                 const date = new Date(item.fecha);
-                return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+                return date.toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit'
+                });
             });
-            
+
             attendanceTrendChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [
-                        {
+                    datasets: [{
                             label: 'Presente',
                             data: tendenciaData.map(item => item.presente),
                             borderColor: '#28a745',
@@ -635,7 +837,19 @@
         function renderAttendanceHistory(asistencias) {
             const tbody = document.querySelector('#attendanceHistoryTable tbody');
             tbody.innerHTML = '';
-            
+
+            if (asistencias.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="4" class="no-data-message">
+                        <i class="fas fa-calendar-times"></i>
+                        No se encontraron registros de asistencia
+                    </td>
+                `;
+                tbody.appendChild(row);
+                return;
+            }
+
             asistencias.forEach(asistencia => {
                 const row = document.createElement('tr');
                 const fecha = new Date(asistencia.fecha_hora);
@@ -647,26 +861,27 @@
                     hour: '2-digit',
                     minute: '2-digit'
                 });
-                  let tipoClass = '';
-                
-                switch(asistencia.tipo) {
+
+                let badgeClass = '';
+                switch (asistencia.tipo) {
                     case 'Presente':
-                        tipoClass = 'style="color: #28a745; font-weight: bold;"';
+                        badgeClass = 'attendance-type-badge presente';
                         break;
                     case 'Ausente':
-                        tipoClass = 'style="color: #dc3545; font-weight: bold;"';
+                        badgeClass = 'attendance-type-badge ausente';
                         break;
                     case 'Justificado':
-                        tipoClass = 'style="color: #ffc107; font-weight: bold;"';
+                        badgeClass = 'attendance-type-badge justificado';
                         break;
                 }
-                  row.innerHTML = `
+
+                row.innerHTML = `
                     <td>${fechaFormateada}</td>
                     <td>${asistencia.materia}</td>
-                    <td ${tipoClass}>${asistencia.tipo}</td>
+                    <td><span class="${badgeClass}">${asistencia.tipo}</span></td>
                     <td>${asistencia.justificacion || '-'}</td>
                 `;
-                
+
                 tbody.appendChild(row);
             });
         }
@@ -683,36 +898,36 @@
         if (justifyForm) {
             justifyForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                
+
                 const attendanceId = document.getElementById('justifyAttendanceId').value;
                 const justification = document.getElementById('justification').value;
-                
+
                 fetch(`{{ url('/profesor/asistencias/') }}/${attendanceId}/justificar`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        justificacion: justification
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            justificacion: justification
+                        })
                     })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        justifyModal.style.display = 'none';
-                        // Recargar detalles de asistencia
-                        loadAttendanceDetails(currentStudentId);
-                        alert('Asistencia justificada correctamente');
-                    } else {
-                        alert('Error al justificar asistencia: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al justificar asistencia');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            justifyModal.style.display = 'none';
+                            // Recargar detalles de asistencia
+                            loadAttendanceDetails(currentStudentId);
+                            alert('Asistencia justificada correctamente');
+                        } else {
+                            alert('Error al justificar asistencia: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al justificar asistencia');
+                    });
             });
         }
 
@@ -723,23 +938,23 @@
                 const dateFrom = document.getElementById('dateFrom').value;
                 const dateTo = document.getElementById('dateTo').value;
                 const attendanceType = document.getElementById('attendanceType').value;
-                
+
                 filteredData = attendanceData.filter(asistencia => {
                     let passes = true;
-                    
+
                     // Filtro por fecha
                     if (dateFrom) {
                         const asistenciaDate = new Date(asistencia.fecha_hora);
                         const fromDate = new Date(dateFrom);
                         if (asistenciaDate < fromDate) passes = false;
                     }
-                    
+
                     if (dateTo) {
                         const asistenciaDate = new Date(asistencia.fecha_hora);
                         const toDate = new Date(dateTo + 'T23:59:59');
                         if (asistenciaDate > toDate) passes = false;
                     }
-                    
+
                     // Filtro por tipo
                     if (attendanceType) {
                         const tipoMap = {
@@ -749,31 +964,43 @@
                         };
                         if (asistencia.tipo !== tipoMap[attendanceType]) passes = false;
                     }
-                    
+
                     return passes;
                 });
-                
+
                 renderAttendanceHistory(filteredData);
             });
         }
 
-        // Cerrar modales de detalles de asistencia
-        const attendanceModalCloses = attendanceModal.querySelectorAll('.modal-close, .btn-cancel');
-        attendanceModalCloses.forEach(button => {
+        // Cerrar modales
+        modalCloseButtons.forEach(button => {
             button.addEventListener('click', function() {
-                attendanceModal.style.display = 'none';
-                if (attendanceTrendChart) {
-                    attendanceTrendChart.destroy();
-                    attendanceTrendChart = null;
+                const modal = this.closest('.modal-overlay');
+                if (modal) {
+                    modal.style.display = 'none';
                 }
             });
         });
 
-        const justifyModalCloses = justifyModal.querySelectorAll('.modal-close, .btn-cancel');
-        justifyModalCloses.forEach(button => {
+        cancelButtons.forEach(button => {
             button.addEventListener('click', function() {
-                justifyModal.style.display = 'none';
+                const modal = this.closest('.modal-overlay');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
             });
+        });
+
+        // Cerrar modal al hacer clic fuera del contenido
+        const modals = [addUserModal, editUserModal, attendanceDetailsModal];
+        modals.forEach(modal => {
+            if (modal) {
+                modal.addEventListener('click', function(event) {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
         });
 
         // Cerrar modal al hacer clic fuera
@@ -785,7 +1012,7 @@
                     attendanceTrendChart = null;
                 }
             }
-            
+
             if (event.target === justifyModal) {
                 justifyModal.style.display = 'none';
             }
