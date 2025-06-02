@@ -145,7 +145,11 @@ Route::middleware(['auth'])->group(function () {
         // Ruta AJAX para filtrado dinámico de alumnos
         Route::get('/alumnos/filter', [ProfesorController::class, 'filterAlumnos'])->name('alumnos.filter');
         
+        // Rutas de materias
         Route::get('/materias', [ProfesorController::class, 'materias'])->name('materias');
+        Route::get('/materias/{id}', [ProfesorController::class, 'showMateria'])->name('materias.show');
+        Route::post('/materias/{id}/generate-qr', [ProfesorController::class, 'generateQR'])->name('materias.generateQr');
+        
         Route::get('/asistencias', [ProfesorController::class, 'asistencias'])->name('asistencias');
         Route::get('/profile', [ProfesorController::class, 'profile'])->name('profile');
         Route::put('/profile', [ProfesorController::class, 'updateProfile'])->name('profile.update');

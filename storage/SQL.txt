@@ -1,0 +1,187 @@
+CREATE DATABASE IF NOT EXISTS `uniscan`
+  DEFAULT CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+USE `uniscan`;
+
+
+
+
+-- ================================================
+-- 1. Tablas y relaciones
+-- ================================================
+
+-- Tabla estados
+CREATE TABLE estados (
+  id TINYINT(1) UNSIGNED NOT NULL AUTO_INCREMENT,
+  nombre VARCHAR(20) NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE tipo_asistencia (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  descripcion VARCHAR(50) NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla roles
+CREATE TABLE roles (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NULL DEFAULT NULL,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Aulas
+CREATE TABLE aulas (
+  id     INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nombre VARCHAR(50)      NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Cursos
+CREATE TABLE cursos (
+  id     INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nombre VARCHAR(50)      NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Tabla users
+CREATE TABLE users (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  role_id INT UNSIGNED NOT NULL,
+  estado_id TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  email_verified_at TIMESTAMP NULL DEFAULT NULL,
+  password VARCHAR(255) NOT NULL,
+  remember_token VARCHAR(100) DEFAULT NULL,
+  created_at TIMESTAMP NULL DEFAULT NULL,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY users_email_unique (email),
+  KEY users_role_id_fk (role_id),
+  KEY users_estado_id_fk (estado_id),
+  CONSTRAINT users_role_id_fk FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+  CONSTRAINT users_estado_id_fk FOREIGN KEY (estado_id) REFERENCES estados(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla materias (usando aula_id, curso_id y qr_path)
+CREATE TABLE materias (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  profesor_id INT UNSIGNED NOT NULL,
+  nombre VARCHAR(100) NOT NULL,
+  aula_id INT UNSIGNED NOT NULL,
+  curso_id INT UNSIGNED NOT NULL,
+  horario_ingreso TIME NOT NULL,
+  horario_salida TIME NOT NULL,
+  token_qr VARCHAR(100) NOT NULL,
+  qr_path VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NULL DEFAULT NULL,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY materias_token_qr_unique (token_qr),
+  KEY materias_profesor_id_fk (profesor_id),
+  KEY materias_aula_id_fk (aula_id),
+  KEY materias_curso_id_fk (curso_id),
+  CONSTRAINT materias_profesor_id_fk FOREIGN KEY (profesor_id) REFERENCES users(id),
+  CONSTRAINT materias_aula_id_fk FOREIGN KEY (aula_id) REFERENCES aulas(id),
+  CONSTRAINT materias_curso_id_fk FOREIGN KEY (curso_id) REFERENCES cursos(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- Tabla sessions
+CREATE TABLE sessions (
+  id VARCHAR(255) NOT NULL,
+  user_id INT UNSIGNED DEFAULT NULL,
+  ip_address VARCHAR(45) DEFAULT NULL,
+  user_agent TEXT DEFAULT NULL,
+  payload LONGTEXT NOT NULL,
+  last_activity INT NOT NULL,
+  PRIMARY KEY (id),
+  KEY sessions_user_id_idx (user_id),
+  KEY sessions_last_activity_idx (last_activity),
+  CONSTRAINT sessions_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla asistencia
+CREATE TABLE asistencias (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  materia_id INT UNSIGNED NOT NULL,
+  alumno_id INT UNSIGNED NOT NULL,
+  profesor_id INT UNSIGNED NOT NULL,
+  fecha_hora DATETIME NOT NULL,
+  tipo_asistencia_id INT UNSIGNED NOT NULL,
+  justificacion VARCHAR(255) DEFAULT NULL,
+  created_at TIMESTAMP NULL DEFAULT NULL,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY fk_asistencias_materia (materia_id),
+  KEY fk_asistencias_alumno  (alumno_id),
+  KEY fk_asistencias_profesor (profesor_id),
+  KEY fk_asistencias_tipo    (tipo_asistencia_id),
+  CONSTRAINT fk_asistencias_materia FOREIGN KEY (materia_id)     REFERENCES materias(id),
+  CONSTRAINT fk_asistencias_alumno  FOREIGN KEY (alumno_id)      REFERENCES users(id),
+  CONSTRAINT fk_asistencias_profesor FOREIGN KEY (profesor_id)      REFERENCES users(id),
+  CONSTRAINT fk_asistencias_tipo    FOREIGN KEY (tipo_asistencia_id) REFERENCES tipo_asistencia(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ================================================
+-- 2. Inserts
+-- ================================================
+
+-- estados
+INSERT INTO estados (id, nombre) VALUES
+  (1, 'Activo'),
+  (2, 'Inactivo');
+
+-- roles
+INSERT INTO roles (id, name, created_at, updated_at) VALUES
+  (1, 'Admin',      '2025-05-16 02:58:51', '2025-05-16 02:58:51'),
+  (2, 'Profesor',   '2025-05-16 02:58:51', '2025-05-16 02:58:51'),
+  (3, 'Estudiante', '2025-05-16 02:58:51', '2025-05-16 02:58:51');
+
+-- users
+INSERT INTO users (
+  id, role_id, estado_id, name, email, email_verified_at,
+  password, remember_token, created_at, updated_at
+) VALUES
+  (1,  2, 1, 'Test User',      'test@example.com',            '2025-05-16 02:58:51', '$2y$12$8DFG.FgG3saU8nzYwxcbtuZOTzcGpoYh6C0WRnPrJxdoHVBAP86DK', 'TANfuiEpu1', '2025-05-16 02:58:51', '2025-05-16 02:58:51'),
+  (12, 3, 1, 'maria',          'mari2@gmail.com',             NULL,                  '$2y$12$vwI8FQsxLgrshADApdWZlezi3.FUAc3kfBl3DEa6crSvA/P3.jN4C', NULL,         '2025-05-25 03:25:39', '2025-05-25 03:25:39'),
+  (13, 1, 1, 'karen',          'karend25@gmail.com',          NULL,                  '$2y$12$y5v42XrGk4HjGxom0J8VWOlryGxux/NmNEULsl41lyTl5OVEmCm/W', NULL,         '2025-05-26 02:47:25', '2025-05-26 02:47:25'),
+  (14, 1, 1, 'Alfredo Gomez',  'alfretg.c@hotmail.com',       NULL,                  '$2y$12$DwNXDx0KIEmTYypv1xoNVu9/mHamLZcaaspupTaovTnRsvu0jTPhm', NULL,         '2025-05-27 06:04:06', '2025-05-27 06:04:06'),
+  (15, 2, 1, 'Alfredo 2',      'culmaalfred@gmail.com',       NULL,                  '$2y$12$TRYUOaMr29dBqUJDOApt2.cH9zqe0xE/waAU4RAn7jx4vgzfEFE5m', NULL,         '2025-05-27 06:17:49', '2025-05-27 06:17:49');
+
+-- aulas
+INSERT INTO aulas (id, nombre) VALUES
+  (1, '202'),
+  (2, '205');
+
+-- cursos
+INSERT INTO cursos (id, nombre) VALUES
+  (1, '4a'),
+  (2, '3c');
+
+-- materias (con aula_id y curso_id y qr_path)
+INSERT INTO materias (
+  id, profesor_id, nombre, aula_id, curso_id,
+  horario_ingreso, horario_salida, token_qr, qr_path, created_at, updated_at
+) VALUES
+  (1, 10, 'Ingles', 1, 1,
+   '14:00:00', '17:00:00',
+   'rqYVWt3sWAMIlc3LDVHtDsIx29FxIHBOlY7cZgE7',
+   '/path/to/qr1.png',
+   '2025-05-26 02:05:47', '2025-05-26 02:05:47'),
+  (2, 10, 'calculo',2, 2,
+   '07:00:00', '10:00:00',
+   'oC7Qmf0uK9t2CqZcI8KcwRhy4F1TKyG7X6ypCVjo',
+   '/path/to/qr2.png',
+   '2025-05-26 02:27:48', '2025-05-26 02:27:48');
+
+-- tipo_asistencia
+INSERT INTO tipo_asistencia (descripcion) VALUES
+  ('Presente'),
+  ('Ausente'),
+  ('Justificado');
+

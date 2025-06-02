@@ -10,6 +10,8 @@ use App\Models\TipoAsistencia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ProfesorController extends Controller
 {    /**
@@ -722,5 +724,182 @@ class ProfesorController extends Controller
             'success' => true,
             'message' => 'Asistencia justificada correctamente'
         ]);
+    }
+    
+    /**
+     * Mostrar una materia específica del profesor
+     */
+    public function showMateria($id)
+    {
+        $user = Auth::user();
+        
+        if (!$user || $user->role_id != 2) {
+            return response()->json(['error' => 'Acceso no autorizado'], 403);
+        }
+        
+        // Obtener la materia asegurando que pertenece al profesor
+        $materia = Materia::with(['aula', 'curso'])
+            ->where('id', $id)
+            ->where('profesor_id', $user->id)
+            ->firstOrFail();
+            
+        // Contar alumnos registrados en la materia
+        $alumnosCount = Asistencia::where('materia_id', $id)
+            ->distinct('alumno_id')
+            ->count('alumno_id');
+            
+        // Agregar el conteo de alumnos a la respuesta
+        $materia->alumnos_count = $alumnosCount;
+        
+        return response()->json($materia);
+    }
+    
+    /**
+     * Generar código QR para una materia
+     */
+    public function generateQR($id)
+    {
+        $user = Auth::user();
+        
+        if (!$user || $user->role_id != 2) {
+            return response()->json(['error' => 'Acceso no autorizado'], 403);
+        }
+        
+        // Verificar que la materia pertenece al profesor
+        $materia = Materia::where('id', $id)
+            ->where('profesor_id', $user->id)
+            ->first();
+            
+        if (!$materia) {
+            return response()->json(['error' => 'Materia no encontrada o no pertenece al profesor'], 404);
+        }
+        
+        try {
+            // Verificar si ya existe un QR y si no ha pasado una semana desde su generación
+            $qrExists = !empty($materia->qr_path) && file_exists(public_path('storage/' . $materia->qr_path));
+            $shouldRegenerateQr = false;
+            
+            if ($qrExists && !empty($materia->updated_at)) {
+                // Calcular si ha pasado una semana desde la última actualización
+                $lastUpdate = Carbon::parse($materia->updated_at);
+                $oneWeekAgo = Carbon::now()->subWeek();
+                
+                // Solo regenerar si ha pasado más de una semana
+                if ($lastUpdate->lt($oneWeekAgo)) {
+                    $shouldRegenerateQr = true;
+                }
+            } else {
+                // Si no existe QR o no hay fecha de actualización, generar uno nuevo
+                $shouldRegenerateQr = true;
+            }
+            
+            // Si no hay necesidad de regenerar, devolver la URL existente
+            if ($qrExists && !$shouldRegenerateQr) {
+                return response()->json([
+                    'success' => true,
+                    'qr_url' => asset('storage/' . $materia->qr_path),
+                    'qr_data' => [
+                        'token_qr' => Str::limit($materia->token_qr, 15),
+                        'nombre' => $materia->nombre,
+                        'aula' => $materia->aula->nombre ?? 'No especificado',
+                        'curso' => $materia->curso->nombre ?? 'No especificado',
+                        'horario' => $materia->horario_ingreso . ' - ' . $materia->horario_salida
+                    ],
+                    'updated_at' => $materia->updated_at->format('Y-m-d H:i:s'),
+                    'next_update' => $materia->updated_at->addWeek()->format('Y-m-d H:i:s'),
+                    'download_url' => asset('storage/' . $materia->qr_path) . '?download=1',
+                    'message' => 'Usando QR existente, no necesita regenerarse'
+                ]);
+            }
+            
+            // Generar o actualizar token QR
+            if (empty($materia->token_qr)) {
+                $materia->token_qr = Str::random(40);
+                $materia->save();
+            }
+            
+            // Datos para incluir en el QR
+            $qrData = [
+                'materia_id' => $materia->id,
+                'token_qr' => $materia->token_qr,
+                'nombre' => $materia->nombre,
+                'aula' => $materia->aula ? $materia->aula->nombre : '',
+                'curso' => $materia->curso ? $materia->curso->nombre : '',
+                'horario' => Carbon::parse($materia->horario_ingreso)->format('H:i') . ' - ' . Carbon::parse($materia->horario_salida)->format('H:i')
+            ];
+            
+            // GUARDAR DIRECTAMENTE EN public/storage/qrcodes como hace el AdminMateriaController
+            $publicQrDir = public_path('storage/qrcodes');
+            
+            // Crear el directorio public/storage/qrcodes si no existe
+            if (!file_exists($publicQrDir)) {
+                if (!mkdir($publicQrDir, 0755, true)) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'No se pudo crear el directorio para el QR'
+                    ], 500);
+                }
+            }
+            
+            // Asegurarse de que exista el enlace simbólico para acceder a los archivos
+            if (!file_exists(public_path('storage'))) {
+                \Illuminate\Support\Facades\Artisan::call('storage:link');
+            }
+            
+            // Generar nombre de archivo del QR con ruta completa
+            $qrFilename = 'materia_' . $materia->id . '_' . time() . '.svg';
+            $qrPath = $publicQrDir . '/' . $qrFilename;
+            
+            // Define el filename para la base de datos (ruta relativa desde public/storage)
+            $filename = 'qrcodes/' . $qrFilename;
+            
+            // Generar QR SVG (no requiere Imagick y es más compatible)
+            $qrcode = QrCode::format('svg')
+                ->size(300)
+                ->color(90, 70, 183)
+                ->margin(2)
+                ->errorCorrection('H')
+                ->generate(json_encode($qrData));
+            
+            // Guardar el archivo
+            file_put_contents($qrPath, $qrcode);
+            
+            // Verificar permisos del archivo
+            if (file_exists($qrPath)) {
+                // Ajustar permisos según el sistema operativo
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    // En Windows, usar icacls para dar permisos completos
+                    exec('icacls "' . $qrPath . '" /grant Everyone:F');
+                } else {
+                    // En sistemas Unix, usar chmod
+                    chmod($qrPath, 0644);
+                }
+            }
+            
+            // Actualizar ruta del QR en la base de datos
+            $materia->qr_path = $filename;
+            $materia->save();
+            
+            return response()->json([
+                'success' => true,
+                'qr_url' => asset('storage/' . $filename),
+                'qr_data' => [
+                    'token_qr' => Str::limit($materia->token_qr, 15),
+                    'nombre' => $materia->nombre,
+                    'aula' => $materia->aula->nombre ?? 'No especificado',
+                    'curso' => $materia->curso->nombre ?? 'No especificado',
+                    'horario' => $materia->horario_ingreso . ' - ' . $materia->horario_salida
+                ],
+                'download_url' => asset('storage/' . $filename) . '?download=1',
+                'updated_at' => $materia->updated_at->format('Y-m-d H:i:s'),
+                'message' => 'Código QR generado correctamente'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Error al generar QR: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
