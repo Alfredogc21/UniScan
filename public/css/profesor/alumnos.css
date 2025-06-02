@@ -1,0 +1,437 @@
+/* Estilos específicos para la gestión de usuarios */
+.role-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: white;
+}
+.role-badge--admin {
+    background-color: #dc3545;
+}
+.role-badge--profesor {
+    background-color: #007bff;
+}
+.role-badge--estudiante {
+    background-color: #28a745;
+}
+.estado-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: white;
+}
+.estado-badge--activo {
+    background-color: #28a745;
+}
+.estado-badge--inactivo {
+    background-color: #dc3545;
+}
+.actions-cell {
+    display: flex;
+    gap: 8px;
+}
+.user-form-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.user-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.form-group label {
+    font-weight: 500;
+    color: #333;
+}
+.form-group select, .form-group input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+.btn-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+.btn-save {
+    background-color: #7c6bd6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-save:hover {
+    background-color: #6659b8;
+}
+.btn-cancel {
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-cancel:hover {
+    background-color: #e9ecef;
+}
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 10px;
+    width: 500px;
+    max-width: 90%;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.modal-header h3 {
+    margin: 0;
+}
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+.success-message, .error-message {
+    padding: 10px 15px;
+    margin: 15px 0;
+    border-radius: 5px;
+    text-align: center;
+}
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Mejorar estilos del botón "Nuevo Usuario" */
+#btnAddUser {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(123, 31, 162, 0.2);
+    text-decoration: none;
+}
+
+#btnAddUser:hover {
+    background-color: #8e24aa; /* Una tonalidad más clara del color primario */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(123, 31, 162, 0.3);
+}
+
+#btnAddUser i {
+    font-size: 1rem;
+}
+
+/* Estilos para porcentaje de asistencia */
+.attendance-percentage {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+    color: white;
+    font-size: 0.85rem;
+}
+
+.attendance-percentage.high {
+    background-color: #28a745; /* Verde para >80% */
+}
+
+.attendance-percentage.medium {
+    background-color: #ffc107; /* Amarillo para 60-80% */
+    color: #000;
+}
+
+.attendance-percentage.low {
+    background-color: #dc3545; /* Rojo para <60% */
+}
+
+/* Modal mejorado para detalles de asistencia */
+.modal-large {
+    max-width: 1200px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+/* Filtros de asistencia */
+.attendance-filters {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Estadísticas de asistencia */
+.attendance-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    border-left: 4px solid #007bff;
+}
+
+.stat-card.stat-present {
+    border-left-color: #28a745;
+}
+
+.stat-card.stat-absent {
+    border-left-color: #dc3545;
+}
+
+.stat-card.stat-justified {
+    border-left-color: #ffc107;
+}
+
+.stat-card.stat-percentage {
+    border-left-color: #17a2b8;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Contenedor de gráfico */
+.chart-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+}
+
+.chart-container h4 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+/* Estadísticas por materia */
+.subject-stats {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+}
+
+.subject-stats h4 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.subject-stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #007bff;
+}
+
+.subject-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.subject-details {
+    display: flex;
+    gap: 15px;
+    font-size: 0.9rem;
+}
+
+.subject-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.subject-detail-label {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.subject-detail-value {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Historial de asistencias */
+.attendance-history {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.attendance-history h4 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.attendance-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Botón de justificar */
+.btn-justify {
+    background-color: #ffc107;
+    color: #000;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background-color 0.3s;
+}
+
+.btn-justify:hover {
+    background-color: #e0a800;
+}
+
+.btn-justify:disabled {
+    background-color: #6c757d;
+    color: #fff;
+    cursor: not-allowed;
+}
+
+/* Responsive para filtros */
+@media (max-width: 768px) {
+    .attendance-filters {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .attendance-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .modal-large {
+        width: 98%;
+        max-height: 95vh;
+    }
+}
+
+/* Estilos para materias en tabla */
+.data-table__cell[title] {
+    position: relative;
+    cursor: help;
+}
+
+/* Estilos para el selector de materias */
+#addMateria {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-size: 1rem;
+    color: #333;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px 12px;
+    appearance: none;
+}
+
+#addMateria:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}

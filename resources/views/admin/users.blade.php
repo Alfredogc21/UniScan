@@ -199,7 +199,7 @@
                 <label for="editEstado">Estado</label>
                 <select id="editEstado" name="estado_id" required>
                     <option value="1">Activo</option>
-                    <option value="0">Inactivo</option>
+                    <option value="2">Inactivo</option>
                 </select>
             </div>
 
@@ -248,7 +248,7 @@
                 <label for="addEstado">Estado</label>
                 <select id="addEstado" name="estado_id" required>
                     <option value="1">Activo</option>
-                    <option value="0">Inactivo</option>
+                    <option value="2">Inactivo</option>
                 </select>
             </div>
 

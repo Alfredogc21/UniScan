@@ -97,18 +97,55 @@ class ProfesorController extends Controller
         
         if (!$user || $user->role_id != 2) {
             abort(403, 'Acceso no autorizado');
-        }
-        
-        // Obtener alumnos que están inscritos en materias del profesor
+        }        // Obtener alumnos que están inscritos en materias del profesor con información adicional
         $alumnos = User::where('role_id', 3)
+            ->where('estado_id', 1) // Solo mostrar alumnos activos
             ->whereHas('asistencias', function ($query) use ($user) {
                 $query->whereHas('materia', function ($q) use ($user) {
                     $q->where('profesor_id', $user->id);
                 });
             })
-            ->get();
+            ->withCount(['asistencias' => function ($query) use ($user) {
+                $query->whereHas('materia', function ($q) use ($user) {
+                    $q->where('profesor_id', $user->id);
+                });
+            }])
+            ->with(['asistencias' => function ($query) use ($user) {
+                $query->whereHas('materia', function ($q) use ($user) {
+                    $q->where('profesor_id', $user->id);
+                })
+                ->with('materia')
+                ->latest();
+            }])
+            ->get()
+            ->map(function ($alumno) use ($user) {
+                // Calcular porcentaje de asistencia individual
+                $totalAsistencias = $alumno->asistencias->count();
+                $asistenciasPresente = $alumno->asistencias->where('tipo_asistencia_id', 1)->count();
+                $porcentajeAsistencia = $totalAsistencias > 0 ? round(($asistenciasPresente / $totalAsistencias) * 100) : 0;
+                
+                // Obtener materias compartidas con el profesor
+                $materiasCompartidas = $alumno->asistencias
+                    ->pluck('materia')
+                    ->unique('id')
+                    ->pluck('nombre')
+                    ->toArray();
+                
+                // Obtener último acceso (última asistencia registrada)
+                $ultimaAsistencia = $alumno->asistencias->first();
+                $ultimoAcceso = $ultimaAsistencia ? $ultimaAsistencia->fecha_hora : null;
+                
+                $alumno->porcentaje_asistencia = $porcentajeAsistencia;
+                $alumno->materias_compartidas = implode(', ', $materiasCompartidas);
+                $alumno->ultimo_acceso = $ultimoAcceso;
+                
+                return $alumno;
+            });
+
+        // Obtener materias del profesor para el formulario de agregar alumno
+        $materias = Materia::where('profesor_id', $user->id)->get();
         
-        return view('profesor.alumnos', compact('alumnos'));
+        return view('profesor.alumnos', compact('alumnos', 'materias'));
     }
 
     /**
@@ -300,8 +337,7 @@ class ProfesorController extends Controller
      * 
      * @param int $profesorId
      * @return array
-     */
-    private function obtenerDatosDistribucionAsistencias($profesorId)
+     */    private function obtenerDatosDistribucionAsistencias($profesorId)
     {
         // Obtener todos los tipos de asistencia directamente de la base de datos
         $tiposAsistencia = DB::table('tipo_asistencia')
@@ -339,5 +375,302 @@ class ProfesorController extends Controller
             'datos' => $datos,
             'colores' => $colores
         ];
+    }
+    
+    /**
+     * Obtener datos de un alumno para edición
+     */
+    public function editAlumno($id)
+    {
+        $user = Auth::user();
+        
+        if (!$user || $user->role_id != 2) {
+            return response()->json(['error' => 'Acceso no autorizado'], 403);
+        }
+        
+        // Verificar que el alumno pertenece a una materia del profesor
+        $alumno = User::where('id', $id)
+            ->where('role_id', 3)
+            ->whereHas('asistencias', function ($query) use ($user) {
+                $query->whereHas('materia', function ($q) use ($user) {
+                    $q->where('profesor_id', $user->id);
+                });
+            })
+            ->first();
+        
+        if (!$alumno) {
+            return response()->json(['error' => 'Alumno no encontrado o no está matriculado en sus materias'], 404);
+        }
+        
+        return response()->json($alumno);
+    }
+    
+    /**
+     * Actualizar datos de un alumno
+     */
+    public function updateAlumno(Request $request, $id)
+    {
+        $user = Auth::user();
+        
+        if (!$user || $user->role_id != 2) {
+            return response()->json(['error' => 'Acceso no autorizado'], 403);
+        }
+        
+        // Verificar que el alumno pertenece a una materia del profesor
+        $alumno = User::where('id', $id)
+            ->where('role_id', 3)
+            ->whereHas('asistencias', function ($query) use ($user) {
+                $query->whereHas('materia', function ($q) use ($user) {
+                    $q->where('profesor_id', $user->id);
+                });
+            })
+            ->first();
+        
+        if (!$alumno) {
+            return response()->json(['error' => 'Alumno no encontrado o no está matriculado en sus materias'], 404);
+        }
+          // Validación
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,'.$alumno->id,
+            'estado_id' => 'required|in:1,2',
+            'password' => 'nullable|string|min:8',
+        ]);
+        
+        // Actualizar datos
+        $alumno->name = $validated['name'];
+        $alumno->email = $validated['email'];
+        $alumno->estado_id = $validated['estado_id'];
+        
+        // Actualizar contraseña si se proporcionó una nueva
+        if (!empty($validated['password'])) {
+            $alumno->password = bcrypt($validated['password']);
+        }
+        
+        $alumno->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Alumno actualizado correctamente'
+        ]);
+    }
+      /**
+     * Crear un nuevo alumno
+     */
+    public function storeAlumno(Request $request)
+    {
+        $user = Auth::user();
+        
+        if (!$user || $user->role_id != 2) {
+            return redirect()->back()->with('error', 'Acceso no autorizado');
+        }
+          // Validación
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'estado_id' => 'required|in:1,2',
+            'password' => 'required|string|min:8|confirmed',
+            'materia_id' => 'required|exists:materias,id',
+        ]);
+        
+        // Verificar que la materia pertenece al profesor
+        $materia = Materia::where('id', $validated['materia_id'])
+            ->where('profesor_id', $user->id)
+            ->first();
+            
+        if (!$materia) {
+            return redirect()->back()->with('error', 'La materia seleccionada no es válida');
+        }
+        
+        // Crear usuario nuevo como estudiante
+        $alumno = new User();
+        $alumno->name = $validated['name'];
+        $alumno->email = $validated['email'];
+        $alumno->password = bcrypt($validated['password']);
+        $alumno->role_id = 3; // Rol estudiante
+        $alumno->estado_id = $validated['estado_id'];
+        $alumno->save();
+        
+        // Crear una asistencia inicial para asociar al alumno con la materia
+        // Esto establece la relación entre el alumno y la materia del profesor
+        $asistencia = new Asistencia();
+        $asistencia->materia_id = $materia->id;
+        $asistencia->alumno_id = $alumno->id;
+        $asistencia->profesor_id = $user->id;
+        $asistencia->fecha_hora = now();
+        $asistencia->tipo_asistencia_id = 1; // Presente (registro inicial)
+        $asistencia->save();
+        
+        return redirect()->route('profesor.alumnos')->with('success', 'Alumno creado y asociado a la materia correctamente');
+    }
+    
+    /**
+     * Eliminar un alumno
+     */
+    public function deleteAlumno($id)
+    {
+        $user = Auth::user();
+        
+        if (!$user || $user->role_id != 2) {
+            return redirect()->back()->with('error', 'Acceso no autorizado');
+        }
+        
+        // Verificar que el alumno pertenece a una materia del profesor
+        $alumno = User::where('id', $id)
+            ->where('role_id', 3)
+            ->whereHas('asistencias', function ($query) use ($user) {
+                $query->whereHas('materia', function ($q) use ($user) {
+                    $q->where('profesor_id', $user->id);
+                });
+            })
+            ->first();
+        
+        if (!$alumno) {
+            return redirect()->back()->with('error', 'Alumno no encontrado o no está matriculado en sus materias');
+        }
+          // En lugar de eliminar el usuario, marcarlo como inactivo
+        $alumno->estado_id = 2; // Inactivo
+        $alumno->save();
+        
+        return redirect()->route('profesor.alumnos')->with('success', 'Alumno eliminado correctamente');
+    }
+    
+    /**
+     * Obtener detalles de asistencia de un alumno específico
+     */
+    public function getDetallesAsistencia($id)
+    {
+        $user = Auth::user();
+        
+        if (!$user || $user->role_id != 2) {
+            return response()->json(['error' => 'Acceso no autorizado'], 403);
+        }
+        
+        // Verificar que el alumno pertenece a una materia del profesor
+        $alumno = User::where('id', $id)
+            ->where('role_id', 3)
+            ->whereHas('asistencias', function ($query) use ($user) {
+                $query->whereHas('materia', function ($q) use ($user) {
+                    $q->where('profesor_id', $user->id);
+                });
+            })
+            ->first();
+        
+        if (!$alumno) {
+            return response()->json(['error' => 'Alumno no encontrado o no está matriculado en sus materias'], 404);
+        }
+        
+        // Obtener asistencias del alumno en materias del profesor
+        $asistencias = Asistencia::with(['materia', 'tipoAsistencia'])
+            ->where('alumno_id', $id)
+            ->whereHas('materia', function ($query) use ($user) {
+                $query->where('profesor_id', $user->id);
+            })
+            ->orderBy('fecha_hora', 'desc')
+            ->get();
+        
+        // Estadísticas generales
+        $totalAsistencias = $asistencias->count();
+        $totalPresente = $asistencias->where('tipo_asistencia_id', 1)->count();
+        $totalAusente = $asistencias->where('tipo_asistencia_id', 2)->count();
+        $totalJustificado = $asistencias->where('tipo_asistencia_id', 3)->count();
+        $porcentajeAsistencia = $totalAsistencias > 0 ? round(($totalPresente / $totalAsistencias) * 100) : 0;
+        
+        // Estadísticas por materia
+        $estadisticasPorMateria = $asistencias->groupBy('materia_id')->map(function ($asistenciasMateria) {
+            $total = $asistenciasMateria->count();
+            $presente = $asistenciasMateria->where('tipo_asistencia_id', 1)->count();
+            $ausente = $asistenciasMateria->where('tipo_asistencia_id', 2)->count();
+            $justificado = $asistenciasMateria->where('tipo_asistencia_id', 3)->count();
+            $porcentaje = $total > 0 ? round(($presente / $total) * 100) : 0;
+            
+            return [
+                'materia' => $asistenciasMateria->first()->materia->nombre,
+                'total' => $total,
+                'presente' => $presente,
+                'ausente' => $ausente,
+                'justificado' => $justificado,
+                'porcentaje' => $porcentaje
+            ];
+        })->values();
+        
+        // Datos para gráfico de tendencia (últimos 30 días)
+        $fechaInicio = Carbon::now()->subDays(30);
+        $tendencia = [];
+        
+        for ($i = 29; $i >= 0; $i--) {
+            $fecha = Carbon::now()->subDays($i);
+            $asistenciasDia = $asistencias->filter(function ($asistencia) use ($fecha) {
+                return Carbon::parse($asistencia->fecha_hora)->isSameDay($fecha);
+            });
+            
+            $tendencia[] = [
+                'fecha' => $fecha->format('Y-m-d'),
+                'presente' => $asistenciasDia->where('tipo_asistencia_id', 1)->count(),
+                'ausente' => $asistenciasDia->where('tipo_asistencia_id', 2)->count(),
+                'justificado' => $asistenciasDia->where('tipo_asistencia_id', 3)->count()
+            ];
+        }
+        
+        return response()->json([
+            'alumno' => [
+                'id' => $alumno->id,
+                'name' => $alumno->name,
+                'email' => $alumno->email
+            ],
+            'estadisticas' => [
+                'total' => $totalAsistencias,
+                'presente' => $totalPresente,
+                'ausente' => $totalAusente,
+                'justificado' => $totalJustificado,
+                'porcentaje' => $porcentajeAsistencia
+            ],
+            'estadisticasPorMateria' => $estadisticasPorMateria,
+            'asistencias' => $asistencias->map(function ($asistencia) {
+                return [
+                    'id' => $asistencia->id,
+                    'fecha_hora' => $asistencia->fecha_hora,
+                    'materia' => $asistencia->materia->nombre,
+                    'tipo' => $asistencia->tipoAsistencia->descripcion,
+                    'justificacion' => $asistencia->justificacion
+                ];
+            }),
+            'tendencia' => $tendencia
+        ]);
+    }
+    
+    /**
+     * Justificar una asistencia
+     */
+    public function justificarAsistencia(Request $request, $id)
+    {
+        $user = Auth::user();
+        
+        if (!$user || $user->role_id != 2) {
+            return response()->json(['error' => 'Acceso no autorizado'], 403);
+        }
+        
+        $validated = $request->validate([
+            'justificacion' => 'required|string|max:255'
+        ]);
+        
+        // Verificar que la asistencia pertenece a una materia del profesor
+        $asistencia = Asistencia::whereHas('materia', function ($query) use ($user) {
+            $query->where('profesor_id', $user->id);
+        })->find($id);
+        
+        if (!$asistencia) {
+            return response()->json(['error' => 'Asistencia no encontrada'], 404);
+        }
+        
+        // Actualizar como justificado
+        $asistencia->tipo_asistencia_id = 3; // Justificado
+        $asistencia->justificacion = $validated['justificacion'];
+        $asistencia->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Asistencia justificada correctamente'
+        ]);
     }
 }

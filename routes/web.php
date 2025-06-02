@@ -130,7 +130,18 @@ Route::middleware(['auth'])->group(function () {
     // Rutas del profesor
     Route::prefix('profesor')->name('profesor.')->group(function () {
         Route::get('/dashboard', [ProfesorController::class, 'dashboard'])->name('dashboard');
+        
+        // Rutas de gestión de alumnos
         Route::get('/alumnos', [ProfesorController::class, 'alumnos'])->name('alumnos');
+        Route::post('/alumnos', [ProfesorController::class, 'storeAlumno'])->name('alumnos.store');
+        Route::get('/alumnos/{id}/edit', [ProfesorController::class, 'editAlumno'])->name('alumnos.edit');
+        Route::put('/alumnos/{id}', [ProfesorController::class, 'updateAlumno'])->name('alumnos.update');
+        Route::delete('/alumnos/{id}', [ProfesorController::class, 'deleteAlumno'])->name('alumnos.delete');
+        
+        // Rutas para detalles de asistencia
+        Route::get('/alumnos/{id}/asistencias', [ProfesorController::class, 'getDetallesAsistencia'])->name('alumnos.asistencias');
+        Route::post('/asistencias/{id}/justificar', [ProfesorController::class, 'justificarAsistencia'])->name('asistencias.justificar');
+        
         Route::get('/materias', [ProfesorController::class, 'materias'])->name('materias');
         Route::get('/asistencias', [ProfesorController::class, 'asistencias'])->name('asistencias');
         Route::get('/profile', [ProfesorController::class, 'profile'])->name('profile');
