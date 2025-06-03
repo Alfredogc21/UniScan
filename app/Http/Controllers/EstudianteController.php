@@ -334,19 +334,104 @@ class EstudianteController extends Controller
 
         if (!$user || $user->role_id != 3) {
             return response()->json(['error' => 'Acceso no autorizado'], 403);
-        }
-
-        $validated = $request->validate([
+        }        $validated = $request->validate([
             'token_qr' => 'required|string'
         ]);
 
         try {
-            // Buscar la materia por el token QR
-            $materia = Materia::where('token_qr', $validated['token_qr'])->first();
+            // Registrar el QR recibido para diagnóstico
+            Log::info('QR recibido:', [
+                'qr_data' => $validated['token_qr'],
+                'estudiante_id' => $user->id
+            ]);
 
+            // Decodificar el QR si es un JSON
+            $qrData = $validated['token_qr'];
+            $tokenQr = null;
+            $materiaId = null;
+            $materiaDirecta = null;
+            
+            // Verificar si el QR contiene JSON
+            if (is_string($qrData) && (str_starts_with(trim($qrData), '{') || str_starts_with(trim($qrData), '['))) {
+                // Intentar decodificar el JSON
+                $decodedQr = json_decode($qrData, true);
+                
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    Log::info('JSON decodificado correctamente', ['decoded' => $decodedQr]);
+                    
+                    // Extraer información del JSON
+                    if (isset($decodedQr['token_qr'])) {
+                        $tokenQr = $decodedQr['token_qr'];
+                        $materiaId = $decodedQr['materia_id'] ?? null;
+                    } else {
+                        // JSON válido pero sin token_qr
+                        $tokenQr = $qrData; // Usar el JSON completo como token
+                        Log::warning('JSON sin token_qr', ['qr_data' => $qrData]);
+                    }
+                } else {
+                    // JSON inválido
+                    Log::warning('Error al decodificar JSON', [
+                        'error' => json_last_error_msg(),
+                        'qr_data' => $qrData
+                    ]);
+                    $tokenQr = $qrData;
+                }
+            } else {
+                // No parece JSON, tratar como token directo
+                $tokenQr = $qrData;
+                Log::info('QR no es JSON, usando como token directo', ['token' => $tokenQr]);
+            }            // Buscar la materia por el token QR o por ID si está disponible
+            $materia = null;
+            
+            // Estrategia 1: Por ID y token
+            if ($materiaId) {
+                $materia = Materia::with(['aula', 'curso', 'profesor'])
+                    ->where('id', $materiaId)
+                    ->where('token_qr', $tokenQr)
+                    ->first();
+                
+                if ($materia) {
+                    Log::info('Materia encontrada por ID y token', ['id' => $materiaId, 'token' => $tokenQr]);
+                } else {
+                    Log::warning('No se encontró materia por ID y token', ['id' => $materiaId, 'token' => $tokenQr]);
+                }
+            }
+            
+            // Estrategia 2: Solo por token si aún no hay materia
             if (!$materia) {
+                $materia = Materia::with(['aula', 'curso', 'profesor'])
+                    ->where('token_qr', $tokenQr)
+                    ->first();
+                    
+                if ($materia) {
+                    Log::info('Materia encontrada solo por token', ['token' => $tokenQr]);
+                } else {
+                    Log::warning('No se encontró materia por token', ['token' => $tokenQr]);
+                }
+            }
+            
+            // Estrategia 3: Solo por ID si aún no hay materia
+            if (!$materia && $materiaId) {
+                $materia = Materia::with(['aula', 'curso', 'profesor'])
+                    ->where('id', $materiaId)
+                    ->first();
+                    
+                if ($materia) {
+                    Log::info('Materia encontrada solo por ID', ['id' => $materiaId]);
+                } else {
+                    Log::warning('No se encontró materia por ID', ['id' => $materiaId]);
+                }
+            }
+            
+            // Si todas las estrategias fallan
+            if (!$materia) {
+                // Para diagnóstico, obtener todas las materias
+                $todasMaterias = Materia::all(['id', 'token_qr', 'nombre']);
+                Log::warning('Materias existentes:', ['materias' => $todasMaterias->toArray()]);
+                
                 return response()->json([
-                    'error' => 'Código QR inválido o no encontrado'
+                    'error' => 'Código QR inválido o no encontrado',
+                    'debug_info' => 'Revisa los logs para más detalles'
                 ], 404);
             }
 
@@ -365,9 +450,7 @@ class EstudianteController extends Controller
                     'error' => 'Ya tienes asistencia registrada para esta materia hoy',
                     'asistencia_existente' => true
                 ], 422);
-            }
-
-            // Verificar si está dentro del horario de la materia (con 15 minutos de tolerancia)
+            }            // Verificar si está dentro del horario de la materia (con 15 minutos de tolerancia)
             $horarioIngreso = Carbon::createFromFormat('H:i:s', $materia->horario_ingreso);
             $horarioSalida = Carbon::createFromFormat('H:i:s', $materia->horario_salida);
             $horaActualCarbon = Carbon::createFromFormat('H:i:s', $horaActual);
@@ -379,23 +462,31 @@ class EstudianteController extends Controller
                 $horaActualCarbon->between($horarioIngreso, $horarioIngresoConTolerancia);
 
             // Determinar el tipo de asistencia
-            $tipoAsistenciaId = 1; // Presente por defecto
+            $tipoAsistenciaId = 1; // Presente por defecto (siempre 1 como solicitado)
             $justificacion = null;
 
+            // === MODIFICADO: Permitir registro de asistencia independientemente de la hora ===
             if (!$dentroDelHorario) {
-                // Si está fuera del horario, verificar si es tardanza (hasta 30 minutos después)
+                // Registrar el horario incorrecto pero permitir la asistencia
+                Log::info('Asistencia fuera de horario permitida', [
+                    'materia' => $materia->nombre,
+                    'hora_actual' => $horaActual,
+                    'horario_materia' => [
+                        'ingreso' => $materia->horario_ingreso,
+                        'salida' => $materia->horario_salida,
+                    ]
+                ]);
+                
+                // Si está fuera del horario, pero dentro de los 30 minutos de tolerancia
                 $horarioTardanza = $horarioIngreso->copy()->addMinutes(30);
-
                 if ($horaActualCarbon->between($horarioIngresoConTolerancia, $horarioTardanza)) {
-                    $tipoAsistenciaId = 1; // Presente (pero tarde)
                     $justificacion = 'Llegada tardía';
                 } else {
-                    return response()->json([
-                        'error' => 'Fuera del horario permitido para registrar asistencia',
-                        'horario_ingreso' => $materia->horario_ingreso,
-                        'horario_salida' => $materia->horario_salida
-                    ], 422);
+                    $justificacion = 'Asistencia registrada fuera de horario';
                 }
+                
+                // El tipo de asistencia siempre será 1 (Presente) como solicitado
+                // Esto es un cambio respecto a la versión anterior que bloqueaba el registro
             }
 
             // Crear el registro de asistencia
@@ -407,12 +498,11 @@ class EstudianteController extends Controller
                 'tipo_asistencia_id' => $tipoAsistenciaId,
                 'justificacion' => $justificacion
             ]);
-
             Log::info('Asistencia registrada via QR', [
                 'estudiante_id' => $user->id,
                 'materia_id' => $materia->id,
                 'fecha_hora' => $now,
-                'token_qr' => $validated['token_qr']
+                'token_qr' => $tokenQr
             ]);
 
             return response()->json([
@@ -423,19 +513,36 @@ class EstudianteController extends Controller
                     'fecha_hora' => $now->format('d/m/Y H:i:s'),
                     'tipo_asistencia' => $justificacion ? 'Presente (Tarde)' : 'Presente',
                     'aula' => $materia->aula->nombre ?? 'N/A',
-                    'curso' => $materia->curso->nombre ?? 'N/A'
+                    'curso' => $materia->curso->nombre ?? 'N/A',
+                    'profesor' => $materia->profesor->name ?? 'N/A'
                 ]
-            ], 200);
-        } catch (\Exception $e) {
+            ], 200);        } catch (\Exception $e) {
+            // Registro detallado del error
             Log::error('Error al procesar QR de asistencia', [
-                'error' => $e->getMessage(),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
                 'estudiante_id' => $user->id,
-                'token_qr' => $validated['token_qr']
+                'qr_data' => $validated['token_qr'],
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
 
-            return response()->json([
-                'error' => 'Error interno del servidor. Inténtalo de nuevo.'
-            ], 500);
+            // Mensaje de error más descriptivo en entorno de desarrollo
+            if (config('app.debug')) {
+                return response()->json([
+                    'error' => 'Error al procesar el código QR',
+                    'debug_info' => [
+                        'message' => $e->getMessage(),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine()
+                    ]
+                ], 500);
+            } else {
+                // Mensaje genérico en producción
+                return response()->json([
+                    'error' => 'Error interno del servidor. Inténtalo de nuevo.'
+                ], 500);
+            }
         }
     }
 }
