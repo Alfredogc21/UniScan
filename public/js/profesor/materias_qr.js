@@ -24,51 +24,49 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Botón de descarga no encontrado');
             isDownloading = false;
             return;
-        }
-          try {
-            // Obtener el elemento de la imagen QR
-            const qrImage = document.getElementById('qrImage');
-            if (!qrImage || !qrImage.src || qrImage.src === 'undefined') {
-                console.error('Imagen QR no encontrada o no válida');
-                alert('Error: No se encontró la imagen QR. Por favor, intente nuevamente.');
-                isDownloading = false;
-                return;
-            }
-            
+        }        try {
             // Obtener la URL de la imagen directamente del botón
             const downloadUrl = downloadQrButton.getAttribute('href');
-            if (!downloadUrl) {
+            if (!downloadUrl || downloadUrl === '#' || downloadUrl === '') {
                 console.error('URL de descarga no configurada en el botón');
+                alert('Error: URL de descarga no disponible. Por favor, intente nuevamente.');
                 isDownloading = false;
                 return;
             }
             
             // Recuperar el nombre de la materia para crear un nombre de archivo descriptivo
             let fileName = 'qr_code.png';
-            const materiaTitleElement = document.querySelector('.modal-title');
+            const materiaTitleElement = document.querySelector('#qrMateriaName');
             if (materiaTitleElement && materiaTitleElement.textContent) {
-                const materiaName = materiaTitleElement.textContent.replace('Código QR: ', '').trim();
-                if (materiaName) {
-                    // Usar siempre PNG para mejor compatibilidad
-                    fileName = `qr_${materiaName.replace(/\s+/g, '_')}.png`;
+                const materiaName = materiaTitleElement.textContent.trim();
+                if (materiaName && materiaName !== '') {
+                    // Limpiar el nombre para usar como archivo
+                    const cleanName = materiaName.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+                    fileName = `qr_${cleanName}.png`;
                 }
             }
             
             console.log('Iniciando descarga del QR:', downloadUrl, 'Nombre de archivo:', fileName);
             
             // Usar el generador de QR para descargar (método mejorado que convierte directamente a PNG)
-            ClientQRGenerator.downloadImage(downloadUrl, fileName);
-        } catch (error) {
+            ClientQRGenerator.downloadImage(downloadUrl, fileName);        } catch (error) {
             console.error('Error al descargar el QR:', error);
             alert('Error al descargar el código QR. Por favor, inténtelo de nuevo.');
             isDownloading = false;
+        } finally {
+            // Asegurar que el estado se resetee después de un tiempo
+            setTimeout(() => { 
+                isDownloading = false; 
+                ClientQRGenerator.resetDownloadStatus();
+            }, 3000);
         }
-    }
-      // Asignar manejo de eventos al botón de descarga
+    }    // Asignar manejo de eventos al botón de descarga
     if (downloadQrButton) {
         downloadQrButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            downloadQR();
+            e.preventDefault(); // Prevenir la acción por defecto del enlace
+            e.stopPropagation(); // Evitar propagación del evento
+            window.downloadQR(); // Llamar a la función de descarga
+            return false;
         });
     }
       // Se removió la funcionalidad de "Ver QR"
@@ -218,10 +216,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.disabled = false;
                     
                     showErrorMessage(data.error || 'Error desconocido al generar el QR');
-                }
-            })            .catch(error => {
+                }            })            .catch(error => {
                 console.error('Error en la generación del QR:', error);
-                console.log('Intentando generar el QR localmente...');
+                console.log('Fallback: intentando obtener token de la base de datos...');
                 
                 // Restaurar el botón
                 this.innerHTML = '<i class="fas fa-qrcode"></i>';
@@ -231,87 +228,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 const errorMessages = document.querySelectorAll('.error-message');
                 errorMessages.forEach(msg => msg.remove());
                 
-                // Configurar datos para el QR local
-                const qrData = {                    materia_id: materiaId,
-                    token_qr: 'local_' + Math.random().toString(36).substring(2, 15),
-                    nombre: materiaName,
-                    aula: this.closest('tr').querySelector('td:nth-child(4)').textContent || 'No especificado',
-                    curso: this.closest('tr').querySelector('td:nth-child(6)').textContent || 'No especificado',
-                    horario: this.closest('tr').querySelector('td:nth-child(5)').textContent || 'No especificado'
-                };
-                
-                // Actualizar el modal con los datos del QR
-                document.getElementById('qrMateriaName').textContent = materiaName;
-                
-                // Ocultar el contenedor del servidor y mostrar el del cliente
-                document.getElementById('serverQrContainer').style.display = 'none';
-                document.getElementById('clientQrContainer').style.display = 'block';
-                
-                // Generar QR con la biblioteca del cliente
-                if (typeof ClientQRGenerator !== 'undefined') {
-                    ClientQRGenerator.generateFallbackForMateria(
-                        'qrCodeCanvas',
-                        materiaId,
-                        qrData.token_qr,
-                        materiaName,
-                        qrData.aula,
-                        qrData.curso
-                    );
-                }
-                
-                // Mostrar información del QR
-                if (document.getElementById('qrTokenData')) {
-                    document.getElementById('qrTokenData').textContent = qrData.token_qr || '';
-                }
-                document.getElementById('qrNombreData').textContent = materiaName;
-                document.getElementById('qrAulaData').textContent = qrData.aula;
-                document.getElementById('qrCursoData').textContent = qrData.curso;
-                document.getElementById('qrHorarioData').textContent = qrData.horario;
-                  // Mostrar modal
-                qrModal.style.display = 'flex';
-                fetch(alternativeUrl)
-                    .then(response => response.json())
-                    .then(data => {
-                        document.body.removeChild(waitMessage);
-                        
-                        if (data.success) {
-                            console.log('QR generado correctamente con método alternativo');                            // Actualizar datos en el modal
-                            document.getElementById('qrMateriaName').textContent = materiaName;
-                            // Usar la URL de visualización directa
-                            document.getElementById('qrImage').src = data.qr_url;
-                            console.log('URL alternativa para mostrar QR:', data.qr_url);
-                            
-                            // Configurar URL para descargar - asegurando que todos los atributos se establecen correctamente
-                            const downloadButton = document.getElementById('downloadQr');
-                            if (downloadButton) {
-                                downloadButton.href = data.download_url || data.qr_url;
-                                downloadButton.setAttribute('data-download-url', data.download_url || data.qr_url);
-                                downloadButton.download = `qr_${materiaName.replace(/\s+/g, '_')}.png`;
-                                console.log('URL alternativa para descargar QR:', data.download_url || data.qr_url);
-                                console.log('Nombre archivo para descargar:', downloadButton.download);
-                            }                              // Mostrar modal
-                            qrModal.style.display = 'flex';
-                        } else {
-                            // Restaurar el botón
-                            this.innerHTML = '<i class="fas fa-qrcode"></i>';
-                            this.disabled = false;
-                            
-                            // Mostrar mensaje de error
-                            showErrorMessage(`Error con método alternativo: ${data.error || 'Error desconocido'}`);
-                        }
-                    })
-                    .catch(alternativeError => {
-                        document.body.removeChild(waitMessage);
-                        
-                        console.error('Error con método alternativo:', alternativeError);
-                        
-                        // Restaurar el botón
-                        this.innerHTML = '<i class="fas fa-qrcode"></i>';
-                        this.disabled = false;
-                        
-                        // Mostrar error con más detalles
-                        showErrorMessage(`No se pudo generar el QR. Por favor, contacte al administrador del sistema.`);
-                    });
+                // En lugar de generar un token local, mostrar mensaje de error
+                // ya que necesitamos usar el token_qr real de la base de datos
+                showErrorMessage('Error al generar el QR. No se pueden usar tokens locales. Por favor, contacte al administrador del sistema.');                
+                // NOTA: El código anterior generaba tokens locales que no coinciden con la base de datos:
+                // token_qr: 'local_' + Math.random().toString(36).substring(2, 15),
+                // Esto ha sido removido para asegurar que solo se usen tokens de la base de datos
+                  console.log('QR no pudo ser generado. El sistema requiere tokens válidos de la base de datos.');
             });
         });
     });

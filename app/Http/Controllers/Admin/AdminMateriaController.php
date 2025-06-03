@@ -53,7 +53,8 @@ class AdminMateriaController extends Controller
             'horario_ingreso' => $request->horario_ingreso,
             'horario_salida' => $request->horario_salida,
             'curso_id' => $curso->id,
-            'token_qr' => Str::random(40)
+            'token_qr' => Str::random(40),
+            'qr_path' => '0' // Inicializar con '0' para cumplir con constraint de base de datos
         ]);
 
         return redirect()->route('admin.materias')->with('success', 'Materia creada con éxito');

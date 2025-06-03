@@ -52,8 +52,7 @@ class ClientQRGenerator {
                 
                 // Dibujar la imagen en el canvas (esto convierte cualquier formato a PNG)
                 ctx.drawImage(img, 0, 0);
-                
-                try {
+                  try {
                     // Usar URL.createObjectURL que es más eficiente para archivos grandes
                     canvas.toBlob((blob) => {
                         // Crear un objeto URL para el blob
@@ -72,21 +71,20 @@ class ClientQRGenerator {
                         setTimeout(() => {
                             document.body.removeChild(link);
                             URL.revokeObjectURL(url);
-                            this._isDownloading = false;
+                            ClientQRGenerator._isDownloading = false; // Corregir referencia
                         }, 100);
                         
                         console.log('Imagen descargada exitosamente como PNG');
-                    }, 'image/png');
-                } catch (e) {
+                    }, 'image/png');                } catch (e) {
                     console.error('Error al convertir imagen a blob:', e);
-                    this._isDownloading = false;
+                    ClientQRGenerator._isDownloading = false;
                     alert('Para guardar el código QR: haga clic derecho en la imagen y seleccione "Guardar imagen como..."');
                 }
             };
             
             img.onerror = (e) => {
                 console.error('Error al cargar la imagen para conversión a PNG:', e);
-                this._isDownloading = false;
+                ClientQRGenerator._isDownloading = false;
                 alert('Para guardar el código QR: haga clic derecho en la imagen visible y seleccione "Guardar imagen como..."');
             };
             
@@ -96,7 +94,7 @@ class ClientQRGenerator {
             return true;
         } catch (error) {
             console.error('Error general en downloadImage:', error);
-            this._isDownloading = false;
+            ClientQRGenerator._isDownloading = false;
             alert('Ocurrió un error al descargar la imagen. Por favor, intente hacer clic derecho en la imagen y seleccione "Guardar imagen como..."');
             return false;
         }

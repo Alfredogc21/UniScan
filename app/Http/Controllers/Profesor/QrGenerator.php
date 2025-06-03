@@ -2,7 +2,7 @@
 // Este archivo proporciona una alternativa para generar códigos QR
 // en caso de que la ruta regular falle o la migración no se ha ejecutado
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Profesor;
 
 use App\Models\Materia;
 use Illuminate\Http\Request;

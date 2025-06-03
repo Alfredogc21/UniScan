@@ -1,5 +1,132 @@
 /* Estilos para la página de gestión de materias */
 
+/* Estilos específicos para el formulario "Añadir Nueva Materia" */
+#addMateriaModal .modal-content {
+    max-width: 450px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+
+#addMateriaModal .modal-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+    padding: 20px 25px;
+    border-bottom: none;
+}
+
+#addMateriaModal .modal-header h3 {
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 600;
+}
+
+#addMateriaModal .modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.6em;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+#addMateriaModal .modal-close:hover {
+    opacity: 1;
+}
+
+/* Formulario limpio sin bordes rojos */
+#addMateriaModal .user-form {
+    padding: 25px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#addMateriaModal .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#addMateriaModal .form-group label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.95rem;
+    margin-bottom: 5px;
+}
+
+#addMateriaModal .form-group input {
+    padding: 12px 15px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    color: #374151;
+}
+
+#addMateriaModal .form-group input:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    background-color: #fafafa;
+}
+
+#addMateriaModal .form-group input::placeholder {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* Botones del formulario */
+#addMateriaModal .btn-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+#addMateriaModal .btn-cancel {
+    background-color: #6b7280;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#addMateriaModal .btn-cancel:hover {
+    background-color: #4b5563;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+#addMateriaModal .btn-save {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+}
+
+#addMateriaModal .btn-save:hover {
+    background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
 /* Estilos para la sección de usuario en el sidebar */
 .user-info {
     color: white;
@@ -54,6 +181,8 @@
     justify-content: center;
     align-items: center;
     padding: 15px;
+    overflow-y: auto;
+    backdrop-filter: blur(3px);
 }
 
 #viewMateriaModal, #qrModal {
@@ -326,46 +455,241 @@
     background-color: #f8f9fa;
 }
 
-/* Estilos para el modal QR */
+/* Estilos mejorados para el modal QR */
+#qrModal .modal-content {
+    max-width: 650px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+#qrModal .modal-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 20px 25px;
+    border-bottom: none;
+}
+
+#qrModal .modal-header h3 {
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 600;
+}
+
+#qrModal .modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.6em;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+#qrModal .modal-close:hover {
+    opacity: 1;
+}
+
+.qr-content {
+    padding: 25px;
+    background: #f8f9fa;
+}
+
 #qrContainer {
-    text-align: center; 
-    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Contenedor principal del QR */
+#serverQrContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 2px solid #e9ecef;
 }
 
 #qrImage {
-    max-width: 200px;
-    width: 100%; 
+    max-width: 250px;
+    width: 100%;
     height: auto;
-    margin: 0 auto 15px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 #clientQrContainer {
     display: none;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 2px solid #e9ecef;
 }
 
 #qrCodeCanvas {
-    margin: 0 auto; 
-    margin-bottom: 15px;
-    max-width: 200px;
-}
-
-.qr-info {
-    text-align: left; 
-    margin-top: 15px; 
-    padding: 12px; 
-    background: #f8f9fa; 
     border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.qr-success-message {
+    color: #28a745;
+    font-weight: 600;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Información del QR mejorada */
+.qr-info {
+    width: 100%;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid #e9ecef;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.qr-info-title {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 8px;
+}
+
+.qr-data {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.qr-data > div {
+    padding: 8px 0;
+    font-size: 0.95rem;
+}
+
+.qr-data strong {
+    color: #2c3e50;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.qr-data-full-width {
+    grid-column: span 2;
+    padding: 10px 0;
+    border-top: 1px solid #e9ecef;
+    margin-top: 5px;
+}
+
+.qr-data-note {
+    grid-column: span 2;
+    color: #6c757d;
+    font-style: italic;
     font-size: 0.9rem;
+    text-align: center;
+    padding: 10px 0;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-top: 10px;
 }
 
-.qr-info h4 {
-    margin-bottom: 8px; 
-    color: #333;
-    font-size: 1rem;
+.monospace-text {
+    font-family: 'Courier New', monospace;
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
 }
 
-.qr-data div {
-    margin-bottom: 6px;
+/* Validez del QR mejorada */
+.qr-validity {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.qr-validity.existing-qr {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    border: 2px solid #b8dabc;
+}
+
+.qr-validity.new-qr {
+    background: linear-gradient(135deg, #cce7ff 0%, #b3d9ff 100%);
+    color: #0c5460;
+    border: 2px solid #9fc9e8;
+}
+
+.qr-validity i {
+    font-size: 1.2em;
+}
+
+/* Botones del QR modal mejorados */
+#qrModal .btn-container {
+    margin-top: 25px;
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding-top: 20px;
+    border-top: 2px solid #e9ecef;
+}
+
+#qrModal .btn-cancel {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#qrModal .btn-cancel:hover {
+    background-color: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+#downloadQr {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#downloadQr:hover {
+    background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    text-decoration: none;
+    color: white;
+}
+
+#downloadQr .fas {
+    font-size: 1em;
 }
 
 .btn-container {
@@ -421,10 +745,379 @@
     transition: all 0.3s ease;
 }
 
-/* Media queries para responsividad */
+/* Estilos mejorados para el modal de agregar materia */
+#addMateriaModal .modal-content {
+    max-width: 600px;
+    width: 95%;
+    border-radius: 20px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.3), 0 15px 30px rgba(0,0,0,0.15);
+    border: none;
+    overflow: visible;
+    margin: 20px auto;
+    backdrop-filter: blur(15px);
+    transform: scale(0.95);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-height: 95vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+#addMateriaModal.modal-show .modal-content {
+    transform: scale(1);
+}
+
+#addMateriaModal .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 32px 36px;
+    border-bottom: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+}
+
+#addMateriaModal .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+#addMateriaModal .modal-header h3 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    letter-spacing: 0.8px;
+    position: relative;
+    z-index: 1;
+}
+
+#addMateriaModal .modal-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1;
+    font-weight: bold;
+}
+
+#addMateriaModal .modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.15) rotate(90deg);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+
+.user-form {
+    padding: 32px 36px 36px 36px;
+    background: linear-gradient(135deg, #fafbff 0%, #ffffff 100%);
+    min-height: auto;
+    position: relative;
+    border-radius: 0 0 20px 20px;
+}
+
+.form-group {
+    margin-bottom: 28px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    position: relative;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: white;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-weight: 500;
+    color: #2c3e50;
+    position: relative;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+    background-color: #fdfdff;
+}
+
+.form-group input::placeholder {
+    color: #94a3b8;
+    font-style: italic;
+    font-weight: 400;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.form-group input:focus::placeholder {
+    opacity: 0.5;
+    transform: translateY(-2px);
+}
+
+/* Mejorar el estilo de los inputs de tiempo */
+.form-group input[type="time"] {
+    cursor: pointer;
+    color: #2c3e50;
+    font-weight: 600;
+    position: relative;
+    padding-right: 50px;
+}
+
+.form-group input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(0.4);
+    transition: all 0.3s ease;
+    position: absolute;
+    right: 15px;
+    width: 20px;
+    height: 20px;
+}
+
+.form-group input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    filter: invert(0.7);
+    transform: scale(1.1);
+}
+
+/* Estados de validación visual mejorados */
+.form-group input:valid:not(:placeholder-shown) {
+    border-color: #10b981;
+    background-color: #f0fdf4;
+}
+
+.form-group input:invalid:not(:placeholder-shown) {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+}
+
+.form-group input:invalid:not(:placeholder-shown):focus {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.btn-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 28px;
+    padding: 24px 0 0 0;
+    border-top: 2px solid #e2e8f0;
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(135deg, #fafbff 0%, #ffffff 100%);
+    border-radius: 0 0 20px 20px;
+}
+
+.btn-cancel {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 120px;
+}
+
+.btn-cancel:hover {
+    background: linear-gradient(135deg, #475569 0%, #334155 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(100, 116, 139, 0.4);
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 140px;
+}
+
+.btn-save:hover {
+    background: linear-gradient(135deg, #047857 0%, #059669 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(5, 150, 105, 0.4);
+}
+
+.btn-save:active,
+.btn-cancel:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Efectos de entrada para el modal mejorados */
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-40px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes overlayFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+#addMateriaModal.modal-show {
+    animation: overlayFadeIn 0.3s ease-out;
+}
+
+#addMateriaModal.modal-show .modal-content {
+    animation: modalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Mejoras adicionales para inputs */
+.form-group input[type="time"] {
+    cursor: pointer;
+    color: #2c3e50;
+}
+
+.form-group input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(0.3);
+    transition: all 0.3s ease;
+}
+
+.form-group input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    filter: invert(0.6);
+    transform: scale(1.1);
+}
+
+/* Estilo mejorado para placeholder */
+.form-group input::placeholder {
+    color: #94a3b8;
+    font-style: italic;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.form-group input:focus::placeholder {
+    opacity: 0.5;
+    transform: translateY(-2px);
+}
+
+/* Estados de validación visual */
+.form-group input:valid {
+    border-color: #10b981;
+}
+
+.form-group input:invalid:not(:placeholder-shown) {
+    border-color: #ef4444;
+}
+
+.form-group input:invalid:not(:placeholder-shown):focus {
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+/* Media queries para responsividad mejorada */
 @media (max-width: 768px) {
-    .modal-content {
+    .modal-overlay {
+        padding: 10px;
+        align-items: flex-start;
+        padding-top: 30px;
+    }
+    
+    #addMateriaModal .modal-content {
         max-width: 95%;
+        margin: 0 auto;
+        border-radius: 16px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    #addMateriaModal .modal-header {
+        padding: 24px 20px;
+        border-radius: 16px 16px 0 0;
+    }
+    
+    #addMateriaModal .modal-header h3 {
+        font-size: 1.4rem;
+    }
+    
+    .user-form {
+        padding: 24px 20px 20px 20px;
+        border-radius: 0 0 16px 16px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 12px 16px;
+        font-size: 0.95rem;
+    }
+    
+    .btn-container {
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 20px;
+        padding: 20px 0 0 0;
+        border-radius: 0 0 16px 16px;
+    }
+    
+    .btn-save,
+    .btn-cancel {
+        width: 100%;
+        padding: 14px 20px;
+        font-size: 0.95rem;
     }
     
     #qrImage {
@@ -437,10 +1130,67 @@
 }
 
 @media (max-width: 480px) {
-    .modal-content {
+    .modal-overlay {
+        padding: 5px;
+        align-items: flex-start;
+        padding-top: 20px;
+    }
+    
+    #addMateriaModal .modal-content {
         max-width: 100%;
-        border-radius: 0;
-        height: auto;
+        border-radius: 12px;
+        margin: 0 auto;
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+    
+    #addMateriaModal .modal-header {
+        padding: 20px 16px;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    #addMateriaModal .modal-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    #addMateriaModal .modal-close {
+        width: 40px;
+        height: 40px;
+        font-size: 1.3rem;
+    }
+    
+    .user-form {
+        padding: 20px 16px 16px 16px;
+        border-radius: 0 0 12px 12px;
+    }
+    
+    .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .form-group label {
+        margin-bottom: 6px;
+        font-size: 0.85rem;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 10px 14px;
+        font-size: 0.9rem;
+        border-radius: 8px;
+    }
+    
+    .btn-container {
+        margin-top: 16px;
+        padding: 16px 0 0 0;
+        border-radius: 0 0 12px 12px;
+    }
+    
+    .btn-save,
+    .btn-cancel {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        border-radius: 8px;
     }
     
     #qrContainer {
@@ -458,17 +1208,6 @@
     
     .qr-info h4 {
         font-size: 0.95rem;
-    }
-    
-    .btn-container {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .btn-container .btn-cancel,
-    .btn-container .btn-save {
-        width: 100%;
     }
 }
 

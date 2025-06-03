@@ -147,6 +147,7 @@ Route::middleware(['auth'])->group(function () {
         
         // Rutas de materias
         Route::get('/materias', [ProfesorController::class, 'materias'])->name('materias');
+        Route::post('/materias', [ProfesorController::class, 'storeMateria'])->name('materias.store');
         Route::get('/materias/{id}', [ProfesorController::class, 'showMateria'])->name('materias.show');
         Route::post('/materias/{id}/generate-qr', [ProfesorController::class, 'generateQR'])->name('materias.generateQr');
         

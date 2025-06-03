@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Materia;
+use App\Models\Aula;
+use App\Models\Curso;
 use App\Models\Asistencia;
 use App\Models\TipoAsistencia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ProfesorController extends Controller
 {    /**
@@ -215,6 +219,104 @@ class ProfesorController extends Controller
             ->get();
         
         return view('profesor.materias', compact('materias'));
+    }
+
+    /**
+     * Mostrar detalles de una materia específica
+     */
+    public function showMateria($id)
+    {
+        $user = Auth::user();
+        
+        if (!$user || $user->role_id != 2) {
+            return response()->json(['error' => 'Acceso no autorizado'], 403);
+        }
+        
+        try {
+            // Verificar que la materia pertenece al profesor
+            $materia = Materia::with(['aula', 'curso'])
+                ->where('id', $id)
+                ->where('profesor_id', $user->id)
+                ->first();
+            
+            if (!$materia) {
+                return response()->json(['error' => 'Materia no encontrada'], 404);
+            }
+            
+            // Contar alumnos registrados en esta materia
+            $alumnosCount = User::whereHas('asistencias', function ($query) use ($id) {
+                $query->where('materia_id', $id);
+            })->distinct('id')->count();
+            
+            // Preparar los datos para la respuesta
+            $response = [
+                'id' => $materia->id,
+                'nombre' => $materia->nombre,
+                'horario_ingreso' => $materia->horario_ingreso,
+                'horario_salida' => $materia->horario_salida,
+                'aula' => $materia->aula ? [
+                    'id' => $materia->aula->id,
+                    'nombre' => $materia->aula->nombre
+                ] : null,
+                'curso' => $materia->curso ? [
+                    'id' => $materia->curso->id,
+                    'nombre' => $materia->curso->nombre
+                ] : null,
+                'alumnos_count' => $alumnosCount
+            ];
+            
+            return response()->json($response);
+            
+        } catch (\Exception $e) {
+            Log::error('Error al obtener detalles de materia', [
+                'materia_id' => $id,
+                'profesor_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json(['error' => 'Error interno del servidor'], 500);
+        }
+    }
+
+    /**
+     * Almacenar una nueva materia creada por el profesor
+     */
+    public function storeMateria(Request $request)
+    {
+        $user = Auth::user();
+        
+        if (!$user || $user->role_id != 2) {
+            return redirect()->back()->with('error', 'Acceso no autorizado');
+        }
+
+        // Validación
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:100',
+            'aula' => 'required|string|max:50',
+            'horario_ingreso' => 'required',
+            'horario_salida' => 'required|after:horario_ingreso',
+            'curso' => 'required|string|max:50'
+        ]);
+
+        // Buscar o crear el aula
+        $aula = \App\Models\Aula::firstOrCreate(['nombre' => $request->aula]);
+        
+        // Buscar o crear el curso
+        $curso = \App\Models\Curso::firstOrCreate(['nombre' => $request->curso]);
+
+        // Crear la materia asignándola automáticamente al profesor actual
+        $materia = Materia::create([
+            'nombre' => $request->nombre,
+            'profesor_id' => $user->id, // Asignar automáticamente al profesor actual
+            'aula_id' => $aula->id,
+            'horario_ingreso' => $request->horario_ingreso,
+            'horario_salida' => $request->horario_salida,
+            'curso_id' => $curso->id,
+            'token_qr' => \Illuminate\Support\Str::random(40),
+            'qr_path' => '0' // Inicializar con '0' para cumplir con constraint de base de datos
+        ]);
+
+        return redirect()->route('profesor.materias')->with('success', 'Materia creada exitosamente');
     }
 
     /**
@@ -945,6 +1047,227 @@ class ProfesorController extends Controller
             return response()->json([
                 'error' => 'Error al obtener los detalles: ' . $e->getMessage()
             ], 500);
+        }
+    }
+    
+    /**
+     * Generate QR code for a subject with automatic 6-day regeneration
+     */
+    public function generateQR($id)
+    {
+        try {
+            $user = Auth::user();
+            
+            if (!$user || $user->role_id != 2) {
+                abort(403, 'Acceso no autorizado');
+            }
+
+            $materia = Materia::with(['profesor', 'aula', 'curso'])->findOrFail($id);
+            
+            // Verificar que la materia pertenece al profesor autenticado
+            if ($materia->profesor_id != $user->id) {
+                abort(403, 'No tienes permisos para generar QR de esta materia');
+            }
+            
+            // Registrar inicio del proceso
+            Log::info('Iniciando generación de QR para materia (Profesor)', [
+                'materia_id' => $materia->id,
+                'profesor_id' => $user->id,
+                'token_qr' => $materia->token_qr
+            ]);
+              
+            // Verificar si el QR necesita regeneración (6 días para profesores)
+            $needsRegeneration = false;
+            $qrAge = null;
+            
+            if ($materia->updated_at) {
+                $qrAge = Carbon::now()->diffInDays($materia->updated_at);
+                $needsRegeneration = $qrAge >= 6; // 6 días para profesores vs 7 para admin
+                
+                Log::info('Verificando edad del QR', [
+                    'materia_id' => $materia->id,
+                    'qr_age_days' => $qrAge,
+                    'needs_regeneration' => $needsRegeneration,
+                    'updated_at' => $materia->updated_at
+                ]);
+            }
+            
+            // Si necesita regeneración, crear un nuevo token_qr
+            if ($needsRegeneration || empty($materia->token_qr)) {
+                $oldToken = $materia->token_qr;
+                $materia->token_qr = Str::random(20); // Generar nuevo token de 20 caracteres
+                $materia->save(); // Esto actualizará el updated_at automáticamente
+                
+                Log::info('Token QR regenerado para materia', [
+                    'materia_id' => $materia->id,
+                    'old_token' => $oldToken,
+                    'new_token' => $materia->token_qr,
+                    'reason' => empty($oldToken) ? 'no_token' : 'age_expired'
+                ]);
+            }
+              
+            // Verificar si ya existe un QR generado y válido
+            $hasQrPath = false;
+            
+            try {
+                $hasQrPath = !empty($materia->qr_path);
+                
+                Log::info('Verificación de qr_path completada', [
+                    'materia_id' => $materia->id,
+                    'has_qr_path' => $hasQrPath
+                ]);
+            } catch (\Exception $e) {
+                Log::warning('No se pudo acceder a la propiedad qr_path', [
+                    'materia_id' => $materia->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+            
+            // Verificar si existe archivo basado en el token_qr actual
+            $expectedFilename = 'qrcodes/materia_' . $materia->id . '_' . substr($materia->token_qr, 0, 8) . '.svg';
+            $publicQrPath = public_path('storage/' . $expectedFilename);
+            $fileExists = file_exists($publicQrPath);
+            
+            // Si el QR fue regenerado o no existe el archivo, crear uno nuevo
+            if ($needsRegeneration || !$fileExists || !$hasQrPath) {
+                Log::info('Generando nuevo QR para materia', [
+                    'materia_id' => $materia->id,
+                    'regenerated' => $needsRegeneration,
+                    'file_missing' => !$fileExists,
+                    'no_qr_path' => !$hasQrPath
+                ]);
+                
+                // Usar el QrGenerator del profesor si está disponible
+                if (function_exists('App\Http\Controllers\Profesor\generate_qr')) {
+                    $result = \App\Http\Controllers\Profesor\generate_qr($id);
+                    
+                    if ($result['success']) {
+                        Log::info('QR generado correctamente usando QrGenerator profesor', [
+                            'materia_id' => $id,
+                            'qr_url' => $result['qr_url'] ?? 'No disponible'
+                        ]);
+                        
+                        if (request()->ajax()) {
+                            return response()->json([
+                                'success' => true,
+                                'existing' => false,
+                                'regenerated' => $needsRegeneration,
+                                'qr_url' => $result['qr_url'],
+                                'qr_data' => [
+                                    'token_qr' => Str::limit($materia->token_qr, 15),
+                                    'nombre' => $materia->nombre,
+                                    'aula' => $materia->aula->nombre ?? 'No especificado',
+                                    'curso' => $materia->curso->nombre ?? 'No especificado',
+                                    'horario' => $materia->horario_ingreso . ' - ' . $materia->horario_salida
+                                ],
+                                'updated_at' => $materia->updated_at
+                            ]);
+                        }
+                        
+                        return redirect()->route('profesor.materias')->with('success', 'Código QR generado con éxito');
+                    }
+                }
+                
+                // Fallback: generar QR directamente aquí
+                $this->generateQRFallback($materia);
+            } else {
+                Log::info('Usando QR existente para materia', [
+                    'materia_id' => $materia->id,
+                    'qr_path' => $materia->qr_path,
+                    'qr_age_days' => $qrAge
+                ]);
+            }
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'existing' => !$needsRegeneration,
+                    'regenerated' => $needsRegeneration,
+                    'qr_url' => asset('storage/' . ($materia->qr_path ?: $expectedFilename)),
+                    'qr_data' => [
+                        'token_qr' => Str::limit($materia->token_qr, 15),
+                        'nombre' => $materia->nombre,
+                        'aula' => $materia->aula->nombre ?? 'No especificado',
+                        'curso' => $materia->curso->nombre ?? 'No especificado',
+                        'horario' => $materia->horario_ingreso . ' - ' . $materia->horario_salida
+                    ],
+                    'updated_at' => $materia->updated_at
+                ]);
+            }
+            
+            return redirect()->route('profesor.materias')->with('success', 'Código QR disponible');
+            
+        } catch (\Exception $e) {
+            Log::error('Error al generar QR para materia (Profesor)', [
+                'materia_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Error al generar el código QR: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('profesor.materias')->with('error', 'Error al generar el código QR');
+        }
+    }
+    
+    /**
+     * Fallback method to generate QR directly
+     */
+    private function generateQRFallback($materia)
+    {
+        // Datos para el código QR
+        $qrData = [
+            'materia_id' => $materia->id,
+            'token_qr' => $materia->token_qr,
+            'nombre' => $materia->nombre,
+            'profesor' => $materia->profesor->name ?? 'Sin asignar',
+            'aula' => $materia->aula->nombre ?? 'No especificado',
+            'curso' => $materia->curso->nombre ?? 'No especificado',
+            'horario' => [
+                'ingreso' => $materia->horario_ingreso,
+                'salida' => $materia->horario_salida
+            ]
+        ];
+        
+        // Crear directorio si no existe
+        $publicQrDir = public_path('storage/qrcodes');
+        if (!file_exists($publicQrDir)) {
+            mkdir($publicQrDir, 0755, true);
+        }
+        
+        // Generar el código QR en formato SVG
+        $qrcode = QrCode::format('svg')
+                        ->size(300)
+                        ->errorCorrection('H')
+                        ->margin(1)
+                        ->generate(json_encode($qrData));
+        
+        // Generar nombre de archivo del QR
+        $qrFilename = 'materia_' . $materia->id . '_' . substr($materia->token_qr, 0, 8) . '.svg';
+        $qrPath = $publicQrDir . '/' . $qrFilename;
+        $filename = 'qrcodes/' . $qrFilename;
+        
+        // Guardar el archivo
+        file_put_contents($qrPath, $qrcode);
+        
+        // Actualizar la materia con la ruta del QR
+        try {
+            $materia->qr_path = $filename;
+            $materia->save();
+            
+            Log::info('QR fallback generado exitosamente', [
+                'materia_id' => $materia->id,
+                'qr_path' => $filename
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('No se pudo guardar qr_path en la base de datos (fallback)', [
+                'error' => $e->getMessage()
+            ]);
         }
     }
 }

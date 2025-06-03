@@ -5,7 +5,6 @@
 @section('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="{{ asset('css/profesor/dashboard.css') }}">
-<link rel="stylesheet" href="{{ asset('css/profesor/users.css') }}">
 <link rel="stylesheet" href="{{ asset('css/profesor/materias.css') }}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -106,7 +105,9 @@
             <div class="content-section">
                 <div class="section__header">
                     <h2 class="section__title">Mis Materias Asignadas</h2>
-                    <!-- El botón de añadir materia se ha eliminado ya que los profesores no deberían añadir materias directamente -->
+                    <button id="btnAddMateria" class="section__action">
+                        <i class="fas fa-plus" style="margin-right: 8px;"></i> Añadir nueva materia
+                    </button>
                 </div>
                 <div class="section__content">
                     <table class="data-table" id="materiasTable">
@@ -206,6 +207,49 @@
     </div>
 </div>
 
+<!-- Modal para agregar materia -->
+<div class="modal-overlay" id="addMateriaModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Añadir Nueva Materia</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <form id="addMateriaForm" action="{{ route('profesor.materias.store') }}" method="POST" class="user-form">
+            @csrf
+
+            <div class="form-group">
+                <label for="addNombre">Nombre de la Materia</label>
+                <input type="text" id="addNombre" name="nombre" required>
+            </div>
+
+            <div class="form-group">
+                <label for="addAula">Aula</label>
+                <input type="text" id="addAula" name="aula" required>
+            </div>
+
+            <div class="form-group">
+                <label for="addHorarioIngreso">Horario de Ingreso</label>
+                <input type="time" id="addHorarioIngreso" name="horario_ingreso" required>
+            </div>
+
+            <div class="form-group">
+                <label for="addHorarioSalida">Horario de Salida</label>
+                <input type="time" id="addHorarioSalida" name="horario_salida" required>
+            </div>
+
+            <div class="form-group">
+                <label for="addCurso">Curso</label>
+                <input type="text" id="addCurso" name="curso" required placeholder="Ej: 3er Año - Grupo A">
+            </div>
+
+            <div class="btn-container">
+                <button type="button" class="btn-cancel">Cancelar</button>
+                <button type="submit" class="btn-save">Añadir Materia</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Modal para mostrar QR -->
 <div class="modal-overlay" id="qrModal">
     <div class="modal-content">
@@ -241,7 +285,7 @@
                         <div><strong>Curso:</strong> <span id="qrCursoData"></span></div>
                         <div><strong>Horario:</strong> <span id="qrHorarioData"></span></div>
                         <div class="qr-data-full-width"><strong>Fecha de generación:</strong> <span id="qrFechaGenData"></span></div>
-                        <div class="qr-data-note">Los códigos QR se regeneran automáticamente cada semana para mayor seguridad.</div>
+                        <div class="qr-data-note">Los códigos QR se regeneran automáticamente cada 6 días para mayor seguridad.</div>
                     </div>
                 </div>
             </div>
@@ -277,26 +321,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Mejorar la funcionalidad de descarga
-    const downloadQrBtn = document.getElementById('downloadQr');
-    if (downloadQrBtn) {
-        downloadQrBtn.addEventListener('click', function(e) {
-            console.log('Iniciando descarga directa:', this.href);
-            // Crear un enlace temporal con la misma URL
-            const tempLink = document.createElement('a');
-            tempLink.href = this.href;
-            tempLink.download = this.download || 'qr-code.png';
-            tempLink.target = '_blank';
-            document.body.appendChild(tempLink);
-            tempLink.click();
-            document.body.removeChild(tempLink);
-            
-            // Evita que el modal se cierre
-            e.preventDefault();
-            window.keepModalOpen();
-            return false;
-        });
-    }
+    // La funcionalidad de descarga se maneja en materias_qr.js
+    // No agregar manejadores duplicados aquí
     
     // Función para mostrar información de validez del QR
     window.showQrValidityInfo = function(isExistingQr, updateDate) {
@@ -326,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (updateDateObj) {
                 // Calcular fecha de regeneración (una semana después)
                 const nextUpdate = new Date(updateDateObj);
-                nextUpdate.setDate(nextUpdate.getDate() + 7);
+                nextUpdate.setDate(nextUpdate.getDate() + 6);
                 mensaje += ` Se regenerará automáticamente después del ${nextUpdate.toLocaleDateString()}.`;
             }
             
@@ -334,7 +360,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             // Es un QR recién generado
             validityContainer.className = 'qr-validity new-qr';
-            validityContainer.innerHTML = '<i class="fas fa-sync"></i> Se ha generado un nuevo código QR que estará vigente durante 7 días.';
+            validityContainer.innerHTML = '<i class="fas fa-sync"></i> Se ha generado un nuevo código QR que estará vigente durante 6 días.';
         }
     };
 });
@@ -342,6 +368,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Referencias a elementos del DOM
+        const btnAddMateria = document.getElementById('btnAddMateria');
+        const modalCloseButtons = document.querySelectorAll('.modal-close');
+        const cancelButtons = document.querySelectorAll('.btn-cancel');
+        const addMateriaModal = document.getElementById('addMateriaModal');
+        const viewMateriaModal = document.getElementById('viewMateriaModal');
+        const viewButtons = document.querySelectorAll('.btn-view-materia');
+
+        // Abrir modal para agregar materia
+        if (btnAddMateria && addMateriaModal) {
+            btnAddMateria.addEventListener('click', function() {
+                addMateriaModal.style.display = 'flex';
+                addMateriaModal.classList.add('modal-show');
+            });
+        }
+
         // Búsqueda de materias
         const searchInput = document.getElementById('materiaSearchInput');
         const tableRows = document.querySelectorAll('#materiasTable tbody tr');
@@ -364,12 +406,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
         }
-
-        // Mostrar/Ocultar modales
-        const modalCloseButtons = document.querySelectorAll('.modal-close');
-        const cancelButtons = document.querySelectorAll('.btn-cancel');
-        const viewMateriaModal = document.getElementById('viewMateriaModal');
-        const viewButtons = document.querySelectorAll('.btn-view-materia');
 
         // Configurar botones para ver detalles
         viewButtons.forEach(button => {
@@ -420,13 +456,17 @@ document.addEventListener('DOMContentLoaded', function() {
         // Cerrar modales
         modalCloseButtons.forEach(button => {
             button.addEventListener('click', function() {
-                this.closest('.modal-overlay').style.display = 'none';
+                const modal = this.closest('.modal-overlay');
+                modal.style.display = 'none';
+                modal.classList.remove('modal-show');
             });
         });
 
         cancelButtons.forEach(button => {
             button.addEventListener('click', function() {
-                this.closest('.modal-overlay').style.display = 'none';
+                const modal = this.closest('.modal-overlay');
+                modal.style.display = 'none';
+                modal.classList.remove('modal-show');
             });
         });
 
@@ -487,16 +527,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 return fetchPromise;
             };
-        }
-        
-        // Configurar botón de descarga del QR - método directo
-        const downloadQrBtn = document.getElementById('downloadQr');
-        if (downloadQrBtn) {
-            downloadQrBtn.addEventListener('click', function(e) {
-                // No prevenir el comportamiento predeterminado para permitir la descarga directa
-                // Solo añadir lógica adicional si es necesario
-                console.log('Descargando QR:', this.href);
-            });
         }
     });
 </script>
