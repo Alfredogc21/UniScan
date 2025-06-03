@@ -2,9 +2,9 @@
 
 @section('title', 'Perfil - UniScan')
 
+@section('page-title', 'Mi Perfil')
+
 @section('styles')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-<link rel="stylesheet" href="{{ asset('css/estudiante')/dashboard.css') }}">
 <style>
     .profile-container {
         max-width: 800px;
@@ -129,82 +129,6 @@
 @endsection
 
 @section('content')
-<div class="dashboard">
-    <!-- Sidebar -->
-    <aside class="dashboard__sidebar">
-        <div class="sidebar__header">
-            <div class="sidebar__logo">
-                <img src="{{ asset('img/uniscan_logo.png') }}" alt="UniScan Logo" class="sidebar__logo-img">
-                <span class="sidebar__logo-text">UniScan</span>
-            </div>
-            <button class="sidebar__toggle" aria-label="Toggle sidebar">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-
-        <nav class="sidebar__nav">
-            <ul class="nav__list">
-                <li class="nav__item">
-                    <a href="{{ route('admin.dashboard') }}" class="nav__link">
-                        <span class="nav__link-icon"><i class="fas fa-home"></i></span>
-                        <span class="nav__link-text">Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav__item">
-                    <a href="{{ route('admin.users') }}" class="nav__link">
-                        <span class="nav__link-icon"><i class="fas fa-users"></i></span>
-                        <span class="nav__link-text">Usuarios</span>
-                    </a>
-                </li>
-                <li class="nav__item">
-                    <a href="{{ route('admin.materias') }}" class="nav__link">
-                        <span class="nav__link-icon"><i class="fas fa-book"></i></span>
-                        <span class="nav__link-text">Materias</span>
-                    </a>
-                </li>
-                <li class="nav__item">
-                    <a href="{{ route('admin.asistencias') }}" class="nav__link">
-                        <span class="nav__link-icon"><i class="fas fa-clipboard-check"></i></span>
-                        <span class="nav__link-text">Asistencias</span>
-                    </a>
-                </li>
-
-            </ul>
-        </nav>
-
-        <div class="sidebar__footer">
-            <a href="{{ route('admin.profile') }}" class="user-info" style="color: white;">
-                <div class="user-info__avatar">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div class="user-info__details">
-                    <div class="user-info__name" style="color: white;">{{ Auth::user()->name }}</div>
-                    <div class="user-info__role" style="color: rgba(255, 255, 255, 0.8);">Administrador</div>
-                </div>
-            </a>
-        </div>
-    </aside>
-
-    <!-- Contenido principal -->
-    <main class="dashboard__content">
-        <header class="content__header">
-            <button class="actions__button mobile-menu-btn d-md-none">
-                <i class="fas fa-bars"></i>
-            </button>
-
-            <h1 class="header__title">Mi Perfil</h1>
-
-            <div class="header__search">
-                <span class="search__icon"><i class="fas fa-search"></i></span>
-                <input type="text" class="search__input" placeholder="Buscar...">
-            </div>
-
-            <div class="header__actions">
-                @include('partials.logout_button')
-            </div>
-        </header>
-
-        <div class="content__main">
             <div class="profile-container">
                 @if (session('success'))
                 <div class="alert alert-success mb-4">
@@ -268,6 +192,4 @@
                 </form>
             </div>
         </div>
-    </main>
-</div>
 @endsection

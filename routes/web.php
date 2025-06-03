@@ -162,9 +162,22 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard/datos-distribucion', [ProfesorController::class, 'getDatosDistribucion'])->name('dashboard.datos-distribucion');
     });
 
-    Route::get('/estudiante/dashboard', function () {
-        return view('estudiante.dashboard');
-    })->name('estudiante.dashboard');
+    // Rutas del estudiante
+    Route::prefix('estudiante')->name('estudiante.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\EstudianteController::class, 'dashboard'])->name('dashboard');
+        Route::get('/materias', [App\Http\Controllers\EstudianteController::class, 'materias'])->name('materias');
+        Route::get('/asistencias', [App\Http\Controllers\EstudianteController::class, 'asistencias'])->name('asistencias');
+        Route::get('/profile', [App\Http\Controllers\EstudianteController::class, 'profile'])->name('profile');
+        Route::put('/profile', [App\Http\Controllers\EstudianteController::class, 'updateProfile'])->name('profile.update');
+        
+        // Rutas para asistencia QR
+        Route::get('/asistencia-qr', [App\Http\Controllers\EstudianteController::class, 'asistenciaQR'])->name('asistencia-qr');
+        Route::post('/procesar-qr', [App\Http\Controllers\EstudianteController::class, 'procesarQR'])->name('procesar-qr');
+        
+        // Rutas para datos de gráficos
+        Route::get('/dashboard/datos-semanal', [App\Http\Controllers\EstudianteController::class, 'getDatosSemanal'])->name('dashboard.datos-semanal');
+        Route::get('/dashboard/datos-distribucion', [App\Http\Controllers\EstudianteController::class, 'getDatosDistribucion'])->name('dashboard.datos-distribucion');
+    });
     
     // Ruta de prueba para depurar el filtrado de asistencias
     Route::get('/test-filter', function () {
