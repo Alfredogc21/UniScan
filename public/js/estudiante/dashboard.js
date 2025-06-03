@@ -161,39 +161,6 @@ function initCharts() {
             }
         });
     }
-
-    // Gráfico de distribución de asistencias
-    const attendanceDistChart = document.getElementById('attendanceDistChart');
-    if (attendanceDistChart) {
-        // Obtener datos del elemento para el gráfico de distribución
-        const datosGraficoDistribucion = attendanceDistChart.dataset.chartData ?
-            JSON.parse(attendanceDistChart.dataset.chartData) :
-            {
-                labels: ['A tiempo', 'Ausentes', 'Tardanzas', 'Justificados'],
-                datos: [0, 0, 0, 0],
-                colores: ['#4caf50', '#f44336', '#ff9800', '#2196f3']
-            };
-
-        new Chart(attendanceDistChart, {
-            type: 'pie',
-            data: {
-                labels: datosGraficoDistribucion.labels,
-                datasets: [{
-                    data: datosGraficoDistribucion.datos,
-                    backgroundColor: datosGraficoDistribucion.colores
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-    }
 }
 
 /**
@@ -270,22 +237,5 @@ function refreshChartData() {
         })
         .catch(error => {
             console.error('Error al actualizar datos semanales:', error);
-        });
-
-    // Actualizar gráfico de distribución de asistencias
-    fetch('/admin/dashboard/datos-distribucion')
-        .then(response => response.json())
-        .then(data => {
-            const distChart = Chart.getChart('attendanceDistChart');
-            if (distChart) {
-                distChart.data.labels = data.labels;
-                distChart.data.datasets[0].data = data.datos;
-                distChart.data.datasets[0].backgroundColor = data.colores;
-                distChart.update();
-                showNotification('Datos de distribución de asistencias actualizados', 'info');
-            }
-        })
-        .catch(error => {
-            console.error('Error al actualizar datos de distribución:', error);
         });
 }

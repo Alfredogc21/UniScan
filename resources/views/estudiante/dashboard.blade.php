@@ -78,15 +78,6 @@
             <canvas id="weeklyActivityChart" data-chart-data="{{ json_encode($datosGraficoSemanal) }}"></canvas>
         </div>
     </div>
-
-    <div class="content-section chart-container">
-        <div class="section__header">
-            <h2 class="section__title">Distribución de Asistencias</h2>
-        </div>
-        <div class="section__content">
-            <canvas id="attendanceDistChart" data-chart-data="{{ json_encode($datosGraficoDistribucion) }}"></canvas>
-        </div>
-    </div>
 </div> <!-- Tabla de datos recientes -->
 <div class="content-section">
     <div class="section__header">
