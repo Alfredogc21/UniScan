@@ -142,11 +142,11 @@
                     </div>
                     <div class="profile-title">
                         <h1>{{ $user->name }}</h1>
-                        <p>Administrador</p>
+                        <p>Estudiante</p>
                     </div>
                 </div>
 
-                <form action="{{ route('admin.profile.update') }}" method="POST">
+                <form action="{{ route('estudiante.profile.update') }}" method="POST">
                     @csrf
                     @method('PUT')
 

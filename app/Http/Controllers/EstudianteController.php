@@ -186,11 +186,9 @@ class EstudianteController extends Controller
 
         if (!empty($validated['password'])) {
             $userModel->password = bcrypt($validated['password']);
-        }
+        }        $userModel->save();
 
-        $userModel->save();
-
-        return redirect()->route('estudiante.profile')->with('status', 'Perfil actualizado correctamente');
+        return redirect()->route('estudiante.profile')->with('success', 'Perfil actualizado correctamente');
     }
 
     /**
