@@ -10,8 +10,7 @@ use App\Models\TipoAsistencia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Facades\Log;
 
 class ProfesorController extends Controller
 {    /**
@@ -725,180 +724,226 @@ class ProfesorController extends Controller
             'message' => 'Asistencia justificada correctamente'
         ]);
     }
-    
+
     /**
-     * Mostrar una materia específica del profesor
+     * Filtrar asistencias según criterios
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function showMateria($id)
+    public function filtrarAsistencias(Request $request)
     {
-        $user = Auth::user();
-        
-        if (!$user || $user->role_id != 2) {
-            return response()->json(['error' => 'Acceso no autorizado'], 403);
-        }
-        
-        // Obtener la materia asegurando que pertenece al profesor
-        $materia = Materia::with(['aula', 'curso'])
-            ->where('id', $id)
-            ->where('profesor_id', $user->id)
-            ->firstOrFail();
-            
-        // Contar alumnos registrados en la materia
-        $alumnosCount = Asistencia::where('materia_id', $id)
-            ->distinct('alumno_id')
-            ->count('alumno_id');
-            
-        // Agregar el conteo de alumnos a la respuesta
-        $materia->alumnos_count = $alumnosCount;
-        
-        return response()->json($materia);
-    }
-    
-    /**
-     * Generar código QR para una materia
-     */
-    public function generateQR($id)
-    {
-        $user = Auth::user();
-        
-        if (!$user || $user->role_id != 2) {
-            return response()->json(['error' => 'Acceso no autorizado'], 403);
-        }
-        
-        // Verificar que la materia pertenece al profesor
-        $materia = Materia::where('id', $id)
-            ->where('profesor_id', $user->id)
-            ->first();
-            
-        if (!$materia) {
-            return response()->json(['error' => 'Materia no encontrada o no pertenece al profesor'], 404);
-        }
-        
         try {
-            // Verificar si ya existe un QR y si no ha pasado una semana desde su generación
-            $qrExists = !empty($materia->qr_path) && file_exists(public_path('storage/' . $materia->qr_path));
-            $shouldRegenerateQr = false;
+            $user = Auth::user();
             
-            if ($qrExists && !empty($materia->updated_at)) {
-                // Calcular si ha pasado una semana desde la última actualización
-                $lastUpdate = Carbon::parse($materia->updated_at);
-                $oneWeekAgo = Carbon::now()->subWeek();
-                
-                // Solo regenerar si ha pasado más de una semana
-                if ($lastUpdate->lt($oneWeekAgo)) {
-                    $shouldRegenerateQr = true;
-                }
-            } else {
-                // Si no existe QR o no hay fecha de actualización, generar uno nuevo
-                $shouldRegenerateQr = true;
+            if (!$user || $user->role_id != 2) {
+                return response()->json(['error' => 'Acceso no autorizado'], 403);
             }
             
-            // Si no hay necesidad de regenerar, devolver la URL existente
-            if ($qrExists && !$shouldRegenerateQr) {
-                return response()->json([
-                    'success' => true,
-                    'qr_url' => asset('storage/' . $materia->qr_path),
-                    'qr_data' => [
-                        'token_qr' => Str::limit($materia->token_qr, 15),
-                        'nombre' => $materia->nombre,
-                        'aula' => $materia->aula->nombre ?? 'No especificado',
-                        'curso' => $materia->curso->nombre ?? 'No especificado',
-                        'horario' => $materia->horario_ingreso . ' - ' . $materia->horario_salida
-                    ],
-                    'updated_at' => $materia->updated_at->format('Y-m-d H:i:s'),
-                    'next_update' => $materia->updated_at->addWeek()->format('Y-m-d H:i:s'),
-                    'download_url' => asset('storage/' . $materia->qr_path) . '?download=1',
-                    'message' => 'Usando QR existente, no necesita regenerarse'
-                ]);
-            }
-            
-            // Generar o actualizar token QR
-            if (empty($materia->token_qr)) {
-                $materia->token_qr = Str::random(40);
-                $materia->save();
-            }
-            
-            // Datos para incluir en el QR
-            $qrData = [
-                'materia_id' => $materia->id,
-                'token_qr' => $materia->token_qr,
-                'nombre' => $materia->nombre,
-                'aula' => $materia->aula ? $materia->aula->nombre : '',
-                'curso' => $materia->curso ? $materia->curso->nombre : '',
-                'horario' => Carbon::parse($materia->horario_ingreso)->format('H:i') . ' - ' . Carbon::parse($materia->horario_salida)->format('H:i')
-            ];
-            
-            // GUARDAR DIRECTAMENTE EN public/storage/qrcodes como hace el AdminMateriaController
-            $publicQrDir = public_path('storage/qrcodes');
-            
-            // Crear el directorio public/storage/qrcodes si no existe
-            if (!file_exists($publicQrDir)) {
-                if (!mkdir($publicQrDir, 0755, true)) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'No se pudo crear el directorio para el QR'
-                    ], 500);
-                }
-            }
-            
-            // Asegurarse de que exista el enlace simbólico para acceder a los archivos
-            if (!file_exists(public_path('storage'))) {
-                \Illuminate\Support\Facades\Artisan::call('storage:link');
-            }
-            
-            // Generar nombre de archivo del QR con ruta completa
-            $qrFilename = 'materia_' . $materia->id . '_' . time() . '.svg';
-            $qrPath = $publicQrDir . '/' . $qrFilename;
-            
-            // Define el filename para la base de datos (ruta relativa desde public/storage)
-            $filename = 'qrcodes/' . $qrFilename;
-            
-            // Generar QR SVG (no requiere Imagick y es más compatible)
-            $qrcode = QrCode::format('svg')
-                ->size(300)
-                ->color(90, 70, 183)
-                ->margin(2)
-                ->errorCorrection('H')
-                ->generate(json_encode($qrData));
-            
-            // Guardar el archivo
-            file_put_contents($qrPath, $qrcode);
-            
-            // Verificar permisos del archivo
-            if (file_exists($qrPath)) {
-                // Ajustar permisos según el sistema operativo
-                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                    // En Windows, usar icacls para dar permisos completos
-                    exec('icacls "' . $qrPath . '" /grant Everyone:F');
-                } else {
-                    // En sistemas Unix, usar chmod
-                    chmod($qrPath, 0644);
-                }
-            }
-            
-            // Actualizar ruta del QR en la base de datos
-            $materia->qr_path = $filename;
-            $materia->save();
-            
-            return response()->json([
-                'success' => true,
-                'qr_url' => asset('storage/' . $filename),
-                'qr_data' => [
-                    'token_qr' => Str::limit($materia->token_qr, 15),
-                    'nombre' => $materia->nombre,
-                    'aula' => $materia->aula->nombre ?? 'No especificado',
-                    'curso' => $materia->curso->nombre ?? 'No especificado',
-                    'horario' => $materia->horario_ingreso . ' - ' . $materia->horario_salida
-                ],
-                'download_url' => asset('storage/' . $filename) . '?download=1',
-                'updated_at' => $materia->updated_at->format('Y-m-d H:i:s'),
-                'message' => 'Código QR generado correctamente'
+            Log::info('Filtrar Asistencias - Request iniciado', [
+                'user_id' => $user->id,
+                'is_ajax' => $request->ajax(),
+                'params' => $request->all()
             ]);
             
-        } catch (\Exception $e) {
+            // Construir la consulta base con las relaciones necesarias
+            $query = Asistencia::with(['alumno', 'materia', 'tipoAsistencia'])
+                ->whereHas('materia', function ($q) use ($user) {
+                    $q->where('profesor_id', $user->id);
+                });
+            
+            // Aplicar filtro por materia
+        if ($request->filled('materia_id')) {
+            $query->where('materia_id', $request->materia_id);
+        }
+        
+        // Aplicar filtro por estado (tipo de asistencia)
+        if ($request->filled('estado_id')) {
+            $query->where('tipo_asistencia_id', $request->estado_id);
+        }
+        
+        // Aplicar filtros de fecha
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('fecha_hora', '>=', $request->fecha_desde);
+        }
+        
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('fecha_hora', '<=', $request->fecha_hasta);
+        }
+        
+        // Ejecutar la consulta y paginar resultados
+        $asistencias = $query->orderBy('fecha_hora', 'desc')->paginate(15);
+        
+        // Si es una solicitud AJAX, devolver vista parcial
+        if ($request->ajax()) {
+            $html = '';
+            
+            if ($asistencias->isEmpty()) {
+                $html = '<tr><td colspan="7" class="data-table__cell text-center">No hay asistencias que coincidan con los filtros</td></tr>';
+            } else {
+                foreach ($asistencias as $asistencia) {
+                    // Definir clase CSS para el estado
+                    $estadoClass = [
+                        1 => 'data-table__status--active',   // Presente
+                        2 => 'data-table__status--inactive', // Ausente
+                        3 => 'data-table__status--pending'   // Justificado
+                    ];
+                    $class = $estadoClass[$asistencia->tipo_asistencia_id] ?? '';
+                    
+                    // Construir html para cada fila
+                    $html .= '<tr>';
+                    $html .= '<td class="data-table__cell">' . $asistencia->id . '</td>';
+                    $html .= '<td class="data-table__cell">' . $asistencia->alumno->name . '</td>';
+                    $html .= '<td class="data-table__cell">' . $asistencia->materia->nombre . '</td>';
+                    $html .= '<td class="data-table__cell">' . Carbon::parse($asistencia->fecha_hora)->format('d/m/Y') . '</td>';
+                    $html .= '<td class="data-table__cell">' . Carbon::parse($asistencia->fecha_hora)->format('H:i') . '</td>';
+                    $html .= '<td class="data-table__cell"><span class="data-table__status ' . $class . '">' . $asistencia->tipoAsistencia->descripcion . '</span></td>';
+                    $html .= '<td class="data-table__cell">';
+                    $html .= '<div class="data-table__actions">';
+                    $html .= '<button class="data-table__action btn-ver-asistencia" title="Ver detalles" data-id="' . $asistencia->id . '"><i class="fas fa-eye"></i></button>';
+                    if ($asistencia->tipo_asistencia_id == 2) { // Solo mostrar botón de justificar para ausentes
+                        $html .= '<button class="data-table__action btn-justificar-asistencia" title="Justificar" data-id="' . $asistencia->id . '"><i class="fas fa-check-circle"></i></button>';
+                    }
+                    $html .= '</div></td>';
+                    $html .= '</tr>';
+                }
+            }
+            
+            Log::info('Filtrar Asistencias - Respuesta AJAX preparada', [
+                'count' => $asistencias->count(),
+                'total' => $asistencias->total(),
+                'html_length' => strlen($html)
+            ]);
+                
             return response()->json([
-                'success' => false,
-                'error' => 'Error al generar QR: ' . $e->getMessage()
+                'html' => $html,
+                'pagination' => $asistencias->links()->toHtml(),
+                'count' => $asistencias->count(),
+                'total' => $asistencias->total()
+            ]);
+        }
+        
+        // Si no es AJAX, redirigir a la vista completa de asistencias
+        Log::info('Filtrar Asistencias - Redirección no-AJAX');
+        return redirect()->route('profesor.asistencias');
+        } catch (\Exception $e) {
+            Log::error('Error en filtrarAsistencias', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            if ($request->ajax()) {
+                return response()->json(['error' => 'Error al procesar los filtros: ' . $e->getMessage()], 500);
+            } else {
+                return redirect()->route('profesor.asistencias')
+                    ->with('error', 'Error al procesar los filtros. Por favor, inténtelo de nuevo.');
+            }
+        }
+    }
+
+    /**
+     * Obtener detalles de una asistencia específica
+     */
+    public function obtenerDetalleAsistencia($id)
+    {
+        try {
+            Log::info('Obtener Detalle Asistencia - Iniciando', ['asistencia_id' => $id]);
+            
+            $profesorId = Auth::id();
+            
+            // Obtener la asistencia con todas las relaciones necesarias
+            $asistencia = Asistencia::with([
+                'alumno:id,name,email',
+                'materia:id,nombre,aula_id,curso_id',
+                'tipoAsistencia:id,descripcion',
+                'materia.aula:id,nombre',
+                'materia.curso:id,nombre'
+            ])
+            ->whereHas('materia', function ($query) use ($profesorId) {
+                $query->where('profesor_id', $profesorId);
+            })
+            ->findOrFail($id);
+            
+            Log::info('Obtener Detalle Asistencia - Asistencia encontrada', [
+                'asistencia_id' => $asistencia->id,
+                'alumno' => $asistencia->alumno->name,
+                'materia' => $asistencia->materia->nombre
+            ]);
+            
+            // Calcular estadísticas adicionales del alumno en esta materia
+            $estadisticasAlumno = Asistencia::where('alumno_id', $asistencia->alumno_id)
+                ->where('materia_id', $asistencia->materia_id)
+                ->selectRaw('
+                    COUNT(*) as total_asistencias,
+                    SUM(CASE WHEN tipo_asistencia_id = 1 THEN 1 ELSE 0 END) as presentes,
+                    SUM(CASE WHEN tipo_asistencia_id = 2 THEN 1 ELSE 0 END) as ausentes,
+                    SUM(CASE WHEN tipo_asistencia_id = 3 THEN 1 ELSE 0 END) as justificadas
+                ')
+                ->first();
+            
+            $porcentajeAsistencia = $estadisticasAlumno->total_asistencias > 0 
+                ? round(($estadisticasAlumno->presentes / $estadisticasAlumno->total_asistencias) * 100, 2)
+                : 0;
+            
+            // Obtener asistencias recientes del alumno en esta materia
+            $asistenciasRecientes = Asistencia::where('alumno_id', $asistencia->alumno_id)
+                ->where('materia_id', $asistencia->materia_id)
+                ->with('tipoAsistencia:id,descripcion')
+                ->orderBy('fecha_hora', 'desc')
+                ->limit(5)
+                ->get();
+            
+            // Preparar los datos para la vista
+            $detalles = [
+                'asistencia' => [
+                    'id' => $asistencia->id,
+                    'fecha' => \Carbon\Carbon::parse($asistencia->fecha_hora)->format('d/m/Y'),
+                    'hora' => \Carbon\Carbon::parse($asistencia->fecha_hora)->format('H:i:s'),
+                    'estado' => $asistencia->tipoAsistencia->descripcion,
+                    'justificacion' => $asistencia->justificacion ?? 'Sin justificación'
+                ],
+                'alumno' => [
+                    'id' => $asistencia->alumno->id,
+                    'nombre' => $asistencia->alumno->name,
+                    'email' => $asistencia->alumno->email
+                ],
+                'materia' => [
+                    'id' => $asistencia->materia->id,
+                    'nombre' => $asistencia->materia->nombre,
+                    'aula' => $asistencia->materia->aula->nombre ?? 'No asignada',
+                    'curso' => $asistencia->materia->curso->nombre ?? 'No asignado'
+                ],
+                'estadisticas' => [
+                    'total_asistencias' => $estadisticasAlumno->total_asistencias,
+                    'presentes' => $estadisticasAlumno->presentes,
+                    'ausentes' => $estadisticasAlumno->ausentes,
+                    'justificadas' => $estadisticasAlumno->justificadas,
+                    'porcentaje_asistencia' => $porcentajeAsistencia
+                ],
+                'asistencias_recientes' => $asistenciasRecientes->map(function ($item) {
+                    return [
+                        'fecha' => \Carbon\Carbon::parse($item->fecha_hora)->format('d/m/Y H:i'),
+                        'estado' => $item->tipoAsistencia->descripcion
+                    ];
+                })
+            ];
+            
+            Log::info('Obtener Detalle Asistencia - Respuesta preparada', [
+                'porcentaje_asistencia' => $porcentajeAsistencia,
+                'total_asistencias' => $estadisticasAlumno->total_asistencias
+            ]);
+            
+            return response()->json($detalles);
+            
+        } catch (\Exception $e) {
+            Log::error('Error al obtener detalle de asistencia', [
+                'asistencia_id' => $id,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Error al obtener los detalles: ' . $e->getMessage()
             ], 500);
         }
     }

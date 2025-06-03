@@ -5,6 +5,8 @@
 @section('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="{{ asset('css/profesor/dashboard.css') }}">
+<link rel="stylesheet" href="{{ asset('css/profesor/asistenciasProfe.css') }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
 @section('content')
@@ -49,15 +51,14 @@
                 </li>
             </ul>
         </nav>
-
         <div class="sidebar__footer">
-            <a href="{{ route('profesor.profile') }}" class="user-info" style="color: white;">
+            <a href="{{ route('profesor.profile') }}" class="user-info">
                 <div class="user-info__avatar">
                     <i class="fas fa-user"></i>
                 </div>
                 <div class="user-info__details">
-                    <div class="user-info__name" style="color: white;">{{ Auth::user()->name }}</div>
-                    <div class="user-info__role" style="color: rgba(255, 255, 255, 0.8);">Profesor</div>
+                    <div class="user-info__name">{{ Auth::user()->name }}</div>
+                    <div class="user-info__role">Profesor</div>
                 </div>
             </a>
         </div>
@@ -95,7 +96,7 @@
                             <select id="materia-filter" class="form-select">
                                 <option value="">Todas</option>
                                 @foreach($materias ?? [] as $materia)
-                                    <option value="{{ $materia->id }}">{{ $materia->nombre }}</option>
+                                <option value="{{ $materia->id }}">{{ $materia->nombre }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -104,7 +105,7 @@
                             <select id="estado-filter" class="form-select">
                                 <option value="">Todos</option>
                                 @foreach($tiposAsistencia ?? [] as $tipo)
-                                    <option value="{{ $tipo->id }}">{{ $tipo->descripcion }}</option>
+                                <option value="{{ $tipo->id }}">{{ $tipo->descripcion }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -122,7 +123,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Tabla de asistencias -->
             <div class="content-section">
                 <div class="section__header">
@@ -152,9 +153,9 @@
                                 <td class="data-table__cell">
                                     @php
                                     $estadoClass = [
-                                        1 => 'data-table__status--active',   // Presente
-                                        2 => 'data-table__status--inactive', // Ausente
-                                        3 => 'data-table__status--pending'   // Justificado
+                                    1 => 'data-table__status--active', // Presente
+                                    2 => 'data-table__status--inactive', // Ausente
+                                    3 => 'data-table__status--pending' // Justificado
                                     ];
                                     $class = $estadoClass[$asistencia->tipo_asistencia_id] ?? '';
                                     @endphp
@@ -164,12 +165,14 @@
                                 </td>
                                 <td class="data-table__cell">
                                     <div class="data-table__actions">
-                                        <button class="data-table__action" title="Ver detalles">
+                                        <button class="data-table__action btn-ver-asistencia" title="Ver detalles" data-id="{{ $asistencia->id }}">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        <button class="data-table__action" title="Justificar">
+                                        @if($asistencia->tipo_asistencia_id == 2)
+                                        <button class="data-table__action btn-justificar-asistencia" title="Justificar" data-id="{{ $asistencia->id }}">
                                             <i class="fas fa-check-circle"></i>
                                         </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -180,22 +183,38 @@
                             @endforelse
                         </tbody>
                     </table>
-                    
+
                     @if(isset($asistencias) && method_exists($asistencias, 'links'))
-                        <div class="mt-4">
-                            {{ $asistencias->links() }}
-                        </div>
+                    <div class="mt-4">
+                        {{ $asistencias->links() }}
+                    </div>
                     @endif
                 </div>
             </div>
-            
             <!-- Contenedor para notificaciones -->
             <div class="notifications-container"></div>
         </div>
     </main>
+
+    <!-- Modal personalizado para ver detalles de asistencia - SIMPLIFICADO -->
+    <div id="modal-detalle-asistencia" class="custom-modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles de Asistencia</h5>
+                <button type="button" class="modal-close-btn" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-detalle-content">
+                <!-- El contenido se cargará dinámicamente aquí -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary modal-close-btn">Cerrar</button>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
 @section('scripts')
 <script src="{{ asset('js/profesor/dashboard.js') }}"></script>
+<script src="{{ asset('js/profesor/asistencias.js') }}"></script>
 @endsection

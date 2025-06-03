@@ -151,6 +151,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/materias/{id}/generate-qr', [ProfesorController::class, 'generateQR'])->name('materias.generateQr');
         
         Route::get('/asistencias', [ProfesorController::class, 'asistencias'])->name('asistencias');
+        Route::get('/asistencias/filtrar', [ProfesorController::class, 'filtrarAsistencias'])->name('asistencias.filtrar');
+        Route::get('/asistencias/{id}/detalle', [ProfesorController::class, 'obtenerDetalleAsistencia'])->name('asistencias.detalle');
         Route::get('/profile', [ProfesorController::class, 'profile'])->name('profile');
         Route::put('/profile', [ProfesorController::class, 'updateProfile'])->name('profile.update');
         
@@ -162,6 +164,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/estudiante/dashboard', function () {
         return view('estudiante.dashboard');
     })->name('estudiante.dashboard');
+    
+    // Ruta de prueba para depurar el filtrado de asistencias
+    Route::get('/test-filter', function () {
+        return response()->json(['success' => true, 'message' => 'Test filter endpoint working']);
+    });
 
     // Guardar materia y generar QR (profesor)
     Route::post('/materias', [MateriaController::class, 'store']);
