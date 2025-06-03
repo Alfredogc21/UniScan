@@ -56,7 +56,7 @@
 
     <!-- Imagen onda a un lado -->
     <div class="login-image">
-      <img src="{{ asset('img/qr.JPG') }}" alt="Decoración onda" />
+      <img src="{{ asset('img/qr.jpg') }}" alt="Decoración onda" />
     </div>
   </div>
 </div>
