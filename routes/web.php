@@ -153,7 +153,15 @@ Route::middleware(['auth'])->group(function () {
         
         Route::get('/asistencias', [ProfesorController::class, 'asistencias'])->name('asistencias');
         Route::get('/asistencias/filtrar', [ProfesorController::class, 'filtrarAsistencias'])->name('asistencias.filtrar');
+        Route::get('/asistencias/ausentes', [ProfesorController::class, 'obtenerAsistenciasAusentes'])->name('asistencias.ausentes');
         Route::get('/asistencias/{id}/detalle', [ProfesorController::class, 'obtenerDetalleAsistencia'])->name('asistencias.detalle');
+        Route::get('/asistencias/{id}/info', [ProfesorController::class, 'obtenerInfoAsistencia'])->name('asistencias.info');
+        
+        // New routes for the justification modal
+        Route::get('/materias-ajax', [ProfesorController::class, 'obtenerMateriasAjax'])->name('materias.ajax');
+        Route::get('/materias/{id}/estudiantes', [ProfesorController::class, 'obtenerEstudiantesMateria'])->name('materias.estudiantes');
+        Route::post('/asistencias/crear-justificada', [ProfesorController::class, 'crearAsistenciaJustificada'])->name('asistencias.crear-justificada');
+        
         Route::get('/profile', [ProfesorController::class, 'profile'])->name('profile');
         Route::put('/profile', [ProfesorController::class, 'updateProfile'])->name('profile.update');
         

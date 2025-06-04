@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="{{ asset('css/profesor/dashboard.css') }}">
 <link rel="stylesheet" href="{{ asset('css/profesor/asistenciasProfe.css') }}">
+<link rel="stylesheet" href="{{ asset('css/profesor/justificar.css') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
@@ -122,12 +123,13 @@
                         <button class="btn btn-primary" id="aplicar-filtros">Aplicar Filtros</button>
                     </div>
                 </div>
-            </div>
-
-            <!-- Tabla de asistencias -->
+            </div>            <!-- Tabla de asistencias -->
             <div class="content-section">
                 <div class="section__header">
                     <h2 class="section__title">Registro de Asistencias</h2>
+                    <button id="btnJustificarAsistencias" class="section__action">
+                        <i class="fas fa-check-circle" style="margin-right: 8px;"></i> Registrar Asistencias
+                    </button>
                 </div>
                 <div class="section__content">
                     <table class="data-table">
@@ -208,6 +210,88 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary modal-close-btn">Cerrar</button>
+            </div>
+        </div>
+    </div>    <!-- Modal para Registrar asistencia -->
+    <div id="modal-justificar-asistencia" class="custom-modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h5 class="modal-title">Registrar Asistencia</h5>
+                <button type="button" class="modal-close-btn" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-justificar" method="POST">
+                    @csrf
+                    
+                    <!-- Selector de Materia -->
+                    <div class="form-group mb-3">
+                        <label for="materia-select" class="form-label">Seleccione la materia:</label>                        <select id="materia-select" name="materia_id" class="form-control" required>
+                            <option value="">-- Seleccione una materia --</option>
+                            @foreach($materias ?? [] as $materia)
+                                <option value="{{ $materia->id }}">
+                                    {{ $materia->nombre }}
+                                    @if($materia->aula)
+                                        - Aula {{ $materia->aula->nombre }}
+                                    @endif
+                                    @if($materia->curso)
+                                        - Curso {{ $materia->curso->nombre }}
+                                    @endif
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Selector de Estudiante -->
+                    <div class="form-group mb-3">
+                        <label for="estudiante-select" class="form-label">Seleccione el estudiante:</label>
+                        <select id="estudiante-select" name="alumno_id" class="form-control" required disabled>
+                            <option value="">-- Primero seleccione una materia --</option>
+                        </select>
+                    </div>
+
+                    <!-- Tipo de Asistencia -->
+                    <div class="form-group mb-3">
+                        <label for="tipo-asistencia-select" class="form-label">Tipo de asistencia:</label>
+                        <select id="tipo-asistencia-select" name="tipo_asistencia_id" class="form-control" required>
+                            <option value="">-- Seleccione el tipo --</option>
+                            @foreach($tiposAsistencia ?? [] as $tipo)
+                                <option value="{{ $tipo->id }}">{{ $tipo->descripcion }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Fecha y Hora -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="fecha-asistencia" class="form-label">Fecha:</label>
+                            <input type="date" id="fecha-asistencia" name="fecha" class="form-control" value="{{ date('Y-m-d') }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="hora-asistencia" class="form-label">Hora:</label>
+                            <input type="time" id="hora-asistencia" name="hora" class="form-control" value="{{ date('H:i') }}" required>
+                        </div>
+                    </div>
+
+                    <!-- Justificación por -->
+                    <div class="form-group mb-3">
+                        <label for="profesor-justificacion" class="form-label">Justificado por:</label>
+                        <input type="text" id="profesor-justificacion" class="form-control" value="{{ Auth::user()->name }}" readonly>
+                        <input type="hidden" name="profesor_id" value="{{ Auth::user()->id }}">
+                    </div>
+
+                    <!-- Motivo de justificación -->
+                    <div class="form-group mb-3">
+                        <label for="justificacion" class="form-label">Motivo de la justificación:</label>
+                        <textarea id="justificacion" name="justificacion" class="form-control" rows="4" maxlength="255" required placeholder="Ingrese el motivo por el cual se justifica la ausencia del estudiante (máximo 255 caracteres)..."></textarea>
+                        <small class="form-text text-muted">Caracteres restantes: <span id="char-count">255</span></small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btn-guardar-justificacion">
+                    <i class="fas fa-save me-1"></i> Guardar Justificación
+                </button>
             </div>
         </div>
     </div>

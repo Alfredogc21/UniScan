@@ -329,8 +329,8 @@ class ProfesorController extends Controller
             abort(403, 'Acceso no autorizado');
         }
         
-        // Obtener materias del profesor para el filtro
-        $materias = Materia::where('profesor_id', $user->id)->get();
+        // Obtener materias del profesor para el filtro con sus relaciones
+        $materias = Materia::with(['aula', 'curso'])->where('profesor_id', $user->id)->get();
         
         // Obtener tipos de asistencia para el filtro
         $tiposAsistencia = TipoAsistencia::all();
@@ -793,38 +793,81 @@ class ProfesorController extends Controller
     }
     
     /**
-     * Justificar una asistencia
+     * Justificar una asistencia ausente
      */
     public function justificarAsistencia(Request $request, $id)
     {
-        $user = Auth::user();
-        
-        if (!$user || $user->role_id != 2) {
-            return response()->json(['error' => 'Acceso no autorizado'], 403);
+        try {
+            $profesorId = Auth::id();
+            
+            // Validación de los datos recibidos
+            $request->validate([
+                'justificacion' => 'required|string|max:1000',
+                'categoria_justificacion' => 'required|string|in:medica,personal,academica,deportiva,otra',
+                'fecha_justificacion' => 'required|date',
+                'documento_justificacion' => 'nullable|file|max:2048|mimes:pdf,jpg,jpeg,png'
+            ], [
+                'justificacion.required' => 'El motivo de justificación es obligatorio',
+                'categoria_justificacion.required' => 'Debe seleccionar una categoría de justificación',
+                'documento_justificacion.max' => 'El archivo no puede exceder 2MB',
+                'documento_justificacion.mimes' => 'Solo se permiten archivos PDF, JPG, JPEG o PNG'
+            ]);
+            
+            // Verificar que la asistencia existe y pertenece al profesor
+            $asistencia = Asistencia::whereHas('materia', function ($query) use ($profesorId) {
+                $query->where('profesor_id', $profesorId);
+            })->findOrFail($id);
+            
+            // Verificar que la asistencia está marcada como ausente
+            if ($asistencia->tipo_asistencia_id != 2) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Solo se pueden justificar asistencias marcadas como ausentes'
+                ], 400);
+            }
+            
+            // Procesar el archivo si se subió uno
+            $rutaDocumento = null;
+            if ($request->hasFile('documento_justificacion')) {
+                $archivo = $request->file('documento_justificacion');
+                $nombreArchivo = 'justificacion_' . $id . '_' . time() . '.' . $archivo->getClientOriginalExtension();
+                $rutaDocumento = $archivo->storeAs('justificaciones', $nombreArchivo, 'public');
+            }
+            
+            // Actualizar la asistencia
+            $asistencia->update([
+                'tipo_asistencia_id' => 3, // Cambiar a "Justificado"
+                'justificacion' => $request->justificacion,
+                'categoria_justificacion' => $request->categoria_justificacion,
+                'fecha_justificacion' => $request->fecha_justificacion,
+                'documento_respaldo' => $rutaDocumento,
+                'profesor_justifica_id' => $profesorId,
+                'updated_at' => now()
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Asistencia justificada correctamente'
+            ]);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error al justificar asistencia:', [
+                'asistencia_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Error interno del servidor al procesar la justificación'
+            ], 500);
         }
-        
-        $validated = $request->validate([
-            'justificacion' => 'required|string|max:255'
-        ]);
-        
-        // Verificar que la asistencia pertenece a una materia del profesor
-        $asistencia = Asistencia::whereHas('materia', function ($query) use ($user) {
-            $query->where('profesor_id', $user->id);
-        })->find($id);
-        
-        if (!$asistencia) {
-            return response()->json(['error' => 'Asistencia no encontrada'], 404);
-        }
-        
-        // Actualizar como justificado
-        $asistencia->tipo_asistencia_id = 3; // Justificado
-        $asistencia->justificacion = $validated['justificacion'];
-        $asistencia->save();
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Asistencia justificada correctamente'
-        ]);
     }
 
     /**
@@ -1268,6 +1311,269 @@ class ProfesorController extends Controller
             Log::warning('No se pudo guardar qr_path en la base de datos (fallback)', [
                 'error' => $e->getMessage()
             ]);
+        }
+    }
+
+    /**
+     * Obtener información básica de una asistencia específica para justificación
+     */
+    public function obtenerInfoAsistencia($id)
+    {
+        try {
+            $profesorId = Auth::id();
+            
+            // Obtener la asistencia con las relaciones necesarias
+            $asistencia = Asistencia::with([
+                'alumno:id,name',
+                'materia:id,nombre',
+                'tipoAsistencia:id,descripcion'
+            ])
+            ->whereHas('materia', function ($query) use ($profesorId) {
+                $query->where('profesor_id', $profesorId);
+            })
+            ->findOrFail($id);
+            
+            // Retornar la información básica necesaria
+            return response()->json([
+                'alumno' => [
+                    'id' => $asistencia->alumno->id,
+                    'nombre' => $asistencia->alumno->name
+                ],
+                'materia' => [
+                    'id' => $asistencia->materia->id,
+                    'nombre' => $asistencia->materia->nombre
+                ],
+                'asistencia' => [
+                    'id' => $asistencia->id,
+                    'fecha' => \Carbon\Carbon::parse($asistencia->fecha_hora)->format('d/m/Y'),
+                    'estado' => $asistencia->tipoAsistencia->descripcion,
+                    'justificacion' => $asistencia->justificacion
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'No se pudo cargar la información de la asistencia',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener lista de asistencias ausentes para justificación
+     */
+    public function obtenerAsistenciasAusentes(Request $request)
+    {
+        try {
+            $profesorId = Auth::id();
+            
+            // Filtros
+            $materiaId = $request->input('materia_id');
+            $fechaDesde = $request->input('fecha_desde');
+            $fechaHasta = $request->input('fecha_hasta');
+            
+            // Construir consulta base
+            $query = Asistencia::with(['alumno:id,name', 'materia:id,nombre'])
+                ->whereHas('materia', function ($q) use ($profesorId) {
+                    $q->where('profesor_id', $profesorId);
+                })
+                ->where('tipo_asistencia_id', 2); // Ausente
+            
+            // Aplicar filtros si están presentes
+            if ($materiaId) {
+                $query->where('materia_id', $materiaId);
+            }
+            
+            if ($fechaDesde) {
+                $query->whereDate('fecha_hora', '>=', $fechaDesde);
+            }
+            
+            if ($fechaHasta) {
+                $query->whereDate('fecha_hora', '<=', $fechaHasta);
+            }
+            
+            // Obtener resultado y formatear
+            $asistenciasAusentes = $query->orderBy('fecha_hora', 'desc')
+                ->limit(50)
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'alumno' => $item->alumno->name,
+                        'materia' => $item->materia->nombre,
+                        'fecha' => \Carbon\Carbon::parse($item->fecha_hora)->format('d/m/Y')
+                    ];
+                });
+                
+            return response()->json($asistenciasAusentes);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'No se pudieron cargar las asistencias ausentes',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener materias del profesor para AJAX
+     */
+    public function obtenerMateriasAjax()
+    {
+        try {
+            $profesorId = Auth::id();
+            
+            $materias = Materia::with(['aula', 'curso'])
+                ->where('profesor_id', $profesorId)
+                ->select('id', 'nombre', 'aula_id', 'curso_id')
+                ->orderBy('nombre')
+                ->get();
+            
+            return response()->json([
+                'success' => true,
+                'materias' => $materias
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Error al cargar las materias: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener estudiantes de una materia específica
+     */
+    public function obtenerEstudiantesMateria($materiaId)
+    {
+        try {
+            $profesorId = Auth::id();
+            
+            // Verificar que la materia pertenece al profesor
+            $materia = Materia::where('id', $materiaId)
+                ->where('profesor_id', $profesorId)
+                ->first();
+                
+            if (!$materia) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Materia no encontrada o sin permisos'
+                ], 404);
+            }
+            
+            // Obtener estudiantes que tienen asistencias en esta materia
+            $estudiantes = User::where('role_id', 3)
+                ->whereHas('asistencias', function ($query) use ($materiaId) {
+                    $query->where('materia_id', $materiaId);
+                })
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->get();
+            
+            return response()->json([
+                'success' => true,
+                'estudiantes' => $estudiantes
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Error al cargar los estudiantes: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Crear una nueva asistencia justificada
+     */
+    public function crearAsistenciaJustificada(Request $request)
+    {
+        try {
+            $profesorId = Auth::id();
+            
+            // Validar los datos de entrada
+            $validated = $request->validate([
+                'materia_id' => 'required|exists:materias,id',
+                'alumno_id' => 'required|exists:users,id',
+                'tipo_asistencia_id' => 'required|in:1,2,3',
+                'fecha' => 'required|date',
+                'hora' => 'required',
+                'justificacion' => 'required|string|max:1000'
+            ]);
+            
+            // Verificar que la materia pertenece al profesor
+            $materia = Materia::where('id', $validated['materia_id'])
+                ->where('profesor_id', $profesorId)
+                ->first();
+                
+            if (!$materia) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Materia no válida'
+                ], 403);
+            }
+            
+            // Verificar que el alumno existe y tiene role de estudiante
+            $alumno = User::where('id', $validated['alumno_id'])
+                ->where('role_id', 3)
+                ->first();
+                
+            if (!$alumno) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Estudiante no válido'
+                ], 403);
+            }
+            
+            // Crear fecha_hora combinando fecha y hora
+            $fechaHora = Carbon::createFromFormat('Y-m-d H:i', 
+                $validated['fecha'] . ' ' . $validated['hora']);
+            
+            // Verificar si ya existe una asistencia para este alumno en esta materia en esta fecha
+            $asistenciaExistente = Asistencia::where('materia_id', $validated['materia_id'])
+                ->where('alumno_id', $validated['alumno_id'])
+                ->whereDate('fecha_hora', $validated['fecha'])
+                ->first();
+                
+            if ($asistenciaExistente) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Ya existe una asistencia registrada para este estudiante en esta fecha'
+                ], 422);
+            }
+            
+            // Crear la nueva asistencia
+            $asistencia = Asistencia::create([
+                'materia_id' => $validated['materia_id'],
+                'alumno_id' => $validated['alumno_id'],
+                'profesor_id' => $profesorId,
+                'fecha_hora' => $fechaHora,
+                'tipo_asistencia_id' => $validated['tipo_asistencia_id'],
+                'justificacion' => $validated['justificacion']
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Asistencia registrada correctamente',
+                'asistencia_id' => $asistencia->id
+            ]);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error al crear asistencia justificada:', [
+                'error' => $e->getMessage(),
+                'request' => $request->all()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Error interno del servidor: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
