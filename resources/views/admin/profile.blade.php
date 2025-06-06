@@ -147,3 +147,10 @@
     </main>
 </div>
 @endsection
+
+@section('scripts')
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<script src="{{ asset('js/admin/dashboard.js') }}"></script>
+
+@endsection
