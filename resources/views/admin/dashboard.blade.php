@@ -173,9 +173,10 @@
                     <h2 class="section__title">Asistencias Recientes</h2>
                 </div>
                 <div class="section__content">
-                    <table class="data-table">
-                        <thead class="data-table__head">
-                            <tr>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead class="data-table__head">
+                                <tr>
                                 <th class="data-table__header">Usuario</th>
                                 <th class="data-table__header">Materia</th>
                                 <th class="data-table__header">Fecha</th>
@@ -211,6 +212,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
 

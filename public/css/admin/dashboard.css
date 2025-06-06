@@ -71,6 +71,12 @@ body {
     z-index: 100;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     overflow-x: hidden;
+    /* En dispositivos móviles, el sidebar comienza oculto */
+    left: -100%; /* Comienza fuera de la pantalla en móvil */
+}
+
+.dashboard__sidebar--active {
+    left: 0; /* Muestra el sidebar */
 }
 
 .dashboard__sidebar--collapsed {
@@ -303,6 +309,38 @@ body {
     transition: all 0.2s ease;
 }
 
+/* Mejorar el área de toque para los botones hamburguesa */
+.sidebar__toggle, 
+.mobile-menu-btn {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent; /* Eliminar el resaltado en dispositivos táctiles */
+}
+
+/* Aumentar el área de toque con un pseudo-elemento */
+.sidebar__toggle:before, 
+.mobile-menu-btn:before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    z-index: -1;
+}
+
+/* Añadir efecto visual al pulsar el botón en dispositivos táctiles */
+.sidebar__toggle:active, 
+.mobile-menu-btn:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+}
+
 .mobile-menu-btn:hover {
     background-color: rgba(123, 31, 162, 0.1);
     transform: scale(1.1);
@@ -529,6 +567,38 @@ body {
     padding: var(--spacing-md);
 }
 
+/* Nuevos estilos para hacer la tabla responsiva */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: var(--spacing-md);
+}
+
+/* Media queries para la tabla de asistencias */
+@media (max-width: 768px) {
+    .data-table {
+        min-width: 650px; /* Ancho mínimo para asegurar que todo el contenido sea visible */
+    }
+    
+    .data-table__cell {
+        padding: var(--spacing-sm);
+        font-size: 0.9rem;
+    }
+    
+    .data-table__header {
+        padding: var(--spacing-sm);
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .data-table__cell,
+    .data-table__header {
+        padding: calc(var(--spacing-sm) / 1.5);
+        font-size: 0.85rem;
+    }
+}
+
 .data-table__status {
     padding: 0.35rem 0.75rem;
     border-radius: 20px;
@@ -615,17 +685,48 @@ body {
 }
 
 /* Media queries para diseño responsivo */
+@media (min-width: 992px) {
+    .dashboard__sidebar {
+        left: 0; /* Siempre visible en pantallas grandes */
+    }
+}
+
+/* Media queries mejoradas para diseño responsivo */
 @media (max-width: 1200px) {
     .content__main {
         padding: var(--spacing-lg);
     }
     
-    .dashboard__content {
-        width: 100%;
+    .summary-cards {
+        gap: var(--spacing-md);
+    }
+    
+    .summary-card {
+        padding: var(--spacing-md);
     }
 }
 
 @media (max-width: 991px) {
+    .dashboard__content {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .dashboard__sidebar {
+        width: 280px;
+        left: -280px; /* Oculto fuera de la pantalla */
+        transition: left 0.3s ease-in-out;
+    }
+    
+    .dashboard__sidebar--active {
+        left: 0;
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .mobile-menu-btn {
+        display: flex !important; /* Siempre visible en móvil */
+    }
+    
     .header__search {
         order: 3;
         width: 100%;
@@ -638,21 +739,8 @@ body {
         flex-wrap: wrap;
     }
     
-    .mobile-menu-btn {
-        display: block;
-    }
-      .dashboard__sidebar {
-        transform: translateX(-100%);
-    }
-    
-    .dashboard__sidebar--active {
-        transform: translateX(0) !important;
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-    }
-    
-    .dashboard__content {
-        margin-left: 0;
-        width: 100%;
+    .summary-card {
+        min-width: calc(50% - var(--spacing-md));
     }
 }
 
@@ -663,11 +751,7 @@ body {
     
     .summary-card {
         width: 100%;
-    }
-    
-    .dashboard__content {
-        padding-left: 0;
-        padding-right: 0;
+        min-width: 100%;
     }
     
     .content__main {
@@ -676,6 +760,13 @@ body {
     
     .header__title {
         font-size: 1.3rem;
+    }
+    
+    /* Ajustes para la tabla en móvil */
+    .section__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
     }
 }
 
@@ -686,5 +777,12 @@ body {
     
     .header__actions {
         gap: var(--spacing-md);
+    }
+    
+    /* Aumentar área táctil en móviles pequeños */
+    .sidebar__toggle, 
+    .mobile-menu-btn {
+        min-width: 48px;
+        min-height: 48px;
     }
 }
