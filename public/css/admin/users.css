@@ -45,35 +45,39 @@
 .user-form {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 8px; /* Reducido de 15px */
 }
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 3px; /* Reducido de 5px */
+    margin-bottom: 10px; /* Añadido margen inferior */
 }
 .form-group label {
     font-weight: 500;
     color: #333;
+    font-size: 0.9rem; /* Tamaño de texto algo más pequeño */
 }
 .form-group select, .form-group input {
-    padding: 10px;
+    padding: 8px; /* Reducido de 10px */
     border: 1px solid #ddd;
     border-radius: 5px;
+    font-size: 0.9rem; /* Tamaño de texto algo más pequeño */
 }
 .btn-container {
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    margin-top: 15px; /* Reducido de 20px */
 }
 .btn-save {
     background-color: #7c6bd6;
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 8px 15px; /* Reducido de 10px 20px */
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.2s;
+    font-size: 0.9rem; /* Texto más pequeño */
 }
 .btn-save:hover {
     background-color: #6659b8;
@@ -82,10 +86,11 @@
     background-color: #f8f9fa;
     color: #333;
     border: 1px solid #ddd;
-    padding: 10px 20px;
+    padding: 8px 15px; /* Reducido de 10px 20px */
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.2s;
+    font-size: 0.9rem; /* Texto más pequeño */
 }
 .btn-cancel:hover {
     background-color: #e9ecef;
@@ -104,25 +109,41 @@
 }
 .modal-content {
     background-color: white;
-    padding: 25px;
+    padding: 20px;
     border-radius: 10px;
-    width: 500px;
-    max-width: 90%;
+    width: 400px; /* Reducido de 500px */
+    max-width: 95%;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px; /* Reducido de 20px */
+    padding-bottom: 8px; /* Añadido separador visual */
+    border-bottom: 1px solid #efefef;
 }
 .modal-header h3 {
     margin: 0;
+    font-size: 1.1rem; /* Tamaño más pequeño */
+    color: var(--primary-color);
 }
 .modal-close {
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: 1.3rem; /* Reducido de 1.5rem */
     cursor: pointer;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+.modal-close:hover {
+    background-color: rgba(0,0,0,0.05);
 }
 .success-message, .error-message {
     padding: 10px 15px;
@@ -169,16 +190,20 @@
     font-size: 1rem;
 }
 
+/* Estilos para tabla responsiva */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: var(--spacing-md);
+    width: 100%;
+}
+
 /* Estilos responsivos para la tabla de usuarios */
 @media (max-width: 991px) {
     .data-table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
+        min-width: 700px; /* Ancho mínimo para asegurar que todo el contenido sea visible */
     }
-}
-
-@media (max-width: 767px) {
+    
     .section__header {
         flex-direction: column;
         align-items: flex-start;
@@ -188,6 +213,12 @@
     #btnAddUser {
         width: 100%;
         justify-content: center;
+    }
+}
+
+@media (max-width: 767px) {
+    .section__header {
+        margin-bottom: 15px;
     }
     
     .data-table__header, 
@@ -199,11 +230,18 @@
     /* Ocultar columnas menos importantes en móviles */
     .data-table__header:nth-child(6), 
     .data-table__cell:nth-child(6) {
-        display: none;
+        display: none; /* Ocultar fecha de registro */
+    }
+    
+    /* Mejorar visualización de los badges en pantallas medianas */
+    .role-badge, .estado-badge {
+        padding: 3px 8px;
+        font-size: 0.75rem;
+        white-space: nowrap;
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 576px) {
     .content-section {
         padding: 15px 10px;
     }
@@ -214,8 +252,46 @@
     }
     
     .role-badge, .estado-badge {
-        padding: 3px 8px;
+        padding: 2px 6px;
         font-size: 0.7rem;
+    }
+    
+    /* Optimizar la columna de acciones */
+    .actions-cell {
+        flex-direction: row;
+        justify-content: center;
+    }
+    
+    /* Mejorando la usabilidad táctil para botones en móviles */
+    .data-table__action {
+        padding: 8px;
+        margin: 0 3px;
+        min-width: 36px;
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-edit-user,
+    .btn-delete-user {
+        position: relative;
+    }
+    
+    /* Aumentar el área táctil */
+    .btn-edit-user::before,
+    .btn-delete-user::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+    }
+    
+    /* Ajustar los espacios entre filas para mejor tactilidad */
+    .data-table__body tr {
+        height: 50px;
     }
     
     .data-table__action {
@@ -224,5 +300,113 @@
     
     .modal-content {
         padding: 15px;
+        width: 340px;
+        margin: 0 auto;
+    }
+    
+    .modal-header {
+        margin-bottom: 10px;
+    }
+    
+    .form-group {
+        margin-bottom: 8px;
+        gap: 2px;
+    }
+    
+    .form-group label {
+        font-size: 0.85rem;
+    }
+    
+    .form-group select, 
+    .form-group input {
+        padding: 7px;
+        font-size: 0.85rem;
+    }
+    
+    .btn-container {
+        margin-top: 10px;
+    }
+    
+    /* Ajustar modo retrato en iPhone */
+    .user-form {
+        max-height: 80vh;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+    
+    /* Mejorar visualización en dispositivos pequeños */
+    .modal-overlay {
+        padding: 0 10px;
+    }
+    
+    /* Animación sutil al mostrar el modal */
+    .modal-content {
+        animation: modalFadeIn 0.2s ease;
+    }
+    
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+/* Asegurar que el modal no ocupe toda la pantalla en dispositivos pequeños */
+@media (max-height: 700px) {
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+/* Modo apaisado (landscape) en móviles */
+@media (max-height: 450px) {
+    .modal-content {
+        max-height: 85vh;
+        padding: 12px;
+    }
+    
+    .form-group {
+        margin-bottom: 5px;
+    }
+    
+    /* Ajustar el scroll para que sea más suave */
+    .user-form {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Estilos para columnas específicas */
+.data-table__header--id, 
+.data-table__header--date {
+    white-space: nowrap;
+}
+
+.data-table__header--name, 
+.data-table__header--email {
+    min-width: 150px;
+}
+
+.data-table__header--role, 
+.data-table__header--status {
+    min-width: 100px;
+}
+
+.data-table__header--actions {
+    min-width: 80px;
+}
+
+/* Ajustes para células específicas en pantallas pequeñas */
+@media (max-width: 576px) {
+    .data-table__header--email, 
+    .data-table__cell:nth-child(3) {
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }

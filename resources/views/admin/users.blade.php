@@ -106,16 +106,17 @@
                     <button id="btnAddUser" class="section__action"><i class="fas fa-plus"></i> Nuevo Usuario</button>
                 </div>
                 <div class="section__content">
-                    <table class="data-table" id="usersTable">
-                        <thead class="data-table__head">
-                            <tr>
-                                <th class="data-table__header">ID</th>
-                                <th class="data-table__header">Nombre</th>
-                                <th class="data-table__header">Email</th>
-                                <th class="data-table__header">Rol</th>
-                                <th class="data-table__header">Estado</th>
-                                <th class="data-table__header">Fecha Registro</th>
-                                <th class="data-table__header">Acciones</th>
+                    <div class="table-responsive">
+                        <table class="data-table" id="usersTable">
+                            <thead class="data-table__head">
+                                <tr>
+                                <th class="data-table__header data-table__header--id">ID</th>
+                                <th class="data-table__header data-table__header--name">Nombre</th>
+                                <th class="data-table__header data-table__header--email">Email</th>
+                                <th class="data-table__header data-table__header--role">Rol</th>
+                                <th class="data-table__header data-table__header--status">Estado</th>
+                                <th class="data-table__header data-table__header--date">Fecha Registro</th>
+                                <th class="data-table__header data-table__header--actions">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="data-table__body"> @foreach($users as $user)

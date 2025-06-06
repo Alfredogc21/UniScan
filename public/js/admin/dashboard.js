@@ -71,6 +71,12 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             handleSidebarToggle(true);
         });
+        
+        // Aseguramos que el botón sea completamente cliqueable
+        const menuIcon = mobileMenuBtn.querySelector('i');
+        if (menuIcon) {
+            menuIcon.style.pointerEvents = 'none';
+        }
     }
     
     // Cerrar sidebar al hacer clic en el overlay
