@@ -81,7 +81,7 @@
 
             <div class="header__search">
                 <span class="search__icon"><i class="fas fa-search"></i></span>
-                <input type="text" id="materiaSearchInput" class="search__input" placeholder="Buscar materia...">
+                <input type="text" id="materiaSearchInput" class="search__input" placeholder="Buscar materia..." aria-label="Buscar materia">
             </div>
 
             <div class="header__actions">
@@ -112,20 +112,21 @@
                     </button>
                 </div>
                 <div class="section__content">
-                    <table class="data-table" id="materiasTable">
-                        <thead class="data-table__head">
-                            <tr>
-                                <th class="data-table__header">ID</th>
-                                <th class="data-table__header">Nombre</th>
-                                <th class="data-table__header">Profesor</th>
-                                <th class="data-table__header">Aula</th>
-                                <th class="data-table__header">Horario</th>
-                                <th class="data-table__header">Curso</th>
-                                <th class="data-table__header">QR</th>
-                                <th class="data-table__header">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="data-table__body">
+                    <div class="table-responsive">
+                        <table class="data-table" id="materiasTable">
+                            <thead class="data-table__head">
+                                <tr>
+                                    <th class="data-table__header data-table__header--id">ID</th>
+                                    <th class="data-table__header data-table__header--name">Nombre</th>
+                                    <th class="data-table__header data-table__header--teacher">Profesor</th>
+                                    <th class="data-table__header data-table__header--classroom">Aula</th>
+                                    <th class="data-table__header data-table__header--schedule">Horario</th>
+                                    <th class="data-table__header data-table__header--course">Curso</th>
+                                    <th class="data-table__header data-table__header--qr">QR</th>
+                                    <th class="data-table__header data-table__header--actions">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="data-table__body">
                             @foreach($materias as $materia)
                             <tr>
                                 <td class="data-table__cell">{{ $materia->id }}</td>
@@ -145,12 +146,14 @@
                                     <div class="data-table__actions">
                                         <button class="data-table__action btn-edit-materia"
                                             title="Editar materia"
-                                            data-id="{{ $materia->id }}">
+                                            data-id="{{ $materia->id }}"
+                                            aria-label="Editar materia">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         <button class="data-table__action btn-generate-qr"
                                             title="Generar QR"
-                                            data-id="{{ $materia->id }}">
+                                            data-id="{{ $materia->id }}"
+                                            aria-label="Generar QR">
                                             <i class="fas fa-qrcode"></i>
                                         </button>
                                         <form method="POST" action="{{ route('admin.materias.destroy', $materia->id) }}"
@@ -159,7 +162,8 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="data-table__action btn-delete-materia"
-                                                title="Eliminar materia">
+                                                title="Eliminar materia"
+                                                aria-label="Eliminar materia">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
@@ -168,7 +172,8 @@
                             </tr>
                             @endforeach
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -329,53 +334,150 @@
 <script src="{{ asset('js/admin/dashboard.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Búsqueda de materias
+        // Búsqueda de materias con debouncing para mejor rendimiento en móviles
         const searchInput = document.getElementById('materiaSearchInput');
         const tableRows = document.querySelectorAll('#materiasTable tbody tr');
+        let searchTimeout;
+
         if (searchInput) {
             searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
+                clearTimeout(searchTimeout);
+                
+                // Usar un debounce para mejorar el rendimiento en dispositivos móviles
+                searchTimeout = setTimeout(() => {
+                    const searchTerm = this.value.toLowerCase();
+                    let visibleCount = 0;
 
-                tableRows.forEach(row => {
-                    const nombre = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                    const profesor = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-                    const aula = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
-                    const curso = row.querySelector('td:nth-child(6)').textContent.toLowerCase();
+                    tableRows.forEach(row => {
+                        const nombre = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                        const profesor = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                        let aula = "";
+                        let curso = "";
+                        
+                        // Comprobar si las celdas existen (pueden estar ocultas en móvil)
+                        const aulaCell = row.querySelector('td:nth-child(4)');
+                        const cursoCell = row.querySelector('td:nth-child(6)');
+                        
+                        if (aulaCell) aula = aulaCell.textContent.toLowerCase();
+                        if (cursoCell) curso = cursoCell.textContent.toLowerCase();
 
-                    if (nombre.includes(searchTerm) || profesor.includes(searchTerm) ||
-                        aula.includes(searchTerm) || curso.includes(searchTerm)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
+                        if (nombre.includes(searchTerm) || 
+                            profesor.includes(searchTerm) ||
+                            aula.includes(searchTerm) || 
+                            curso.includes(searchTerm)) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                    
+                    // Mostrar mensaje cuando no hay resultados
+                    const noResultsMessage = document.getElementById('noResultsMessage');
+                    if (visibleCount === 0 && searchTerm !== '') {
+                        if (!noResultsMessage) {
+                            const tableContainer = document.querySelector('.table-responsive');
+                            const message = document.createElement('div');
+                            message.id = 'noResultsMessage';
+                            message.className = 'alert alert-info mt-3';
+                            message.textContent = 'No se encontraron materias que coincidan con la búsqueda.';
+                            tableContainer.appendChild(message);
+                        } else {
+                            noResultsMessage.style.display = 'block';
+                        }
+                    } else if (noResultsMessage) {
+                        noResultsMessage.style.display = 'none';
                     }
-                });
+                }, 300); // 300ms de retraso para el debounce
+            });
+
+            // Agregar evento para limpiar la búsqueda con el botón Escape
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    this.value = '';
+                    // Activar el evento input para actualizar la tabla
+                    this.dispatchEvent(new Event('input'));
+                }
             });
         }
 
-        // Mostrar/Ocultar modales básicos
+        // Mejorar la experiencia táctil para los botones de acción
+        const actionButtons = document.querySelectorAll('.data-table__action');
+        actionButtons.forEach(button => {
+            // Prevenir doble toque en dispositivos móviles
+            let touchTimeout;
+            let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            
+            if (isTouchDevice) {
+                button.addEventListener('touchstart', function(e) {
+                    clearTimeout(touchTimeout);
+                    
+                    // Efecto visual de presionado
+                    this.classList.add('button-pressed');
+                    
+                    touchTimeout = setTimeout(() => {
+                        this.classList.remove('button-pressed');
+                    }, 300);
+                });
+            }
+        });
+
+        // Mostrar/Ocultar modales con mejor experiencia móvil
         const btnAddMateria = document.getElementById('btnAddMateria');
         const modalCloseButtons = document.querySelectorAll('.modal-close');
         const cancelButtons = document.querySelectorAll('.btn-cancel');
         const addMateriaModal = document.getElementById('addMateriaModal');
         const editMateriaModal = document.getElementById('editMateriaModal');
-
+        const qrModal = document.getElementById('qrModal');
+        
+        // Prevenir animación de cierre
+        const modals = document.querySelectorAll('.modal-overlay');
+        
         // Abrir modal para agregar materia
         if (btnAddMateria && addMateriaModal) {
             btnAddMateria.addEventListener('click', function() {
-                addMateriaModal.style.display = 'flex';
+                document.body.classList.add('modal-open');
+                addMateriaModal.classList.add('modal-show');
             });
         }
 
-        // Cerrar modales
+        // Cerrar modales con animación
+        function closeModal(modal) {
+            modal.classList.add('modal-closing');
+            setTimeout(() => {
+                modal.classList.remove('modal-show', 'modal-closing');
+                document.body.classList.remove('modal-open');
+            }, 300);
+        }
+
         modalCloseButtons.forEach(button => {
             button.addEventListener('click', function() {
-                this.closest('.modal-overlay').style.display = 'none';
+                const modal = this.closest('.modal-overlay');
+                closeModal(modal);
             });
         });
 
         cancelButtons.forEach(button => {
             button.addEventListener('click', function() {
-                this.closest('.modal-overlay').style.display = 'none';
+                const modal = this.closest('.modal-overlay');
+                closeModal(modal);
+            });
+        });
+
+        // Cerrar modal al hacer clic fuera
+        modals.forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this);
+                }
+            });
+        });
+        
+        // Prevenir que el clic en el contenido cierre el modal
+        const modalContents = document.querySelectorAll('.modal-content');
+        modalContents.forEach(content => {
+            content.addEventListener('click', function(e) {
+                e.stopPropagation();
             });
         });
     });
@@ -405,8 +507,6 @@
                 downloadQR();
             });
         }
-
-        // Simplificamos la interfaz quitando la generación en el navegador
     });
 </script>
 @endsection
