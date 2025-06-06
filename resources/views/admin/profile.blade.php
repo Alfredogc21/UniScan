@@ -5,127 +5,8 @@
 @section('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="{{ asset('css/admin/dashboard.css') }}">
-<style>
-    .profile-container {
-        max-width: 800px;
-        margin: 0 auto;
-        background-color: white;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        padding: 2rem;
-    }
-
-    .profile-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #e5e1ff;
-    }
-
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background-color: #7f6fcb;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.5rem;
-        margin-right: 1.5rem;
-    }
-
-    .profile-title h1 {
-        margin: 0;
-        color: #4a3c85;
-        font-size: 1.8rem;
-    }
-
-    .profile-title p {
-        margin: 0.5rem 0 0;
-        color: #8a7eb1;
-        font-size: 1rem;
-    }
-
-    .form-section {
-        margin-bottom: 2rem;
-    }
-
-    .form-section h2 {
-        color: #4a3c85;
-        font-size: 1.3rem;
-        margin-bottom: 1.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid #e5e1ff;
-    }
-
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: #574b9b;
-        font-weight: 500;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        border: 1.5px solid #c7b9f7;
-        font-size: 1rem;
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: #7f6fcb;
-        box-shadow: 0 0 0 3px rgba(127, 111, 203, 0.25);
-    }
-
-    .btn-purple {
-        background: linear-gradient(90deg, #7f6fcb, #ab94ff);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: opacity 0.3s ease;
-    }
-
-    .btn-purple:hover {
-        opacity: 0.9;
-    }
-
-    .alert {
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
-    }
-
-    .alert-success {
-        background-color: #d1fae5;
-        color: #047857;
-        border: 1px solid #a7f3d0;
-    }
-
-    .alert-danger {
-        background-color: #fee2e2;
-        color: #b91c1c;
-        border: 1px solid #fecaca;
-    }
-
-    .invalid-feedback {
-        display: block;
-        margin-top: 0.25rem;
-        font-size: 0.875rem;
-        color: #dc2626;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/admin/profile.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 @endsection
 
 @section('content')
@@ -193,11 +74,6 @@
             </button>
 
             <h1 class="header__title">Mi Perfil</h1>
-
-            <div class="header__search">
-                <span class="search__icon"><i class="fas fa-search"></i></span>
-                <input type="text" class="search__input" placeholder="Buscar...">
-            </div>
 
             <div class="header__actions">
                 @include('partials.logout_button')
