@@ -223,13 +223,6 @@
                                             data-id="{{ $asistencia->id }}">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        @if($asistencia->tipo_asistencia_id != 1 && !$asistencia->justificacion)
-                                        <button class="data-table__action btn-justify-asistencia"
-                                            title="Justificar asistencia"
-                                            data-id="{{ $asistencia->id }}">
-                                            <i class="fas fa-check-circle"></i>
-                                        </button>
-                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -379,35 +372,7 @@
     </div>
 </div>
 
-<!-- Modal para justificar ausencia -->
-<div class="modal-overlay" id="justificarAusenciaModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Justificar Asistencia</h3>
-            <button class="modal-close">&times;</button>
-        </div>
-        <form id="justificarAusenciaForm" action="" method="POST" class="user-form">
-            @csrf
-            <input type="hidden" name="_token" value="{{ csrf_token() }}">
 
-            <div class="form-group">
-                <label for="justificacionText">Justificación:</label>
-                <textarea id="justificacionText" name="justificacion" rows="4" required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="evidenciaFile">Evidencia (opcional):</label>
-                <input type="file" id="evidenciaFile" name="evidencia">
-                <small>Formatos permitidos: PDF, JPG, PNG. Máximo 2MB.</small>
-            </div>
-
-            <div class="btn-container">
-                <button type="button" class="btn-cancel">Cancelar</button>
-                <button type="submit" class="btn-save">Guardar Justificación</button>
-            </div>
-        </form>
-    </div>
-</div>
 @endsection
 
 @section('scripts')
@@ -543,24 +508,6 @@
                                 document.getElementById('detailEstado').className = 'detail-value status-error';
                             }
                         });
-                });
-            });
-        } // Justificar ausencia
-        const justificarBtns = document.querySelectorAll('.btn-justify-asistencia');
-        const justificarModal = document.getElementById('justificarAusenciaModal');
-        const justificarForm = document.getElementById('justificarAusenciaForm');
-
-        if (justificarBtns.length && justificarModal && justificarForm) {
-            justificarBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const ausenciaId = this.getAttribute('data-id');
-
-                    // Actualizar la acción del formulario con el ID correcto
-                    justificarForm.action = `/admin/asistencias/${ausenciaId}/justificar`;
-
-                    // Mostrar el modal
-                    justificarModal.style.display = 'flex';
-                    justificarModal.classList.add('active');
                 });
             });
         } // Cerrar modales
