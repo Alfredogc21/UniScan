@@ -50,6 +50,13 @@
                     </a>
                 </li>
 
+                <li class="nav__item">
+                    <a href="{{ route('admin.menu') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-question-circle"></i></span>
+                        <span class="nav__link-text">Ayuda</span>
+                    </a>
+                </li>
+
             </ul>
         </nav>
 
@@ -110,58 +117,58 @@
                         <table class="data-table" id="usersTable">
                             <thead class="data-table__head">
                                 <tr>
-                                <th class="data-table__header data-table__header--id">ID</th>
-                                <th class="data-table__header data-table__header--name">Nombre</th>
-                                <th class="data-table__header data-table__header--email">Email</th>
-                                <th class="data-table__header data-table__header--role">Rol</th>
-                                <th class="data-table__header data-table__header--status">Estado</th>
-                                <th class="data-table__header data-table__header--date">Fecha Registro</th>
-                                <th class="data-table__header data-table__header--actions">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="data-table__body"> @foreach($users as $user)
-                            <tr>
-                                <td class="data-table__cell">{{ $user->id }}</td>
-                                <td class="data-table__cell">{{ $user->name }}</td>
-                                <td class="data-table__cell">{{ $user->email }}</td>
-                                <td class="data-table__cell">
-                                    @if($user->role_id == 1)
-                                    <span class="role-badge role-badge--admin">Administrador</span>
-                                    @elseif($user->role_id == 2)
-                                    <span class="role-badge role-badge--profesor">Profesor</span>
-                                    @else
-                                    <span class="role-badge role-badge--estudiante">Estudiante</span>
-                                    @endif
-                                </td>
-                                <td class="data-table__cell">
-                                    @if($user->estado_id == 1)
-                                    <span class="estado-badge estado-badge--activo">Activo</span>
-                                    @else
-                                    <span class="estado-badge estado-badge--inactivo">Inactivo</span>
-                                    @endif
-                                </td>
-                                <td class="data-table__cell">{{ $user->created_at->format('d/m/Y') }}</td>
-                                <td class="data-table__cell">
-                                    <div class="actions-cell">
-                                        <button class="data-table__action btn-edit-user" data-user-id="{{ $user->id }}" title="Editar usuario">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline delete-form">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="data-table__action btn-delete-user" title="Eliminar usuario">
-                                                <i class="fas fa-trash"></i>
+                                    <th class="data-table__header data-table__header--id">ID</th>
+                                    <th class="data-table__header data-table__header--name">Nombre</th>
+                                    <th class="data-table__header data-table__header--email">Email</th>
+                                    <th class="data-table__header data-table__header--role">Rol</th>
+                                    <th class="data-table__header data-table__header--status">Estado</th>
+                                    <th class="data-table__header data-table__header--date">Fecha Registro</th>
+                                    <th class="data-table__header data-table__header--actions">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="data-table__body"> @foreach($users as $user)
+                                <tr>
+                                    <td class="data-table__cell">{{ $user->id }}</td>
+                                    <td class="data-table__cell">{{ $user->name }}</td>
+                                    <td class="data-table__cell">{{ $user->email }}</td>
+                                    <td class="data-table__cell">
+                                        @if($user->role_id == 1)
+                                        <span class="role-badge role-badge--admin">Administrador</span>
+                                        @elseif($user->role_id == 2)
+                                        <span class="role-badge role-badge--profesor">Profesor</span>
+                                        @else
+                                        <span class="role-badge role-badge--estudiante">Estudiante</span>
+                                        @endif
+                                    </td>
+                                    <td class="data-table__cell">
+                                        @if($user->estado_id == 1)
+                                        <span class="estado-badge estado-badge--activo">Activo</span>
+                                        @else
+                                        <span class="estado-badge estado-badge--inactivo">Inactivo</span>
+                                        @endif
+                                    </td>
+                                    <td class="data-table__cell">{{ $user->created_at->format('d/m/Y') }}</td>
+                                    <td class="data-table__cell">
+                                        <div class="actions-cell">
+                                            <button class="data-table__action btn-edit-user" data-user-id="{{ $user->id }}" title="Editar usuario">
+                                                <i class="fas fa-edit"></i>
                                             </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                            <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline delete-form">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="data-table__action btn-delete-user" title="Eliminar usuario">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
     </main>
 </div>
 

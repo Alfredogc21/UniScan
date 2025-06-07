@@ -90,6 +90,11 @@ Route::middleware(['auth'])->group(function () {
         // Rutas de perfil
         Route::get('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'edit'])->name('profile');
         Route::put('/profile', [App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
+        
+        // Ruta de ayuda/menu
+        Route::get('/menu', function () {
+            return view('admin.menu');
+        })->name('menu');
 
         // Rutas de gestión de usuarios usando el controlador
         Route::get('/users', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('users');

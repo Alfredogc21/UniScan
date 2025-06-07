@@ -51,6 +51,13 @@
                         <span class="nav__link-text">Asistencias</span>
                     </a>
                 </li>
+
+                <li class="nav__item">
+                    <a href="{{ route('admin.menu') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-question-circle"></i></span>
+                        <span class="nav__link-text">Ayuda</span>
+                    </a>
+                </li>
             </ul>
         </nav>
 
@@ -202,7 +209,8 @@
                                 <td class="data-table__cell">{{ $asistencia->materia->nombre ?? 'No disponible' }}</td>
                                 <td class="data-table__cell">{{ $asistencia->nombre_profesor }}</td>
                                 <td class="data-table__cell">{{ \Carbon\Carbon::parse($asistencia->fecha_hora)->format('d/m/Y') }}</td>
-                                <td class="data-table__cell">{{ \Carbon\Carbon::parse($asistencia->fecha_hora)->format('H:i') }}</td>                                <td class="data-table__cell">
+                                <td class="data-table__cell">{{ \Carbon\Carbon::parse($asistencia->fecha_hora)->format('H:i') }}</td>
+                                <td class="data-table__cell">
                                     <span class="attendance-status {{ $asistencia->estado_css_class }}">
                                         {{ $asistencia->estado_texto }}
                                     </span>
@@ -279,7 +287,8 @@
                             <div class="summary-card__content">
                                 <div class="summary-card__value">{{ $totalAusentes ?? 0 }}</div>
                             </div>
-                        </div>                        <div class="summary-card">
+                        </div>
+                        <div class="summary-card">
                             <div class="summary-card__header">
                                 <h3 class="summary-card__title">Justificadas</h3>
                                 <div class="summary-card__icon">
@@ -456,16 +465,16 @@
                     }
                 });
             });
-        }    // Ver detalles de asistencia
+        } // Ver detalles de asistencia
         const verAsistenciaBtns = document.querySelectorAll('.btn-ver-asistencia');
         const verAsistenciaModal = document.getElementById('verAsistenciaModal');
 
         if (verAsistenciaBtns.length && verAsistenciaModal) {
             verAsistenciaBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const asistenciaId = this.getAttribute('data-id');                    // Construir la URL correctamente con la ruta de Laravel
+                    const asistenciaId = this.getAttribute('data-id'); // Construir la URL correctamente con la ruta de Laravel
                     const detailsUrl = `{{ route('admin.asistencias.details', ['id' => '__ID__']) }}`.replace('__ID__', asistenciaId);
-                      // Usar AJAX para obtener los datos detallados de la asistencia
+                    // Usar AJAX para obtener los datos detallados de la asistencia
                     console.log('Solicitando detalles de asistencia:', detailsUrl);
                     fetch(detailsUrl)
                         .then(response => {
@@ -482,7 +491,7 @@
                             document.getElementById('detailMateria').textContent = data.materia || 'No disponible';
                             document.getElementById('detailProfesor').textContent = data.profesor || 'No disponible';
                             document.getElementById('detailFecha').textContent = data.fecha || 'No disponible';
-                            document.getElementById('detailHora').textContent = data.hora || 'No disponible';                            // Usar el estado directamente de la respuesta del servidor
+                            document.getElementById('detailHora').textContent = data.hora || 'No disponible'; // Usar el estado directamente de la respuesta del servidor
                             const estadoElement = document.getElementById('detailEstado');
 
                             // Mostrar la descripción del estado que viene de la tabla tipo_asistencia
@@ -491,7 +500,7 @@
 
                             // Usar las clases CSS que provienen directamente del backend a través de accesorios
                             let estadoClass = 'detail-value';
-                            
+
                             // Si tenemos una clase CSS personalizada del backend, usarla
                             if (data.estado_css_class) {
                                 // Convertir de 'attendance-xxx' a 'status-xxx' para mantener la consistencia visual
@@ -500,7 +509,7 @@
                             } else {
                                 estadoClass += ' status-desconocido';
                             }
-                            
+
                             estadoElement.className = estadoClass;
 
                             // Mostrar justificación
@@ -515,19 +524,19 @@
                             // Mostrar el modal (asegurarse de usar display flex)
                             verAsistenciaModal.style.display = 'flex';
                             verAsistenciaModal.classList.add('active');
-                        })                        .catch(error => {
+                        }).catch(error => {
                             console.error('Error al obtener detalles:', error);
-                            
+
                             // Mostrar mensaje más descriptivo al usuario
                             const errorMessage = `Error al cargar los detalles: ${error.message}. URL: ${detailsUrl}`;
                             console.error(errorMessage);
-                            
+
                             // Verificar si hay problemas con CORS
                             console.log('Verificando posibles problemas con CORS o autenticación...');
-                            
+
                             // Informar al usuario
                             alert('Error al cargar los detalles de la asistencia. Por favor, intente nuevamente o contacte al administrador.');
-                            
+
                             // Si hay un elemento de estado, podemos mostrar el error allí también
                             if (document.getElementById('detailEstado')) {
                                 document.getElementById('detailEstado').textContent = 'Error al cargar datos';

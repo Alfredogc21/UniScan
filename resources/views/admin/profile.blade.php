@@ -50,6 +50,13 @@
                     </a>
                 </li>
 
+                <li class="nav__item">
+                    <a href="{{ route('admin.menu') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-question-circle"></i></span>
+                        <span class="nav__link-text">Ayuda</span>
+                    </a>
+                </li>
+
             </ul>
         </nav>
 

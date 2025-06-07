@@ -54,6 +54,13 @@
                     </a>
                 </li>
 
+                <li class="nav__item">
+                    <a href="{{ route('admin.menu') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-question-circle"></i></span>
+                        <span class="nav__link-text">Ayuda</span>
+                    </a>
+                </li>
+
             </ul>
         </nav>
 
@@ -127,51 +134,51 @@
                                 </tr>
                             </thead>
                             <tbody class="data-table__body">
-                            @foreach($materias as $materia)
-                            <tr>
-                                <td class="data-table__cell">{{ $materia->id }}</td>
-                                <td class="data-table__cell">{{ $materia->nombre }}</td>
-                                <td class="data-table__cell">{{ $materia->profesor->name ?? 'Sin asignar' }}</td>
-                                <td class="data-table__cell">{{ $materia->aula->nombre ?? 'No especificado' }}</td>
-                                <td class="data-table__cell">{{ \Carbon\Carbon::parse($materia->horario_ingreso)->format('H:i') }} - {{ \Carbon\Carbon::parse($materia->horario_salida)->format('H:i') }}</td>
-                                <td class="data-table__cell">{{ $materia->curso->nombre ?? 'No especificado' }}</td>
-                                <td class="data-table__cell">
-                                    @if($materia->qr_path)
-                                    <span class="data-table__status data-table__status--active">Generado</span>
-                                    @else
-                                    <span class="data-table__status data-table__status--inactive">No generado</span>
-                                    @endif
-                                </td>
-                                <td class="data-table__cell">
-                                    <div class="data-table__actions">
-                                        <button class="data-table__action btn-edit-materia"
-                                            title="Editar materia"
-                                            data-id="{{ $materia->id }}"
-                                            aria-label="Editar materia">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="data-table__action btn-generate-qr"
-                                            title="Generar QR"
-                                            data-id="{{ $materia->id }}"
-                                            aria-label="Generar QR">
-                                            <i class="fas fa-qrcode"></i>
-                                        </button>
-                                        <form method="POST" action="{{ route('admin.materias.destroy', $materia->id) }}"
-                                            style="display: inline;"
-                                            onsubmit="return confirm('¿Estás seguro de eliminar esta materia?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="data-table__action btn-delete-materia"
-                                                title="Eliminar materia"
-                                                aria-label="Eliminar materia">
-                                                <i class="fas fa-trash"></i>
+                                @foreach($materias as $materia)
+                                <tr>
+                                    <td class="data-table__cell">{{ $materia->id }}</td>
+                                    <td class="data-table__cell">{{ $materia->nombre }}</td>
+                                    <td class="data-table__cell">{{ $materia->profesor->name ?? 'Sin asignar' }}</td>
+                                    <td class="data-table__cell">{{ $materia->aula->nombre ?? 'No especificado' }}</td>
+                                    <td class="data-table__cell">{{ \Carbon\Carbon::parse($materia->horario_ingreso)->format('H:i') }} - {{ \Carbon\Carbon::parse($materia->horario_salida)->format('H:i') }}</td>
+                                    <td class="data-table__cell">{{ $materia->curso->nombre ?? 'No especificado' }}</td>
+                                    <td class="data-table__cell">
+                                        @if($materia->qr_path)
+                                        <span class="data-table__status data-table__status--active">Generado</span>
+                                        @else
+                                        <span class="data-table__status data-table__status--inactive">No generado</span>
+                                        @endif
+                                    </td>
+                                    <td class="data-table__cell">
+                                        <div class="data-table__actions">
+                                            <button class="data-table__action btn-edit-materia"
+                                                title="Editar materia"
+                                                data-id="{{ $materia->id }}"
+                                                aria-label="Editar materia">
+                                                <i class="fas fa-edit"></i>
                                             </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
+                                            <button class="data-table__action btn-generate-qr"
+                                                title="Generar QR"
+                                                data-id="{{ $materia->id }}"
+                                                aria-label="Generar QR">
+                                                <i class="fas fa-qrcode"></i>
+                                            </button>
+                                            <form method="POST" action="{{ route('admin.materias.destroy', $materia->id) }}"
+                                                style="display: inline;"
+                                                onsubmit="return confirm('¿Estás seguro de eliminar esta materia?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="data-table__action btn-delete-materia"
+                                                    title="Eliminar materia"
+                                                    aria-label="Eliminar materia">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -342,7 +349,7 @@
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 clearTimeout(searchTimeout);
-                
+
                 // Usar un debounce para mejorar el rendimiento en dispositivos móviles
                 searchTimeout = setTimeout(() => {
                     const searchTerm = this.value.toLowerCase();
@@ -353,17 +360,17 @@
                         const profesor = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
                         let aula = "";
                         let curso = "";
-                        
+
                         // Comprobar si las celdas existen (pueden estar ocultas en móvil)
                         const aulaCell = row.querySelector('td:nth-child(4)');
                         const cursoCell = row.querySelector('td:nth-child(6)');
-                        
+
                         if (aulaCell) aula = aulaCell.textContent.toLowerCase();
                         if (cursoCell) curso = cursoCell.textContent.toLowerCase();
 
-                        if (nombre.includes(searchTerm) || 
+                        if (nombre.includes(searchTerm) ||
                             profesor.includes(searchTerm) ||
-                            aula.includes(searchTerm) || 
+                            aula.includes(searchTerm) ||
                             curso.includes(searchTerm)) {
                             row.style.display = '';
                             visibleCount++;
@@ -371,7 +378,7 @@
                             row.style.display = 'none';
                         }
                     });
-                    
+
                     // Mostrar mensaje cuando no hay resultados
                     const noResultsMessage = document.getElementById('noResultsMessage');
                     if (visibleCount === 0 && searchTerm !== '') {
@@ -407,14 +414,14 @@
             // Prevenir doble toque en dispositivos móviles
             let touchTimeout;
             let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            
+
             if (isTouchDevice) {
                 button.addEventListener('touchstart', function(e) {
                     clearTimeout(touchTimeout);
-                    
+
                     // Efecto visual de presionado
                     this.classList.add('button-pressed');
-                    
+
                     touchTimeout = setTimeout(() => {
                         this.classList.remove('button-pressed');
                     }, 300);
@@ -429,10 +436,10 @@
         const addMateriaModal = document.getElementById('addMateriaModal');
         const editMateriaModal = document.getElementById('editMateriaModal');
         const qrModal = document.getElementById('qrModal');
-        
+
         // Prevenir animación de cierre
         const modals = document.querySelectorAll('.modal-overlay');
-        
+
         // Abrir modal para agregar materia
         if (btnAddMateria && addMateriaModal) {
             btnAddMateria.addEventListener('click', function() {
@@ -472,7 +479,7 @@
                 }
             });
         });
-        
+
         // Prevenir que el clic en el contenido cierre el modal
         const modalContents = document.querySelectorAll('.modal-content');
         modalContents.forEach(content => {
