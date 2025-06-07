@@ -170,7 +170,6 @@
         }
 
         .btn-primary:hover {
-            transform: translateY(-3px);
             box-shadow: 0 10px 25px rgba(123, 31, 162, 0.3);
         }
 
@@ -222,8 +221,10 @@
         .mobile-bottom-btn {
             position: fixed;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 0;
+            right: 0;
+            margin-left: auto;
+            margin-right: auto;
             width: 90%;
             max-width: 350px;
             z-index: 10;

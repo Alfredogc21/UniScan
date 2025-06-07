@@ -2,6 +2,10 @@
 
 @section('title', 'Iniciar Sesión')
 
+@push('styles')
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+@endpush
+
 @section('content')
 <div class="login-wrapper">
   <!-- Círculos decorativos -->
@@ -25,25 +29,27 @@
       <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        <label for="email">Correo electrónico</label>
-        <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus
-               class="@error('email') input-error @enderror">
+        <div class="form-field">
+          <label for="email">Correo electrónico</label>
+          <input type="email" id="email" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus
+                 class="@error('email') input-error @enderror">
+          @error('email')
+            <p class="error-text">{{ $message }}</p>
+          @enderror
+        </div>
 
-        @error('email')
-          <p class="error-text">{{ $message }}</p>
-        @enderror
-
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" name="password" required>
-       
-
-        @error('password')
-          <p class="error-text">{{ $message }}</p>
-        @enderror
+        <div class="form-field">
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" name="password" required autocomplete="current-password"
+                 class="@error('password') input-error @enderror">
+          @error('password')
+            <p class="error-text">{{ $message }}</p>
+          @enderror
+        </div>
         
-     <div class="forgot-password-container">
-  <a href="{{ route('password.request') }}" class="link-purple">¿Olvidaste tu contraseña?</a>
-</div>
+        <div class="forgot-password-container">
+          <a href="{{ route('password.request') }}" class="link-purple">¿Olvidaste tu contraseña?</a>
+        </div>
 
         <button type="submit" class="btn-purple">Iniciar Sesión</button>
       </form>
@@ -56,7 +62,7 @@
 
     <!-- Imagen onda a un lado -->
     <div class="login-image">
-      <img src="{{ asset('img/qr.jpg') }}" alt="Decoración onda" />
+      <img src="{{ asset('img/qr.jpg') }}" alt="Decoración onda" loading="lazy" />
     </div>
   </div>
 </div>
