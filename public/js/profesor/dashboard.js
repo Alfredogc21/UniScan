@@ -1,19 +1,24 @@
 /**
- * Dashboard Admin - UniScan
+ * Dashboard Profesor - UniScan
  * JavaScript para la funcionalidad del dashboard
  */
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     // Referencias a elementos DOM
     const sidebar = document.querySelector('.dashboard__sidebar');
     const content = document.querySelector('.dashboard__content');
     const sidebarToggle = document.querySelector('.sidebar__toggle');
     const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-
+    
     // Crear un overlay para el sidebar en móvil
     const sidebarOverlay = document.createElement('div');
     sidebarOverlay.className = 'sidebar-overlay';
     document.body.appendChild(sidebarOverlay);
+    
+    // Variables para evitar múltiples clics rápidos
+    let isTransitioning = false;
+    const transitionDelay = 300; // ms, debe coincidir con la duración de la transición CSS
+    
     // Función para mostrar/ocultar el overlay
     function toggleSidebarOverlay() {
         if (window.innerWidth <= 991 && sidebar.classList.contains('dashboard__sidebar--active')) {
@@ -22,52 +27,86 @@ document.addEventListener('DOMContentLoaded', function () {
             sidebarOverlay.classList.remove('sidebar-overlay--active');
         }
     }
+    
+    // Función para manejar el toggle del sidebar con protección contra múltiples clics
+    function handleSidebarToggle(isMobile = false) {
+        if (isTransitioning) return;
+        
+        isTransitioning = true;
+        setTimeout(() => { isTransitioning = false; }, transitionDelay);
+        
+        // En dispositivos móviles
+        if (window.innerWidth <= 991 || isMobile) {
+            if (sidebar.classList.contains('dashboard__sidebar--active')) {
+                sidebar.classList.remove('dashboard__sidebar--active');
+                sidebarOverlay.classList.remove('sidebar-overlay--active');
+            } else {
+                sidebar.classList.add('dashboard__sidebar--active');
+                sidebarOverlay.classList.add('sidebar-overlay--active');
+            }
+        } 
+        // En desktop
+        else {
+            sidebar.classList.toggle('dashboard__sidebar--collapsed');
+            content.classList.toggle('dashboard__content--expanded');
+            
+            // Guardar preferencia del usuario
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('dashboard__sidebar--collapsed'));
+        }
+    }
+    
     // Toggle sidebar en desktop
     if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function () {
-            // Comportamiento diferente según el tamaño de pantalla
-            if (window.innerWidth <= 991) {
-                sidebar.classList.toggle('dashboard__sidebar--active');
-                toggleSidebarOverlay();
-            } else {
-                sidebar.classList.toggle('dashboard__sidebar--collapsed');
-                content.classList.toggle('dashboard__content--expanded');
-            }
+        sidebarToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSidebarToggle();
         });
     }
+    
     // Toggle sidebar en mobile
     if (mobileMenuBtn) {
-        mobileMenuBtn.addEventListener('click', function (e) {
-            e.stopPropagation(); // Evitar que el clic se propague al documento
-            sidebar.classList.toggle('dashboard__sidebar--active');
-            toggleSidebarOverlay();
-
-            console.log('Mobile menu clicked, sidebar classes:', sidebar.className);
+        mobileMenuBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSidebarToggle(true);
         });
+        
+        // Aseguramos que el botón sea completamente cliqueable
+        const menuIcon = mobileMenuBtn.querySelector('i');
+        if (menuIcon) {
+            menuIcon.style.pointerEvents = 'none';
+        }
     }
-
+    
     // Cerrar sidebar al hacer clic en el overlay
-    sidebarOverlay.addEventListener('click', function () {
-        sidebar.classList.remove('dashboard__sidebar--active');
-        sidebarOverlay.classList.remove('sidebar-overlay--active');
+    sidebarOverlay.addEventListener('click', function() {
+        if (sidebar.classList.contains('dashboard__sidebar--active')) {
+            handleSidebarToggle(true);
+        }
     });
+    
     // Cerrar sidebar en mobile cuando se hace clic fuera
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function(event) {
         const isClickInsideSidebar = sidebar && sidebar.contains(event.target);
         const isClickOnMobileMenu = mobileMenuBtn && mobileMenuBtn.contains(event.target);
+        const isClickOnSidebarToggle = sidebarToggle && sidebarToggle.contains(event.target);
         const isClickOnOverlay = event.target === sidebarOverlay;
         const isSidebarActive = sidebar && sidebar.classList.contains('dashboard__sidebar--active');
-
-        if (!isClickInsideSidebar && !isClickOnMobileMenu && !isClickOnOverlay && isSidebarActive && window.innerWidth < 992) {
-            sidebar.classList.remove('dashboard__sidebar--active');
-            sidebarOverlay.classList.remove('sidebar-overlay--active');
+        
+        if (!isClickInsideSidebar && !isClickOnMobileMenu && !isClickOnSidebarToggle && 
+            !isClickOnOverlay && isSidebarActive && window.innerWidth <= 991) {
+            handleSidebarToggle(true);
         }
-    });      // Manejo de redimensión de ventana
-    window.addEventListener('resize', function () {
+    });
+    
+    // Manejo de redimensión de ventana
+    window.addEventListener('resize', function() {
+        // Cuando cambia de móvil a desktop
         if (window.innerWidth > 991) {
             sidebar.classList.remove('dashboard__sidebar--active');
             sidebarOverlay.classList.remove('sidebar-overlay--active');
-
+            
             // Restaurar estado del sidebar basado en preferencia de usuario
             if (localStorage.getItem('sidebarCollapsed') === 'true') {
                 sidebar.classList.add('dashboard__sidebar--collapsed');
@@ -76,6 +115,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 sidebar.classList.remove('dashboard__sidebar--collapsed');
                 content.classList.remove('dashboard__content--expanded');
             }
+        }
+        // Cuando cambia de desktop a móvil
+        else {
+            sidebar.classList.remove('dashboard__sidebar--collapsed');
+            content.classList.remove('dashboard__content--expanded');
         }
     });
 
@@ -89,6 +133,30 @@ document.addEventListener('DOMContentLoaded', function () {
             link.classList.add('nav__link--active');
         }
     });
+    
+    // Inicialización según tamaño de pantalla
+    function initializeSidebarState() {
+        // En dispositivos móviles, siempre se inicia cerrado
+        if (window.innerWidth <= 991) {
+            sidebar.classList.remove('dashboard__sidebar--collapsed');
+            content.classList.remove('dashboard__content--expanded');
+            sidebar.classList.remove('dashboard__sidebar--active');
+            sidebarOverlay.classList.remove('sidebar-overlay--active');
+        } 
+        // En desktop, se respeta la preferencia guardada
+        else {
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                sidebar.classList.add('dashboard__sidebar--collapsed');
+                content.classList.add('dashboard__content--expanded');
+            } else {
+                sidebar.classList.remove('dashboard__sidebar--collapsed');
+                content.classList.remove('dashboard__content--expanded');
+            }
+        }
+    }
+    
+    // Inicializar estado del sidebar
+    initializeSidebarState();
 
     // Inicialización de gráficos si existen
     initCharts();
