@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="{{ asset('css/profesor/dashboard.css') }}">
 <link rel="stylesheet" href="{{ asset('css/profesor/alumnos.css') }}">
+<link rel="stylesheet" href="{{ asset('css/profesor/modal-responsive.css') }}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
@@ -187,7 +188,8 @@
                     </div>
                 </div>
                 <div class="section__content">
-                    <table class="data-table" id="usersTable">
+                    <div class="table-responsive">
+                        <table class="data-table" id="usersTable">
                         <thead class="data-table__head">
                             <tr>
                                 <th class="data-table__header">ID</th>
@@ -251,6 +253,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
 
@@ -267,53 +270,55 @@
             <h3>Editar Alumno</h3>
             <button class="modal-close">&times;</button>
         </div>
-        <form id="editUserForm" class="user-form">
-            @csrf
-            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="_method" value="PUT">
-            <input type="hidden" id="editUserId">
+        <div class="modal-body">
+            <form id="editUserForm" class="user-form">
+                @csrf
+                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="_method" value="PUT">
+                <input type="hidden" id="editUserId">
 
-            <div class="form-group">
-                <label for="editName">Nombre</label>
-                <input type="text" id="editName" name="name" required>
-            </div>
+                <div class="form-group">
+                    <label for="editName">Nombre</label>
+                    <input type="text" id="editName" name="name" required>
+                </div>
 
-            <div class="form-group">
-                <label for="editEmail">Email</label>
-                <input type="email" id="editEmail" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="editEstado">Estado</label>
-                <select id="editEstado" name="estado_id" required>
-                    <option value="1">Activo</option>
-                    <option value="2">Inactivo</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="editMateria">Materia</label>
-                <select id="editMateria" name="materia_id" required>
-                    <option value="">Seleccione una materia</option>
-                    @foreach($materias ?? [] as $materia)
-                        <option value="{{ $materia->id }}">
-                            {{ $materia->nombre }} 
-                            (Curso: {{ $materia->curso->nombre ?? 'N/A' }}, 
-                            Aula: {{ $materia->aula->nombre ?? 'N/A' }})
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+                <div class="form-group">
+                    <label for="editEmail">Email</label>
+                    <input type="email" id="editEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="editEstado">Estado</label>
+                    <select id="editEstado" name="estado_id" required>
+                        <option value="1">Activo</option>
+                        <option value="2">Inactivo</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editMateria">Materia</label>
+                    <select id="editMateria" name="materia_id" required>
+                        <option value="">Seleccione una materia</option>
+                        @foreach($materias ?? [] as $materia)
+                            <option value="{{ $materia->id }}">
+                                {{ $materia->nombre }} 
+                                (Curso: {{ $materia->curso->nombre ?? 'N/A' }}, 
+                                Aula: {{ $materia->aula->nombre ?? 'N/A' }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label for="editPassword">Nueva Contraseña (dejar en blanco para no cambiar)</label>
-                <input type="password" id="editPassword" name="password">
-            </div>
+                <div class="form-group">
+                    <label for="editPassword">Nueva Contraseña (dejar en blanco para no cambiar)</label>
+                    <input type="password" id="editPassword" name="password">
+                </div>
 
-            <div class="btn-container">
-                <button type="button" class="btn-cancel">Cancelar</button>
-                <button type="submit" class="btn-save">Guardar Cambios</button>
-            </div>
-        </form>
+                <div class="btn-container">
+                    <button type="button" class="btn-cancel">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -324,53 +329,55 @@
             <h3>Agregar Nuevo Alumno</h3>
             <button class="modal-close">&times;</button>
         </div>
-        <form id="addUserForm" action="{{ route('profesor.alumnos.store') }}" method="POST" class="user-form">
-            @csrf
+        <div class="modal-body">
+            <form id="addUserForm" action="{{ route('profesor.alumnos.store') }}" method="POST" class="user-form">
+                @csrf
 
-            <div class="form-group">
-                <label for="addName">Nombre</label>
-                <input type="text" id="addName" name="name" required>
-            </div>
-            <div class="form-group">
-                <label for="addEmail">Email</label>
-                <input type="email" id="addEmail" name="email" required>
-            </div>
+                <div class="form-group">
+                    <label for="addName">Nombre</label>
+                    <input type="text" id="addName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="addEmail">Email</label>
+                    <input type="email" id="addEmail" name="email" required>
+                </div>
 
-            <!-- Alumno siempre tendrá role_id = 3 -->
-            <input type="hidden" name="role_id" value="3">
+                <!-- Alumno siempre tendrá role_id = 3 -->
+                <input type="hidden" name="role_id" value="3">
 
-            <div class="form-group">
-                <label for="addMateria">Materia a Asociar</label>
-                <select id="addMateria" name="materia_id" required>
-                    <option value="">Seleccionar materia...</option>
-                    @foreach($materias ?? [] as $materia)
-                    <option value="{{ $materia->id }}">{{ $materia->nombre }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="addEstado">Estado</label>
-                <select id="addEstado" name="estado_id" required>
-                    <option value="1">Activo</option>
-                    <option value="2">Inactivo</option>
-                </select>
-            </div>
+                <div class="form-group">
+                    <label for="addMateria">Materia a Asociar</label>
+                    <select id="addMateria" name="materia_id" required>
+                        <option value="">Seleccionar materia...</option>
+                        @foreach($materias ?? [] as $materia)
+                        <option value="{{ $materia->id }}">{{ $materia->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="addEstado">Estado</label>
+                    <select id="addEstado" name="estado_id" required>
+                        <option value="1">Activo</option>
+                        <option value="2">Inactivo</option>
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label for="addPassword">Contraseña</label>
-                <input type="password" id="addPassword" name="password" required>
-            </div>
+                <div class="form-group">
+                    <label for="addPassword">Contraseña</label>
+                    <input type="password" id="addPassword" name="password" required>
+                </div>
 
-            <div class="form-group">
-                <label for="addPasswordConfirmation">Confirmar Contraseña</label>
-                <input type="password" id="addPasswordConfirmation" name="password_confirmation" required>
-            </div>
+                <div class="form-group">
+                    <label for="addPasswordConfirmation">Confirmar Contraseña</label>
+                    <input type="password" id="addPasswordConfirmation" name="password_confirmation" required>
+                </div>
 
-            <div class="btn-container">
-                <button type="button" class="btn-cancel">Cancelar</button>
-                <button type="submit" class="btn-save">Agregar Alumno</button>
-            </div>
-        </form>
+                <div class="btn-container">
+                    <button type="button" class="btn-cancel">Cancelar</button>
+                    <button type="submit" class="btn-save">Agregar Alumno</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -418,7 +425,8 @@
             <div class="attendance-history modal-content-section">
                 <h4>Historial de Asistencias</h4>
                 <div class="attendance-table-container">
-                    <table class="data-table" id="attendanceHistoryTable">
+                    <div class="table-responsive">
+                        <table class="data-table" id="attendanceHistoryTable">
                         <thead>
                             <tr>
                                 <th>Fecha y Hora</th>
@@ -431,6 +439,7 @@
                             <!-- Se llenará dinámicamente -->
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
         </div>

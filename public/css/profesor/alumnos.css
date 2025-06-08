@@ -46,49 +46,71 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
+    padding-top: 5px;
 }
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
+    margin-bottom: 5px;
 }
 .form-group label {
     font-weight: 500;
     color: #333;
+    font-size: 0.95rem;
 }
 .form-group select, .form-group input {
-    padding: 10px;
+    padding: 12px;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group select:focus, .form-group input:focus {
+    outline: none;
+    border-color: #7c6bd6;
+    box-shadow: 0 0 0 3px rgba(124, 107, 214, 0.1);
 }
 .btn-container {
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    margin-top: 25px;
+    gap: 15px;
 }
 .btn-save {
-    background-color: #7c6bd6;
+    background: linear-gradient(135deg, #7c6bd6 0%, #a855f7 100%);
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
+    padding: 12px 24px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    flex: 1;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(124, 107, 214, 0.2);
 }
 .btn-save:hover {
-    background-color: #6659b8;
+    background: linear-gradient(135deg, #6b59c7 0%, #9333ea 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(124, 107, 214, 0.3);
 }
 .btn-cancel {
     background-color: #f8f9fa;
     color: #333;
     border: 1px solid #ddd;
-    padding: 10px 20px;
-    border-radius: 5px;
+    padding: 12px 24px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    flex: 1;
+    text-align: center;
 }
 .btn-cancel:hover {
     background-color: #e9ecef;
+    transform: translateY(-1px);
 }
 .modal-overlay {
     display: none;
@@ -106,10 +128,12 @@
 }
 .modal-content {
     background-color: white;
-    padding: 25px;
-    border-radius: 10px;
+    padding: 0;
+    border-radius: 15px;
     width: 500px;
     max-width: 90%;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 .modal-header {
     display: flex;
@@ -247,6 +271,22 @@
     to {
         opacity: 1;
         transform: scale(1) translateY(0);
+    }
+}
+
+/* Animación para modales estándar */
+.modal-content {
+    animation: modalContentFadeIn 0.3s ease-out;
+}
+
+@keyframes modalContentFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
     }
 }
 
@@ -938,39 +978,105 @@
 /* Mejoras para el responsive del modal */
 @media (max-width: 768px) {
     .modal-large {
-        width: 98%;
-        max-height: 98vh;
-        border-radius: 12px;
-    }
-    
-    .modal-header {
-        padding: 20px;
-        border-radius: 12px 12px 0 0;
-    }
-    
-    .modal-header h3 {
-        font-size: 1.4rem;
+        width: 95%;
+        max-height: 90vh;
+        margin: 5vh auto;
     }
     
     .modal-body {
-        padding: 20px;
-    }
-    
-    .attendance-filters {
-        grid-template-columns: 1fr;
-        padding: 20px;
+        padding: 15px;
+        max-height: calc(90vh - 70px);
     }
     
     .attendance-stats {
         grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .subject-stats, 
+    .attendance-stats, 
+    .attendance-history {
+        padding: 15px;
+    }
+    
+    #subjectStatsContainer {
+        grid-template-columns: 1fr;
     }
     
     .stat-card {
-        padding: 20px 15px;
+        padding: 10px;
     }
     
     .stat-number {
-        font-size: 2rem;
+        font-size: 1.5rem;
+    }
+    
+    /* Tabla del modal más responsiva */
+    #attendanceHistoryTable thead th {
+        padding: 10px 8px;
+        font-size: 0.8rem;
+    }
+    
+    #attendanceHistoryTable tbody td {
+        padding: 10px 8px;
+        font-size: 0.9rem;
+    }
+    
+    /* Asegurar que la tabla se pueda desplazar horizontalmente */
+    .attendance-table-container .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    #attendanceHistoryTable {
+        min-width: 500px;
+    }
+}
+
+@media (max-width: 576px) {
+    .modal-large {
+        width: 100%;
+        max-height: 95vh;
+        margin: 2.5vh auto;
+        border-radius: 10px;
+    }
+    
+    .modal-body {
+        padding: 10px;
+    }
+    
+    .attendance-stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    
+    .stat-card {
+        padding: 8px;
+    }
+    
+    .stat-number {
+        font-size: 1.3rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+    
+    .subject-stat-card {
+        padding: 12px;
+    }
+    
+    .subject-stat-card h5 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+    
+    /* Mejorar visualización de las estadísticas por materia */
+    .subject-stat-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
     }
 }
 
@@ -999,4 +1105,126 @@
     outline: none;
     border-color: #007bff;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Mejoras para tablas responsivas */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: var(--spacing-md);
+}
+
+/* Media queries para tablas responsivas */
+@media (max-width: 768px) {
+    .data-table {
+        min-width: 650px; /* Ancho mínimo para asegurar que todo el contenido sea visible */
+    }
+    
+    .data-table__cell {
+        padding: var(--spacing-sm);
+        font-size: 0.9rem;
+    }
+    
+    .data-table__header {
+        padding: var(--spacing-sm);
+        font-size: 0.9rem;
+    }
+    
+    /* Estilos responsivos para modales estándar */
+    .modal-content {
+        width: 90%;
+        max-width: 500px;
+        max-height: 80vh;
+        margin: 10vh auto;
+        border-radius: 12px;
+        overflow-y: auto;
+    }
+
+    .modal-body {
+        max-height: calc(80vh - 100px);
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    .modal-header h3 {
+        font-size: 1.4rem;
+    }
+    
+    .form-group {
+        margin-bottom: 12px;
+    }
+    
+    .form-group label {
+        font-size: 0.9rem;
+        margin-bottom: 3px;
+    }
+    
+    .form-group input, 
+    .form-group select {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-container {
+        margin-top: 15px;
+    }
+    
+    .btn-save, 
+    .btn-cancel {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .data-table__cell,
+    .data-table__header {
+        padding: calc(var(--spacing-sm) / 1.5);
+        font-size: 0.85rem;
+    }
+    
+    /* Aumentar área táctil en móviles pequeños */
+    .data-table__action {
+        min-width: 32px;
+        min-height: 32px;
+    }
+    
+    /* Estilos para modales en pantallas muy pequeñas */
+    .modal-content {
+        width: 95%;
+        max-height: 85vh;
+        margin: 7vh auto;
+        padding: 15px;
+    }
+
+    .modal-header {
+        padding: 15px;
+        margin: -15px -15px 15px;
+    }
+
+    .modal-header h3 {
+        font-size: 1.2rem;
+    }
+
+    .modal-close {
+        width: 30px;
+        height: 30px;
+        right: 15px;
+    }
+    
+    .form-group input,
+    .form-group select {
+        height: 40px; /* Aumentar área táctil */
+    }
+    
+    .btn-save,
+    .btn-cancel {
+        flex: 1;
+        padding: 10px 0;
+        text-align: center;
+    }
+    
+    .btn-container {
+        gap: 10px;
+    }
 }
