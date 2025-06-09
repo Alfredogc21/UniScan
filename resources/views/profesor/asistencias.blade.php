@@ -130,10 +130,10 @@
                     <button id="btnJustificarAsistencias" class="section__action">
                         <i class="fas fa-check-circle" style="margin-right: 8px;"></i> Registrar Asistencias
                     </button>
-                </div>
-                <div class="section__content">
-                    <table class="data-table">
-                        <thead class="data-table__head">
+                </div>                <div class="section__content">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead class="data-table__head">
                             <tr>
                                 <th class="data-table__header">ID</th>
                                 <th class="data-table__header">Alumno</th>
@@ -182,9 +182,9 @@
                             <tr>
                                 <td colspan="7" class="data-table__cell text-center">No hay asistencias registradas</td>
                             </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            @endforelse                        </tbody>
+                        </table>
+                    </div>
 
                     @if(isset($asistencias) && method_exists($asistencias, 'links'))
                     <div class="mt-4">
