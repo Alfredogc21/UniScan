@@ -1,11 +1,70 @@
 /* Estilos para la página de gestión de materias */
 
+/* Estilos para los botones de acción en la tabla */
+.data-table__actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.data-table__action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Estilos específicos para hacer la tabla responsiva */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    margin-bottom: 1rem;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.05);
+}
+
+/* Para pantallas muy pequeñas */
+@media screen and (max-width: 480px) {
+    .data-table__actions {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+    
+    .data-table__action {
+        min-width: 36px;
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
 /* Estilos específicos para el formulario "Añadir Nueva Materia" */
 #addMateriaModal .modal-content {
     max-width: 450px;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    overflow: hidden;
+    overflow-y: auto;
+    max-height: 90vh;
 }
 
 #addMateriaModal .modal-header {
@@ -141,12 +200,12 @@
 }
 
 /* Estilos mejorados para botones */
-.btn-edit-materia:hover, .btn-generate-qr:hover, .btn-delete-materia:hover {
+.btn-edit-materia:hover, .btn-generate-qr:hover, .btn-delete-materia:hover, .btn-view-materia:hover, .data-table__action[title="Ver asistencias"]:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 8px rgba(123, 31, 162, 0.3);
 }
 
-.btn-edit-materia:active, .btn-generate-qr:active, .btn-delete-materia:active {
+.btn-edit-materia:active, .btn-generate-qr:active, .btn-delete-materia:active, .btn-view-materia:active, .data-table__action[title="Ver asistencias"]:active {
     transform: translateY(1px);
 }
 
@@ -366,8 +425,8 @@
 }
 
 #downloadQr {
-    background-color: #28a745;
-    border-color: #28a745;
+    background-color: #7b1fa2;
+    border-color: #7b1fa2;
     cursor: pointer;
 }
 
@@ -463,7 +522,7 @@
 }
 
 #qrModal .modal-header {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, #7b1fa2, #9c27b0);
     color: white;
     padding: 20px 25px;
     border-bottom: none;
@@ -665,7 +724,7 @@
 }
 
 #downloadQr {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, #7b1fa2, #9c27b0);
     color: white;
     border: none;
     padding: 12px 24px;
@@ -681,7 +740,7 @@
 }
 
 #downloadQr:hover {
-    background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+    background: linear-gradient(135deg, #6a1b9a, #8e24aa);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     text-decoration: none;
@@ -735,620 +794,48 @@
 
 /* Estilos para botones de acción en tabla */
 #btnAddMateria {
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); 
+    background: linear-gradient(135deg, #7b1fa2, #9c27b0); 
     color: white; 
     border: none; 
     padding: 10px 18px; 
     border-radius: 8px; 
     font-weight: 600; 
-    box-shadow: 0 4px 10px rgba(37, 117, 252, 0.2); 
+    box-shadow: 0 4px 10px rgba(123, 31, 162, 0.3); 
     transition: all 0.3s ease;
 }
 
-/* Estilos mejorados para el modal de agregar materia */
-#addMateriaModal .modal-content {
-    max-width: 600px;
-    width: 95%;
-    border-radius: 20px;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.3), 0 15px 30px rgba(0,0,0,0.15);
+/* Estilo común para todos los botones de acción en la tabla */
+.data-table__action {
+    background: white;
+    color: #444;
     border: none;
-    overflow: visible;
-    margin: 20px auto;
-    backdrop-filter: blur(15px);
-    transform: scale(0.95);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    max-height: 95vh;
-    overflow-y: auto;
-    position: relative;
-}
-
-#addMateriaModal.modal-show .modal-content {
-    transform: scale(1);
-}
-
-#addMateriaModal .modal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 32px 36px;
-    border-bottom: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
-}
-
-#addMateriaModal .modal-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
-    pointer-events: none;
-}
-
-#addMateriaModal .modal-header h3 {
-    margin: 0;
-    font-size: 1.8rem;
-    font-weight: 700;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.4);
-    letter-spacing: 0.8px;
-    position: relative;
-    z-index: 1;
-}
-
-#addMateriaModal .modal-close {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    z-index: 1;
-    font-weight: bold;
-}
-
-#addMateriaModal .modal-close:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
-    transform: scale(1.15) rotate(90deg);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-}
-
-.user-form {
-    padding: 32px 36px 36px 36px;
-    background: linear-gradient(135deg, #fafbff 0%, #ffffff 100%);
-    min-height: auto;
-    position: relative;
-    border-radius: 0 0 20px 20px;
-}
-
-.form-group {
-    margin-bottom: 28px;
-    position: relative;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 12px;
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    position: relative;
-}
-
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 16px 20px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 1.05rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: white;
-    box-sizing: border-box;
-    font-family: inherit;
-    font-weight: 500;
-    color: #2c3e50;
-    position: relative;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-    transform: translateY(-2px);
-    background-color: #fdfdff;
-}
-
-.form-group input::placeholder {
-    color: #94a3b8;
-    font-style: italic;
-    font-weight: 400;
-    opacity: 0.8;
-    transition: opacity 0.3s ease;
-}
-
-.form-group input:focus::placeholder {
-    opacity: 0.5;
-    transform: translateY(-2px);
-}
-
-/* Mejorar el estilo de los inputs de tiempo */
-.form-group input[type="time"] {
     cursor: pointer;
-    color: #2c3e50;
-    font-weight: 600;
-    position: relative;
-    padding-right: 50px;
-}
-
-.form-group input[type="time"]::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    filter: invert(0.4);
-    transition: all 0.3s ease;
-    position: absolute;
-    right: 15px;
-    width: 20px;
-    height: 20px;
-}
-
-.form-group input[type="time"]::-webkit-calendar-picker-indicator:hover {
-    filter: invert(0.7);
-    transform: scale(1.1);
-}
-
-/* Estados de validación visual mejorados */
-.form-group input:valid:not(:placeholder-shown) {
-    border-color: #10b981;
-    background-color: #f0fdf4;
-}
-
-.form-group input:invalid:not(:placeholder-shown) {
-    border-color: #ef4444;
-    background-color: #fef2f2;
-}
-
-.form-group input:invalid:not(:placeholder-shown):focus {
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
-}
-
-.btn-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    margin-top: 28px;
-    padding: 24px 0 0 0;
-    border-top: 2px solid #e2e8f0;
-    position: sticky;
-    bottom: 0;
-    background: linear-gradient(135deg, #fafbff 0%, #ffffff 100%);
-    border-radius: 0 0 20px 20px;
-}
-
-.btn-cancel {
-    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
-    color: white;
-    border: none;
-    padding: 14px 28px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    min-width: 120px;
-}
-
-.btn-cancel:hover {
-    background: linear-gradient(135deg, #475569 0%, #334155 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(100, 116, 139, 0.4);
-}
-
-.btn-save {
-    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-    color: white;
-    border: none;
-    padding: 14px 28px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    min-width: 140px;
-}
-
-.btn-save:hover {
-    background: linear-gradient(135deg, #047857 0%, #059669 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(5, 150, 105, 0.4);
-}
-
-.btn-save:active,
-.btn-cancel:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-/* Efectos de entrada para el modal mejorados */
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-40px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes overlayFadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-#addMateriaModal.modal-show {
-    animation: overlayFadeIn 0.3s ease-out;
-}
-
-#addMateriaModal.modal-show .modal-content {
-    animation: modalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-/* Mejoras adicionales para inputs */
-.form-group input[type="time"] {
-    cursor: pointer;
-    color: #2c3e50;
-}
-
-.form-group input[type="time"]::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    filter: invert(0.3);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
 }
 
-.form-group input[type="time"]::-webkit-calendar-picker-indicator:hover {
-    filter: invert(0.6);
-    transform: scale(1.1);
+/* Estilo específico para el botón de ver detalles */
+.btn-view-materia {
+    background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+    color: white;
 }
 
-/* Estilo mejorado para placeholder */
-.form-group input::placeholder {
-    color: #94a3b8;
-    font-style: italic;
-    opacity: 0.8;
-    transition: opacity 0.3s ease;
+/* Ya tenemos el estilo para el botón de generar QR en .btn-generate-qr */
+
+/* Estilo para el botón de ver asistencias */
+.data-table__action[title="Ver asistencias"] {
+    background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+    color: white;
 }
 
-.form-group input:focus::placeholder {
-    opacity: 0.5;
+/* Estilos para los hover de los botones de acción */
+.data-table__action:hover {
     transform: translateY(-2px);
-}
-
-/* Estados de validación visual */
-.form-group input:valid {
-    border-color: #10b981;
-}
-
-.form-group input:invalid:not(:placeholder-shown) {
-    border-color: #ef4444;
-}
-
-.form-group input:invalid:not(:placeholder-shown):focus {
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
-}
-
-/* Media queries para responsividad mejorada */
-@media (max-width: 768px) {
-    .modal-overlay {
-        padding: 10px;
-        align-items: flex-start;
-        padding-top: 30px;
-    }
-    
-    #addMateriaModal .modal-content {
-        max-width: 95%;
-        margin: 0 auto;
-        border-radius: 16px;
-        max-height: 90vh;
-        overflow-y: auto;
-    }
-    
-    #addMateriaModal .modal-header {
-        padding: 24px 20px;
-        border-radius: 16px 16px 0 0;
-    }
-    
-    #addMateriaModal .modal-header h3 {
-        font-size: 1.4rem;
-    }
-    
-    .user-form {
-        padding: 24px 20px 20px 20px;
-        border-radius: 0 0 16px 16px;
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
-    }
-    
-    .form-group label {
-        font-size: 0.9rem;
-        margin-bottom: 8px;
-    }
-    
-    .form-group input,
-    .form-group select {
-        padding: 12px 16px;
-        font-size: 0.95rem;
-    }
-    
-    .btn-container {
-        flex-direction: column;
-        gap: 12px;
-        margin-top: 20px;
-        padding: 20px 0 0 0;
-        border-radius: 0 0 16px 16px;
-    }
-    
-    .btn-save,
-    .btn-cancel {
-        width: 100%;
-        padding: 14px 20px;
-        font-size: 0.95rem;
-    }
-    
-    #qrImage {
-        max-width: 180px;
-    }
-    
-    .qr-info {
-        font-size: 0.85rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .modal-overlay {
-        padding: 5px;
-        align-items: flex-start;
-        padding-top: 20px;
-    }
-    
-    #addMateriaModal .modal-content {
-        max-width: 100%;
-        border-radius: 12px;
-        margin: 0 auto;
-        max-height: 95vh;
-        overflow-y: auto;
-    }
-    
-    #addMateriaModal .modal-header {
-        padding: 20px 16px;
-        border-radius: 12px 12px 0 0;
-    }
-    
-    #addMateriaModal .modal-header h3 {
-        font-size: 1.2rem;
-    }
-    
-    #addMateriaModal .modal-close {
-        width: 40px;
-        height: 40px;
-        font-size: 1.3rem;
-    }
-    
-    .user-form {
-        padding: 20px 16px 16px 16px;
-        border-radius: 0 0 12px 12px;
-    }
-    
-    .form-group {
-        margin-bottom: 16px;
-    }
-    
-    .form-group label {
-        margin-bottom: 6px;
-        font-size: 0.85rem;
-    }
-    
-    .form-group input,
-    .form-group select {
-        padding: 10px 14px;
-        font-size: 0.9rem;
-        border-radius: 8px;
-    }
-    
-    .btn-container {
-        margin-top: 16px;
-        padding: 16px 0 0 0;
-        border-radius: 0 0 12px 12px;
-    }
-    
-    .btn-save,
-    .btn-cancel {
-        padding: 12px 16px;
-        font-size: 0.9rem;
-        border-radius: 8px;
-    }
-    
-    #qrContainer {
-        padding: 10px;
-    }
-    
-    #qrImage {
-        max-width: 150px;
-    }
-    
-    .qr-info {
-        padding: 10px;
-        margin-top: 10px;
-    }
-    
-    .qr-info h4 {
-        font-size: 0.95rem;
-    }
-}
-
-/* Estilos adicionales para los modales y botones */
-.btn-cancel:hover {
-    background-color: #0E3850 !important;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.modal-content {
-    animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.detail-value {
-    color: #333;
-}
-
-/* Estilos para el modal de detalles de la materia */
-#viewMateriaModal {
-    z-index: 9999;
-}
-
-#viewMateriaModal .modal-content {
-    max-width: 500px;
-    border-radius: 10px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-}
-
-#viewMateriaModal .modal-header {
-    background-color: #164E63;
-    color: white;
-    padding: 15px 20px;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-}
-
-#viewMateriaModal .modal-header h3 {
-    margin: 0;
-    font-size: 1.3em;
-    font-weight: 500;
-}
-
-#viewMateriaModal .modal-close {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.5em;
-    cursor: pointer;
-}
-
-#viewMateriaModal .materia-details {
-    padding: 20px;
-}
-
-#viewMateriaModal .detail-item {
-    margin-bottom: 15px;
-    border-bottom: 1px solid #eaeaea;
-    padding-bottom: 10px;
-}
-
-#viewMateriaModal .detail-item:last-of-type {
-    border-bottom: none;
-}
-
-#viewMateriaModal .detail-label {
-    font-weight: 600;
-    color: #164E63;
-    display: block;
-    margin-bottom: 3px;
-}
-
-#viewMateriaModal .detail-value {
-    font-size: 1.1em;
-}
-
-#viewMateriaModal .detail-item:first-child .detail-value {
-    font-size: 1.2em;
-}
-
-#viewMateriaModal .btn-container {
-    text-align: right;
-    margin-top: 20px;
-}
-
-#viewMateriaModal .btn-cancel {
-    background-color: #164E63;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.3s;
-}
-
-.btn-edit-materia {
-    background: linear-gradient(135deg, #3498db, #2980b9); 
-    color: white; 
-    border: none; 
-    width: 36px; 
-    height: 36px; 
-    border-radius: 6px; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15); 
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn-generate-qr {
-    background: linear-gradient(135deg, #27ae60, #2ecc71); 
-    color: white; 
-    border: none; 
-    width: 36px; 
-    height: 36px; 
-    border-radius: 6px; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15); 
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn-delete-materia {
-    background: linear-gradient(135deg, #e74c3c, #c0392b); 
-    color: white; 
-    border: none; 
-    width: 36px; 
-    height: 36px; 
-    border-radius: 6px; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15); 
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.data-table__actions {
-    display: flex; 
-    gap: 8px; 
-    justify-content: center;
-}
-
-/* Clase para ocultar filas en la búsqueda */
-.hidden-row {
-    display: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }

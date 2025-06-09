@@ -110,58 +110,60 @@
                     </button>
                 </div>
                 <div class="section__content">
-                    <table class="data-table" id="materiasTable">
-                        <thead class="data-table__head">
-                            <tr>
-                                <th class="data-table__header">ID</th>
-                                <th class="data-table__header">Nombre</th>
-                                <th class="data-table__header">Profesor</th>
-                                <th class="data-table__header">Aula</th>
-                                <th class="data-table__header">Horario</th>
-                                <th class="data-table__header">Curso</th>
-                                <th class="data-table__header">QR</th>
-                                <th class="data-table__header">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="data-table__body">
-                            @foreach($materias as $materia)
-                            <tr>
-                                <td class="data-table__cell">{{ $materia->id }}</td>
-                                <td class="data-table__cell">{{ $materia->nombre }}</td>
-                                <td class="data-table__cell">{{ $materia->profesor->name ?? 'Sin asignar' }}</td>
-                                <td class="data-table__cell">{{ $materia->aula->nombre ?? 'No especificado' }}</td>
-                                <td class="data-table__cell">{{ \Carbon\Carbon::parse($materia->horario_ingreso)->format('H:i') }} - {{ \Carbon\Carbon::parse($materia->horario_salida)->format('H:i') }}</td>
-                                <td class="data-table__cell">{{ $materia->curso->nombre ?? 'No especificado' }}</td>
-                                <td class="data-table__cell">
-                                    @if($materia->qr_path)
-                                    <span class="data-table__status data-table__status--active">Generado</span>
-                                    @else
-                                    <span class="data-table__status data-table__status--inactive">No generado</span>
-                                    @endif
-                                </td>
-                                <td class="data-table__cell">
-                                    <div class="data-table__actions">
-                                        <button class="data-table__action btn-view-materia"
-                                            title="Ver detalles"
-                                            data-id="{{ $materia->id }}">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="data-table__action btn-generate-qr"
-                                            title="Generar QR"
-                                            data-id="{{ $materia->id }}">
-                                            <i class="fas fa-qrcode"></i>
-                                        </button>
-                                        <a href="{{ route('profesor.asistencias', ['materia_id' => $materia->id]) }}" 
-                                           class="data-table__action"
-                                           title="Ver asistencias">
-                                            <i class="fas fa-clipboard-check"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="data-table" id="materiasTable">
+                            <thead class="data-table__head">
+                                <tr>
+                                    <th class="data-table__header">ID</th>
+                                    <th class="data-table__header">Nombre</th>
+                                    <th class="data-table__header">Profesor</th>
+                                    <th class="data-table__header">Aula</th>
+                                    <th class="data-table__header">Horario</th>
+                                    <th class="data-table__header">Curso</th>
+                                    <th class="data-table__header">QR</th>
+                                    <th class="data-table__header">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="data-table__body">
+                                @foreach($materias as $materia)
+                                <tr>
+                                    <td class="data-table__cell">{{ $materia->id }}</td>
+                                    <td class="data-table__cell">{{ $materia->nombre }}</td>
+                                    <td class="data-table__cell">{{ $materia->profesor->name ?? 'Sin asignar' }}</td>
+                                    <td class="data-table__cell">{{ $materia->aula->nombre ?? 'No especificado' }}</td>
+                                    <td class="data-table__cell">{{ \Carbon\Carbon::parse($materia->horario_ingreso)->format('H:i') }} - {{ \Carbon\Carbon::parse($materia->horario_salida)->format('H:i') }}</td>
+                                    <td class="data-table__cell">{{ $materia->curso->nombre ?? 'No especificado' }}</td>
+                                    <td class="data-table__cell">
+                                        @if($materia->qr_path)
+                                        <span class="data-table__status data-table__status--active">Generado</span>
+                                        @else
+                                        <span class="data-table__status data-table__status--inactive">No generado</span>
+                                        @endif
+                                    </td>
+                                    <td class="data-table__cell">
+                                        <div class="data-table__actions">
+                                            <button class="data-table__action btn-view-materia"
+                                                title="Ver detalles"
+                                                data-id="{{ $materia->id }}">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="data-table__action btn-generate-qr"
+                                                title="Generar QR"
+                                                data-id="{{ $materia->id }}">
+                                                <i class="fas fa-qrcode"></i>
+                                            </button>
+                                            <a href="{{ route('profesor.asistencias', ['materia_id' => $materia->id]) }}" 
+                                               class="data-table__action"
+                                               title="Ver asistencias">
+                                                <i class="fas fa-clipboard-check"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
