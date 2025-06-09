@@ -41,11 +41,16 @@
                         <span class="nav__link-icon"><i class="fas fa-book"></i></span>
                         <span class="nav__link-text">Mis Materias</span>
                     </a>
-                </li>
-                <li class="nav__item">
+                </li>                <li class="nav__item">
                     <a href="{{ route('profesor.asistencias') }}" class="nav__link">
                         <span class="nav__link-icon"><i class="fas fa-clipboard-check"></i></span>
                         <span class="nav__link-text">Asistencias</span>
+                    </a>
+                </li>
+                <li class="nav__item">
+                    <a href="{{ route('profesor.menu') }}" class="nav__link">
+                        <span class="nav__link-icon"><i class="fas fa-question-circle"></i></span>
+                        <span class="nav__link-text">Ayuda</span>
                     </a>
                 </li>
             </ul>

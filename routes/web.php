@@ -136,6 +136,11 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('profesor')->name('profesor.')->group(function () {
         Route::get('/dashboard', [ProfesorController::class, 'dashboard'])->name('dashboard');
         
+        // Ruta de ayuda/menu
+        Route::get('/menu', function () {
+            return view('profesor.menu');
+        })->name('menu');
+        
         // Rutas de gestión de alumnos
         Route::get('/alumnos', [ProfesorController::class, 'alumnos'])->name('alumnos');
         Route::post('/alumnos', [ProfesorController::class, 'storeAlumno'])->name('alumnos.store');
