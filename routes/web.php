@@ -187,6 +187,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/asistencia-qr', [App\Http\Controllers\EstudianteController::class, 'asistenciaQR'])->name('asistencia-qr');
         Route::post('/procesar-qr', [App\Http\Controllers\EstudianteController::class, 'procesarQR'])->name('procesar-qr');
         
+        // Ruta de ayuda/menu
+        Route::get('/menu', function () {
+            return view('estudiante.menu');
+        })->name('menu');
+        
         // Rutas para datos de gráficos
         Route::get('/dashboard/datos-semanal', [App\Http\Controllers\EstudianteController::class, 'getDatosSemanal'])->name('dashboard.datos-semanal');
         Route::get('/dashboard/datos-distribucion', [App\Http\Controllers\EstudianteController::class, 'getDatosDistribucion'])->name('dashboard.datos-distribucion');

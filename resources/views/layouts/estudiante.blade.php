@@ -68,6 +68,12 @@
                             <span class="nav__link-text">Asistencia QR</span>
                         </a>
                     </li>
+                    <li class="nav__item">
+                        <a href="{{ route('estudiante.menu') }}" class="nav__link {{ request()->routeIs('estudiante.menu') ? 'nav__link--active' : '' }}">
+                            <span class="nav__link-icon"><i class="fas fa-question-circle"></i></span>
+                            <span class="nav__link-text">Ayuda</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
 
