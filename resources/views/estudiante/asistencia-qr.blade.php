@@ -5,219 +5,7 @@
 @section('page-title', 'Asistencia QR')
 
 @section('styles')
-<style>
-    .qr-scanner-container {
-        background: #fff;
-        border-radius: 15px;
-        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        padding: 2rem;
-        margin: 1rem auto;
-        max-width: 500px;
-    }
-
-    .scanner-header {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-
-    .scanner-header h2 {
-        color: #2c3e50;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .scanner-header p {
-        color: #7f8c8d;
-        font-size: 0.95rem;
-    }
-
-    #qr-reader {
-        width: 100%;
-        border-radius: 10px;
-        overflow: hidden;
-        border: 3px solid #e3f2fd;
-        background: #f8f9fa;
-        position: relative;
-    }
-
-    #qr-reader__scan_region {
-        min-height: 300px !important;
-        position: relative;
-    }
-
-    #qr-reader__camera {
-        border-radius: 10px;
-        width: 100% !important;
-        height: auto !important;
-    }
-
-    .scan-region-highlight {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 200px;
-        height: 200px;
-        border: 2px solid #667eea;
-        border-radius: 10px;
-        box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5);
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-        0% {
-            box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5), 0 0 0 0 rgba(102, 126, 234, 0.7);
-        }
-
-        70% {
-            box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5), 0 0 0 10px rgba(102, 126, 234, 0);
-        }
-
-        100% {
-            box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5), 0 0 0 0 rgba(102, 126, 234, 0);
-        }
-    }
-
-    .scanner-controls {
-        margin-top: 1.5rem;
-        text-align: center;
-    }
-
-    .btn-scanner {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        color: white;
-        padding: 12px 30px;
-        border-radius: 25px;
-        font-weight: 500;
-        margin: 0 10px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    }
-
-    .btn-scanner:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        color: white;
-    }
-
-    .btn-scanner:disabled {
-        background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-    }
-
-    .status-card {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-top: 1.5rem;
-        border-left: 4px solid #17a2b8;
-    }
-
-    .status-card h5 {
-        color: #2c3e50;
-        margin-bottom: 0.5rem;
-    }
-
-    .status-card p {
-        color: #6c757d;
-        margin: 0;
-        font-size: 0.9rem;
-    }
-
-    .success-message {
-        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-        border: 1px solid #c3e6cb;
-        border-left: 4px solid #28a745;
-        color: #155724;
-        padding: 1rem;
-        border-radius: 10px;
-        margin-top: 1rem;
-        animation: slideIn 0.5s ease-out;
-    }
-
-    .error-message {
-        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-        border: 1px solid #f5c6cb;
-        border-left: 4px solid #dc3545;
-        color: #721c24;
-        padding: 1rem;
-        border-radius: 10px;
-        margin-top: 1rem;
-        animation: slideIn 0.5s ease-out;
-    }
-
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .scanning-indicator {
-        display: none;
-        text-align: center;
-        margin-top: 1rem;
-    }
-
-    .scanning-indicator .spinner-border {
-        color: #667eea;
-        width: 2rem;
-        height: 2rem;
-    }
-
-    .instruction-card {
-        background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        border: 1px solid #e1bee7;
-    }
-
-    .instruction-card h6 {
-        color: #4a148c;
-        font-weight: 600;
-        margin-bottom: 1rem;
-    }
-
-    .instruction-card ol {
-        color: #6a1b9a;
-        margin: 0;
-        padding-left: 1.2rem;
-    }
-
-    .instruction-card li {
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-    }
-
-    /* Responsivo */
-    @media (max-width: 768px) {
-        .qr-scanner-container {
-            margin: 0.5rem;
-            padding: 1.5rem;
-        }
-
-        #qr-reader__scan_region {
-            min-height: 250px !important;
-        }
-
-        .btn-scanner {
-            padding: 10px 20px;
-            font-size: 0.9rem;
-            margin: 5px;
-        }
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/estudiante/asistencia-qr.css') }}">
 @endsection
 
 @section('content')
@@ -283,6 +71,7 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('js/estudiante/dashboard.js') }}"></script>
 <!-- QR Code Scanner Library -->
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
@@ -326,7 +115,7 @@
         // Función para actualizar el estado
         function updateStatus(status) {
             statusEl.text(status);
-        }        // Función cuando se escanea exitosamente
+        } // Función cuando se escanea exitosamente
         function onScanSuccess(decodedText, decodedResult) {
             console.log('QR Code escaneado:', decodedText);
 
@@ -384,12 +173,13 @@
                         showMessage(response.message || 'Error al procesar el código QR', 'error');
                         updateStatus('Error en el procesamiento');
                     }
-                },                error: function(xhr, status, error) {
+                },
+                error: function(xhr, status, error) {
                     scanningIndicator.hide();
                     console.error('Error AJAX:', error, xhr);
 
                     let errorMessage = 'Error de conexión. Inténtalo de nuevo.';
-                    
+
                     // Intentar obtener mensaje de error del servidor
                     if (xhr.responseJSON) {
                         if (xhr.responseJSON.error) {
@@ -397,7 +187,7 @@
                         } else if (xhr.responseJSON.message) {
                             errorMessage = xhr.responseJSON.message;
                         }
-                        
+
                         // Mostrar información de debug en la consola (para desarrollo)
                         if (xhr.responseJSON.debug_info) {
                             console.warn('Información de debug:', xhr.responseJSON.debug_info);
@@ -415,7 +205,7 @@
 
                     showMessage(errorMessage, 'error');
                     updateStatus('Error en el escaneo');
-                    
+
                     // Habilitar el botón para volver a escanear
                     startBtn.prop('disabled', false);
                 }
