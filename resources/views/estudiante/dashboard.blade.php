@@ -82,19 +82,19 @@
 <div class="content-section">
     <div class="section__header">
         <h2 class="section__title">Mis Asistencias Recientes</h2>
-    </div>
-    <div class="section__content">
-        <table class="data-table">
-            <thead class="data-table__head">
-                <tr>
-                    <th class="data-table__header">Materia</th>
-                    <th class="data-table__header">Profesor</th>
-                    <th class="data-table__header">Fecha</th>
-                    <th class="data-table__header">Hora</th>
-                    <th class="data-table__header">Estado</th>
-                </tr>
-            </thead>
-            <tbody class="data-table__body">
+    </div>    <div class="section__content">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead class="data-table__head">
+                    <tr>
+                        <th class="data-table__header">Materia</th>
+                        <th class="data-table__header">Profesor</th>
+                        <th class="data-table__header">Fecha</th>
+                        <th class="data-table__header">Hora</th>
+                        <th class="data-table__header">Estado</th>
+                    </tr>
+                </thead>
+                <tbody class="data-table__body">
                 @forelse($asistenciasRecientes as $asistencia)
                 <tr>
                     <td class="data-table__cell">{{ $asistencia->materia->nombre }}</td>
@@ -118,10 +118,10 @@
                 @empty
                 <tr>
                     <td colspan="5" class="data-table__cell text-center">No hay asistencias registradas aún</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </tr>                @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div> <!-- Contenedor para notificaciones -->
 <div class="notifications-container"></div>
