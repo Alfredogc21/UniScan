@@ -1,0 +1,189 @@
+/* Estilos para la vista de materias del estudiante */
+
+.materias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.materia-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e1e5e9;
+    transition: all 0.3s ease;
+}
+
+.materia-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.materia-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e1e5e9;
+    flex-wrap: wrap;
+}
+
+.materia-card__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.materia-card__percentage {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.percentage--good {
+    background: #d4edda;
+    color: #155724;
+}
+
+.percentage--warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.percentage--danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.materia-card__info {
+    margin-bottom: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.info-item i {
+    width: 20px;
+    color: #6c757d;
+    margin-right: 0.75rem;
+}
+
+.info-item span {
+    color: #495057;
+    font-size: 0.875rem;
+}
+
+.materia-card__stats {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 1rem;
+    border-top: 1px solid #e1e5e9;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-state__icon {
+    font-size: 4rem;
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+
+.empty-state__title {
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state__description {
+    color: #868e96;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.badge {
+    background: #e9ecef;
+    color: #495057;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Estilos responsivos para las tarjetas de materias */
+@media (max-width: 768px) {
+    .materias-grid {
+        grid-template-columns: 1fr;
+        padding: 0 10px;
+    }
+    
+    .materia-card {
+        padding: 1rem;
+        width: 100%;
+    }
+    
+    .materia-card__title {
+        font-size: 1.1rem;
+        word-break: break-word;
+    }
+    
+    .materia-card__stats {
+        flex-wrap: wrap;
+    }
+    
+    .stat-item {
+        margin: 0.5rem 0;
+        flex: 1 0 50%;
+    }
+}
+
+@media (max-width: 480px) {
+    .section__header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .section__actions {
+        margin-top: 0.5rem;
+    }
+    
+    .materia-card__header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .materia-card__percentage {
+        margin-top: 0.5rem;
+    }
+    
+    .info-item span {
+        font-size: 0.8rem;
+    }
+}
