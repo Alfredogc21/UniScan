@@ -71,7 +71,7 @@
     <!-- Contenido principal -->
     <main class="dashboard__content">
         <header class="content__header">
-            <button class="actions__button mobile-menu-btn">
+            <button class="actions__button mobile-menu-btn d-md-none">
                 <i class="fas fa-bars"></i>
             </button>
 
