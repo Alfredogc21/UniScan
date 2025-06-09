@@ -340,6 +340,64 @@
     animation-fill-mode: both;
 }
 
+/* Estilos para los botones de acción en la tabla - Similar a materias.css */
+.data-table__actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.data-table__action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+    color: white;
+}
+
+.data-table__action:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(123, 31, 162, 0.3);
+    background: linear-gradient(135deg, #6a1b9a, #8e24aa);
+}
+
+.data-table__action:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(123, 31, 162, 0.2);
+}
+
+/* Estilos específicos para los diferentes botones de acción */
+.btn-view-attendance {
+    background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+    color: white;
+}
+
+.btn-edit-user {
+    background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+    color: white;
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+    color: white;
+}
+
+/* Mejoras para la clase actions-cell existente */
+.actions-cell {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+    justify-content: center;
+}
+
 /* Filtros de asistencia mejorados */
 .attendance-filters {
     display: grid;
