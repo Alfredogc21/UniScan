@@ -1,0 +1,198 @@
+/* Estilos para la página de perfil del profesor */
+
+/* Diseño del contenedor de perfil */
+.section__content {
+    background-color: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilos para los formularios */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -15px;
+}
+
+.col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+    padding: 0 15px;
+    position: relative;
+}
+
+.col-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding: 0 15px;
+}
+
+.mb-3 {
+    margin-bottom: 20px;
+}
+
+/* Estilos mejorados para los campos del formulario */
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #eaecef;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background-color: #f9fafc;
+    color: #495057;
+}
+
+.form-control:focus {
+    border-color: #9c27b0;
+    box-shadow: 0 0 0 3px rgba(123, 31, 162, 0.15);
+    outline: none;
+    background-color: white;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+    font-size: 15px;
+    letter-spacing: 0.3px;
+}
+
+/* Estilo para mensajes de error de validación */
+.invalid-feedback {
+    color: #e74c3c;
+    font-size: 13px;
+    margin-top: 8px;
+    display: block;
+    font-weight: 500;
+}
+
+.is-invalid {
+    border-color: #e74c3c !important;
+    background-color: rgba(231, 76, 60, 0.05);
+}
+
+.is-invalid:focus {
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15) !important;
+}
+
+/* Estilo mejorado para el botón "Guardar Cambios" */
+.btn-primary {
+    background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+    color: white;
+    border: none;
+    padding: 13px 30px;
+    border-radius: 50px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(123, 31, 162, 0.3);
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #6a1b9a, #8e24aa);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(123, 31, 162, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(123, 31, 162, 0.4);
+}
+
+/* Textos de ayuda mejorados */
+.form-text {
+    color: #6c757d;
+    font-size: 13px;
+    margin-top: 8px;
+    display: block;
+    font-style: italic;
+}
+
+/* Mensajes de éxito */
+.alert {
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    position: relative;
+    border-left: 4px solid transparent;
+}
+
+.alert-success {
+    background-color: #f0fff4;
+    border-color: #38a169;
+    color: #2f855a;
+}
+
+.alert-success::before {
+    content: '✓';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    width: 24px;
+    height: 24px;
+    background-color: #38a169;
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+}
+
+/* Contenedor de formulario mejorado */
+.d-flex {
+    display: flex;
+}
+
+.justify-content-end {
+    justify-content: flex-end;
+}
+
+/* Mejoras para responsive */
+@media (max-width: 768px) {
+    .row {
+        flex-direction: column;
+        margin: 0;
+    }
+    
+    .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        padding: 0;
+    }
+    
+    .mb-3 {
+        margin-bottom: 20px;
+    }
+    
+    .section__content {
+        padding: 20px;
+    }
+    
+    .btn-primary {
+        width: 100%;
+        padding: 12px 20px;
+    }
+    
+    .section__header {
+        padding-bottom: 10px;
+    }
+    
+    .section__title {
+        font-size: 18px;
+    }
+    
+    /* Mejoras para el contenedor principal */
+    .content-section {
+        margin: 0 10px;
+    }
+}
