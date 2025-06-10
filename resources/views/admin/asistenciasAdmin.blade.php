@@ -233,9 +233,6 @@
                             @endforelse
                         </tbody>
                     </table>
-                    <!-- Paginación -->
-                    <div class="pagination"> {{ $asistencias->links() ?? '' }}
-                    </div>
                 </div>
             </div>
 
